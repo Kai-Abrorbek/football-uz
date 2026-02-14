@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ComponentsModule } from './components/components.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { RedisModule } from './redis/redis.module';
+import { ModulesModule } from './modules/modules.module';
 
 @Module({
   imports: [
@@ -14,9 +14,9 @@ import { RedisModule } from './redis/redis.module';
       envFilePath: '.env',
     }),
 
-    ComponentsModule,
     DatabaseModule,
     RedisModule,
+    ModulesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
