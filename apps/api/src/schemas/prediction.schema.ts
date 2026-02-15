@@ -26,10 +26,10 @@ export class MultiLangText {
 
 @Schema({ _id: false })
 export class PredictedScore {
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   home: number | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   away: number | null;
 }
 
@@ -82,10 +82,10 @@ export class DataUsed {
   @Prop()
   awayForm?: string;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   homeLeaguePos: number | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   awayLeaguePos: number | null;
 
   /** Optional: capture the "asOf" season/date used for this prediction */
@@ -95,13 +95,13 @@ export class DataUsed {
 
 @Schema({ _id: false })
 export class ActualResult {
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   home: number | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   away: number | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Boolean })
   isCorrect: boolean | null;
 }
 

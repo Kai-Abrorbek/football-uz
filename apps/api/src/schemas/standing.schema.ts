@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export type StandingDocument = Standing & Document;
 
@@ -83,7 +83,7 @@ export class Standing {
    * API-Football standings is an array of groups:
    * response[0].league.standings => [ [rows...], [rows...] ... ]
    */
-  @Prop({ type: [[StandingEntry]], default: [] })
+  @Prop({ type: MongooseSchema.Types.Mixed, default: [] })
   standings: StandingEntry[][];
 
   @Prop()

@@ -25,6 +25,12 @@ export class LeagueInfo {
   // store the season you queried with (e.g., 2024)
   @Prop()
   season?: number;
+
+  @Prop()
+  round?: string;
+
+  @Prop({ type: Boolean, default: false })
+  standings?: boolean;
 }
 
 @Schema({ _id: false })
@@ -37,24 +43,27 @@ export class TeamInfo {
 
   @Prop()
   logo?: string;
+
+  @Prop({ type: Boolean, default: null })
+  winner?: boolean | null;
 }
 
 @Schema({ _id: false })
 export class Goals {
   // API-FOOTBALL: goals.home / goals.away (final or live goals)
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   home: number | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   away: number | null;
 }
 
 @Schema({ _id: false })
 export class ScoreDetail {
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   home: number | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   away: number | null;
 }
 
@@ -131,34 +140,34 @@ export class MatchStatistic {
   @Prop({ enum: ['home', 'away'], required: true })
   side: 'home' | 'away';
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: String })
   possession: string | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   shots: number | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   shotsOnTarget: number | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   corners: number | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   fouls: number | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   yellowCards: number | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   redCards: number | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   offsides: number | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   passes: number | null;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Number })
   passAccuracy: string | null;
 }
 
@@ -189,34 +198,11 @@ export class MatchEvent {
   comments?: string;
 }
 
-/** =========================
- *  Root Schema
- *  ========================= */
+@Schema({ _id: false })
+export class MatchStatus {
+  @Prop({ type: String, default: undefined })
+  long?: string;
 
-@Schema({ timestamps: true })
-export class Match {
-  /** API Fixture ID */
-  @Prop({ required: true, unique: true })
-  apiFootballId: number;
-
-  @Prop({ type: LeagueInfo })
-  league?: LeagueInfo;
-
-  @Prop({ type: TeamInfo, required: true })
-  homeTeam: TeamInfo;
-
-  @Prop({ type: TeamInfo, required: true })
-  awayTeam: TeamInfo;
-
-  /** Final/live goals (simple) */
-  @Prop({ type: Goals, default: undefined })
-  goals?: Goals;
-
-  /** Halftime/fulltime/... breakdown */
-  @Prop({ type: ScoreBreakdown, default: undefined })
-  score?: ScoreBreakdown;
-
-  /** Match status short code from API-FOOTBALL */
   @Prop({
     enum: [
       'TBD',
@@ -240,7 +226,48 @@ export class Match {
     ],
     default: 'NS',
   })
-  status: string;
+  short?: string;
+
+  @Prop({ type: Number, default: undefined })
+  elapsed?: number;
+
+  @Prop({ type: Number, default: null })
+  extra?: number | null;
+}
+
+/** =========================
+ *  Root Schema
+ *  ========================= */
+
+@Schema({ timestamps: true })
+export class Match {
+  /** API Fixture ID */
+  @Prop({ required: true })
+  apiFootballId: number;
+
+  @Prop({ type: String, default: undefined })
+  referee?: string;
+
+  @Prop({ type: LeagueInfo })
+  league?: LeagueInfo;
+
+  @Prop({ type: TeamInfo, required: true })
+  homeTeam: TeamInfo;
+
+  @Prop({ type: TeamInfo, required: true })
+  awayTeam: TeamInfo;
+
+  /** Final/live goals (simple) */
+  @Prop({ type: Goals, default: undefined })
+  goals?: Goals;
+
+  /** Halftime/fulltime/... breakdown */
+  @Prop({ type: ScoreBreakdown, default: undefined })
+  score?: ScoreBreakdown;
+
+  /** Match status short code from API-FOOTBALL */
+  @Prop({ type: MatchStatus, default: undefined })
+  status: MatchStatus;
 
   /** kickoff date-time (API: fixture.date) */
   @Prop({ required: true })

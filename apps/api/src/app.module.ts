@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { RedisModule } from './redis/redis.module';
 import { ModulesModule } from './modules/modules.module';
+import { TeamsModule } from './moduels/teams/teams.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ModulesModule } from './modules/modules.module';
     DatabaseModule,
     RedisModule,
     ModulesModule,
+    TeamsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

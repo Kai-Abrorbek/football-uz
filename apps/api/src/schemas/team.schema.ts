@@ -44,7 +44,7 @@ export class LeagueEntry {
 
 @Schema({ timestamps: true })
 export class Team {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   apiFootballId: number;
 
   @Prop({ required: true })

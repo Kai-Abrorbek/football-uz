@@ -159,7 +159,7 @@ export class PlayerStatistic {
 
 @Schema({ timestamps: true })
 export class Player {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   apiFootballId: number; // API: player.id
 
   @Prop({ required: true })
