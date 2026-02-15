@@ -107,11 +107,11 @@ export class ActualResult {
 
 @Schema({ timestamps: true })
 export class Prediction {
-  @Prop({ type: Types.ObjectId, ref: 'Match', required: true, unique: true })
+  @Prop({ type: Types.ObjectId, ref: 'Match', required: true })
   matchId: Types.ObjectId;
 
   /** API-Football fixture id for convenience */
-  @Prop({ required: true, index: true })
+  @Prop({ required: true })
   apiFootballId: number;
 
   @Prop({ type: PredictionTeamInfo, required: true })

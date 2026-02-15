@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -77,6 +77,70 @@ export class StandingScheduler {
       );
     } catch (error) {
       this.logger.error('Failed to sync standings', error);
+    }
+  }
+
+  // standing.scheduler.ts
+  async syncLeagueSeason(leagueId: number, season: number) {
+    this.logger.log(`Syncing league ${leagueId} season ${season}...`);
+
+    try {
+      const data = await this.apiFootballService.getStandings(leagueId, season);
+      const standingsData = data.response[0];
+
+      if (!standingsData) {
+        this.logger.warn(
+          `No standings data for league ${leagueId} season ${season}`,
+        );
+        return;
+      }
+
+      const standings = standingsData.league.standings.map((group) =>
+        group.map((entry) => ({
+          rank: entry.rank,
+          team: {
+            id: entry.team.id,
+            name: entry.team.name,
+            logo: entry.team.logo,
+          },
+          points: entry.points,
+          played: entry.all.played,
+          win: entry.all.win,
+          draw: entry.all.draw,
+          lose: entry.all.lose,
+          goalsFor: entry.all.goals.for,
+          goalsAgainst: entry.all.goals.against,
+          goalsDiff: entry.goalsDiff,
+          form: entry.form || '',
+          group: entry.group || '',
+        })),
+      );
+
+      await this.standingModel.findOneAndUpdate(
+        { 'league.id': leagueId, 'league.season': season },
+        {
+          league: {
+            id: standingsData.league.id,
+            name: standingsData.league.name,
+            country: standingsData.league.country,
+            logo: standingsData.league.logo,
+            season,
+          },
+          standings,
+          lastSyncAt: new Date(),
+        },
+        { upsert: true, returnDocument: 'after' },
+      );
+
+      this.logger.log(
+        `Synced standings for league ${leagueId} season ${season}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to sync standings for league ${leagueId}`,
+        error,
+      );
+      throw error;
     }
   }
 }

@@ -1,5 +1,5 @@
 // api-football.controller.ts (새로 생성)
-import { Controller, Post, Query } from '@nestjs/common';
+import { Controller, Param, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { MatchScheduler } from './schedulers/match.scheduler';
 import { StandingScheduler } from './schedulers/standing.scheduler';
@@ -49,5 +49,16 @@ export class ApiFootballController {
   async syncPlayers() {
     await this.playerScheduler.syncTopScorers();
     return { message: '선수 동기화 완료' };
+  }
+
+  // api-football.controller.ts
+  @Post('standings/:leagueId/:season')
+  @ApiOperation({ summary: '특정 시즌 순위표 수동 동기화' })
+  async syncStandingsBySeason(
+    @Param('leagueId') leagueId: number,
+    @Param('season') season: number,
+  ) {
+    await this.standingScheduler.syncLeagueSeason(+leagueId, +season);
+    return { message: '순위표 동기화 완료' };
   }
 }

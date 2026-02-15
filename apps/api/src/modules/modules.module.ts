@@ -7,6 +7,8 @@ import { LeaguesModule } from './leagues/leagues.module';
 import { MatchesModule } from './matches/matches.module';
 import { TeamsModule } from './teams/teams.module';
 import { PlayersModule } from './players/players.module';
+import { StandingsModule } from './standings/standings.module';
+import { PredictionsModule } from './predictions/predictions.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { PlayersModule } from './players/players.module';
     MatchesModule,
     TeamsModule,
     PlayersModule,
+    StandingsModule,
+    PredictionsModule,
   ],
 })
 export class ModulesModule {}
