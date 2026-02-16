@@ -54,7 +54,7 @@ export class News {
   isPublished: boolean;
 
   @Prop()
-  publishedAt: Date;
+  publishedAt: Date | null;
 
   @Prop({ default: 0 })
   viewCount: number;

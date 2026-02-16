@@ -15,7 +15,7 @@ export class GptService {
     this.model = this.config.get('OPENAI_MODEL') || 'gpt-4o-mini';
   }
 
-  async generatePrediction(prompt: string): Promise<string> {
+  public async generatePrediction(prompt: string): Promise<string> {
     try {
       const completion = await this.openai.chat.completions.create({
         model: this.model,

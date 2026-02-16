@@ -27,7 +27,7 @@ export class NotificationData {
 @Schema({ timestamps: true })
 export class Notification {
   @Prop({ type: Types.ObjectId, ref: 'User', default: null })
-  userId: Types.ObjectId;
+  userId: Types.ObjectId | null;
 
   @Prop({
     required: true,

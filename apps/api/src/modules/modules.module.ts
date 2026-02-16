@@ -9,6 +9,10 @@ import { TeamsModule } from './teams/teams.module';
 import { PlayersModule } from './players/players.module';
 import { StandingsModule } from './standings/standings.module';
 import { PredictionsModule } from './predictions/predictions.module';
+import { ChatModule } from './chat/chat.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { NewsModule } from './news/news.module';
+import { WorldcupModule } from './worldcup/worldcup.module';
 
 @Module({
   imports: [
@@ -23,6 +27,10 @@ import { PredictionsModule } from './predictions/predictions.module';
     PlayersModule,
     StandingsModule,
     PredictionsModule,
+    ChatModule,
+    NotificationsModule,
+    NewsModule,
+    WorldcupModule,
   ],
 })
 export class ModulesModule {}
