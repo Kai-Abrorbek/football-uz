@@ -12,7 +12,7 @@ import { PredictionsModule } from './predictions/predictions.module';
 import { ChatModule } from './chat/chat.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { NewsModule } from './news/news.module';
-import { WorldcupModule } from './worldcup/worldcup.module';
+import { WorldCupModule } from './worldcup/worldcup.module';
 
 @Module({
   imports: [
@@ -30,7 +30,7 @@ import { WorldcupModule } from './worldcup/worldcup.module';
     ChatModule,
     NotificationsModule,
     NewsModule,
-    WorldcupModule,
+    WorldCupModule,
   ],
 })
 export class ModulesModule {}

@@ -53,7 +53,7 @@ export class News {
   @Prop({ default: false })
   isPublished: boolean;
 
-  @Prop()
+  @Prop({ type: Date })
   publishedAt: Date | null;
 
   @Prop({ default: 0 })

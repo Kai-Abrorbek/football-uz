@@ -15,6 +15,7 @@ import { PlayerScheduler } from './schedulers/player.scheduler';
 import { TeamScheduler } from './schedulers/team.scheduler';
 import { LeagueRecord, LeagueRecordSchema } from '../../schemas';
 import { ApiFootballController } from './api-football.controller';
+import { DetailsScheduler } from './schedulers/details.scheduler';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { ApiFootballController } from './api-football.controller';
     StandingScheduler,
     TeamScheduler,
     PlayerScheduler,
+    DetailsScheduler,
   ],
   exports: [ApiFootballService],
   controllers: [ApiFootballController],

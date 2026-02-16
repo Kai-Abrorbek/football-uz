@@ -5,6 +5,7 @@ import { MatchScheduler } from './schedulers/match.scheduler';
 import { StandingScheduler } from './schedulers/standing.scheduler';
 import { TeamScheduler } from './schedulers/team.scheduler';
 import { PlayerScheduler } from './schedulers/player.scheduler';
+import { DetailsScheduler } from './schedulers/details.scheduler';
 
 @ApiTags('API-Football Sync')
 @Controller('sync')
@@ -14,6 +15,7 @@ export class ApiFootballController {
     private standingScheduler: StandingScheduler,
     private teamScheduler: TeamScheduler,
     private playerScheduler: PlayerScheduler,
+    private detailsScheduler: DetailsScheduler,
   ) {}
 
   @Post('fixtures')
@@ -60,5 +62,12 @@ export class ApiFootballController {
   ) {
     await this.standingScheduler.syncLeagueSeason(+leagueId, +season);
     return { message: '순위표 동기화 완료' };
+  }
+
+  @Post('match-details/:fixtureId')
+  @ApiOperation({ summary: '경기 상세 정보 수동 동기화' })
+  async syncMatchDetails(@Param('fixtureId') fixtureId: number) {
+    await this.detailsScheduler.syncMatchDetails(+fixtureId);
+    return { message: '경기 상세 정보 동기화 완료' };
   }
 }

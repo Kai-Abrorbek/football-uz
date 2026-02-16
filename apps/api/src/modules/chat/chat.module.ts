@@ -6,14 +6,22 @@ import {
   ChatMessage,
   ChatMessageSchema,
 } from '../../schemas/chat-message.schema';
+import { Match, MatchSchema } from '../../schemas/match.schema';
+import { Team, TeamSchema } from '../../schemas/team.schema';
+import { Player, PlayerSchema } from '../../schemas/player.schema';
+import { Standing, StandingSchema } from '../../schemas/standing.schema';
 import { PredictionsModule } from '../predictions/predictions.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: ChatMessage.name, schema: ChatMessageSchema },
+      { name: Match.name, schema: MatchSchema },
+      { name: Team.name, schema: TeamSchema },
+      { name: Player.name, schema: PlayerSchema },
+      { name: Standing.name, schema: StandingSchema },
     ]),
-    PredictionsModule, // GptService 사용
+    PredictionsModule,
   ],
   controllers: [ChatController],
   providers: [ChatService],

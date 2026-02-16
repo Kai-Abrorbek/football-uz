@@ -167,7 +167,7 @@ export class MatchStatistic {
   @Prop({ default: null, type: Number })
   passes: number | null;
 
-  @Prop({ default: null, type: Number })
+  @Prop({ default: null, type: String })
   passAccuracy: string | null;
 }
 
