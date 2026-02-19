@@ -3,11 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Match, MatchDocument } from '../../schemas/match.schema';
 import { MatchQueryDto } from './dto/match-query.dto';
+import { Player, PlayerDocument } from '../../schemas';
 
 @Injectable()
 export class MatchesService {
   constructor(
     @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
+    @InjectModel(Player.name) private playerModel: Model<PlayerDocument>,
   ) {}
 
   async findAll(query: MatchQueryDto) {
@@ -68,7 +70,49 @@ export class MatchesService {
     if (!match) {
       throw new NotFoundException('경기를 찾을 수 없습니다');
     }
-    return match;
+
+    // console.log(match);
+    const matchObj = match.toObject();
+
+    // lineups에 선수 사진 추가
+    if (matchObj.lineups?.home?.startXI || matchObj.lineups?.away?.startXI) {
+      const enrichPlayers = async (players: any[]) => {
+        if (!players) return [];
+        return Promise.all(
+          players.map(async (p) => {
+            if (!p.playerId) return p;
+            const player = await this.playerModel
+              .findOne({ apiFootballId: p.playerId })
+              .select('photo name')
+              .lean();
+
+            return {
+              ...p,
+              photo: player?.photo || null,
+            };
+          }),
+        );
+      };
+
+      if (matchObj.lineups.home) {
+        matchObj.lineups.home.startXI = await enrichPlayers(
+          matchObj.lineups.home.startXI,
+        );
+        matchObj.lineups.home.substitutes = await enrichPlayers(
+          matchObj.lineups.home.substitutes,
+        );
+      }
+      if (matchObj.lineups.away) {
+        matchObj.lineups.away.startXI = await enrichPlayers(
+          matchObj.lineups.away.startXI,
+        );
+        matchObj.lineups.away.substitutes = await enrichPlayers(
+          matchObj.lineups.away.substitutes,
+        );
+      }
+    }
+
+    return matchObj;
   }
 
   async findByApiFootballId(apiFootballId: number) {
