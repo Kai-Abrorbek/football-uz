@@ -25,33 +25,6 @@ export class PlayerScheduler {
       this.configService.get<string>('API_FOOTBALL_BASE_URL') || '';
   }
 
-  async test() {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get(`${this.baseUrl}/players/topscorers`, {
-          headers: {
-            'x-apisports-key': this.apiKey,
-          },
-          params: {
-            league: 39,
-            season: 2024,
-          },
-        }),
-      );
-      const players = response.data.response;
-
-      for (const item of players) {
-        const playerData = item.player;
-        const statistics = item.statistics[0];
-
-        console.log(statistics);
-        console.log(playerData);
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
   // 매일 오전 4시에 득점왕/어시스트왕 업데이트
   // @Cron('0 4 * * *')
   async syncTopPlayers() {
@@ -309,5 +282,33 @@ export class PlayerScheduler {
 
   private delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  public async syncPlayers(
+    leagueId: number,
+    season: number,
+    page: number,
+  ): Promise<any> {
+    this.logger.log('전부 선수 동기화 시작');
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(`${this.baseUrl}/players`, {
+          headers: {
+            'x-apisports-key': this.apiKey,
+          },
+          params: {
+            league: leagueId,
+            season: season,
+            page: 1,
+          },
+        }),
+      );
+
+      return response.data;
+    } catch (err) {
+      console.log(err);
+    }
+
+    this.logger.log('전부 선수 동기화 완료');
   }
 }

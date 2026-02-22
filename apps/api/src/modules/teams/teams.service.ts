@@ -1,12 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Team, TeamDocument } from '../../schemas/team.schema';
 import { TeamQueryDto } from './dto/team-query.dto';
+import { LeaguesService } from '../leagues/leagues.service';
 
 @Injectable()
 export class TeamsService {
-  constructor(@InjectModel(Team.name) private teamModel: Model<TeamDocument>) {}
+  constructor(
+    @InjectModel(Team.name) private teamModel: Model<TeamDocument>,
+    private readonly leaguesService: LeaguesService,
+  ) {}
 
   async findAll(query: TeamQueryDto) {
     const filter: any = {};
@@ -42,6 +50,20 @@ export class TeamsService {
       .find({ $text: { $search: query } })
       .limit(20)
       .exec();
+  }
+
+  async getTeamLeagues(id: number) {
+    const teamLeagues = await this.teamModel
+      .findOne({ apiFootballId: id })
+      .exec();
+
+    if (!teamLeagues)
+      throw new BadRequestException('팀 정도가 조희 되지 않았습니다.');
+
+    const ids = teamLeagues.leagues.map((v) => v.id);
+
+    const leaguesData = await this.leaguesService.findByTeamIds(ids);
+    return leaguesData;
   }
 
   private async getTeamIdsByLeague(leagueId: number): Promise<number[]> {

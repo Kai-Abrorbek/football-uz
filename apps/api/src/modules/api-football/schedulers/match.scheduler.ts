@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { ApiFootballService } from '../api-football.service';
 import { Match, MatchDocument } from '../../../schemas/match.schema';
 import { FEATURED_LEAGUES } from '../../../constants/leagues.constant';
+import { DetailsScheduler } from './details.scheduler';
 
 @Injectable()
 export class MatchScheduler {
@@ -13,6 +14,7 @@ export class MatchScheduler {
 
   constructor(
     private apiFootballService: ApiFootballService,
+    private detailsScheduler: DetailsScheduler,
     @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
   ) {}
 
@@ -87,7 +89,7 @@ export class MatchScheduler {
   }
 
   // 라이브 스코어 - 5분마다
-  // @Cron('*/5 * * * *')
+  @Cron('*/15 * * * *')
   async syncLiveScores() {
     this.logger.log('Syncing live scores...');
 

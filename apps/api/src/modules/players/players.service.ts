@@ -52,7 +52,6 @@ export class PlayersService {
   }
 
   async findByLeaguePlayers(leagueId: number): Promise<Player[]> {
-    console.log(leagueId);
     const player: Player[] = await this.playerModel.find({
       'statistics.league.id': leagueId,
     });

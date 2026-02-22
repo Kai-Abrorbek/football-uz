@@ -52,7 +52,7 @@ export class DetailsScheduler {
   }
 
   // 종료 직후 - 5분마다 체크
-  // @Cron('*/5 * * * *')
+  // @Cron('*/15 * * * *')
   async syncFinishedMatchDetails() {
     this.logger.log('Checking recently finished matches...');
 
@@ -92,10 +92,12 @@ export class DetailsScheduler {
         await this.apiFootballService.getFixtureLineups(fixtureId);
       const lineups = this.parseLineups(lineupsData.response);
 
+      console.log(lineupsData.response);
       // Statistics
       const statsData =
         await this.apiFootballService.getFixtureStatistics(fixtureId);
       const statistics = this.parseStatistics(statsData.response);
+      console.log(statsData.response);
 
       // Events
       const eventsData =

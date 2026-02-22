@@ -67,18 +67,19 @@ export class ChatService {
         type: 'function',
         function: {
           name: 'getTeamMatches',
-          description: 'Get recent or upcoming matches for a specific team',
+          description:
+            'Get recent or upcoming matches for a specific team. Use this when user asks about team matches, fixtures, or results.',
           parameters: {
             type: 'object',
             properties: {
               teamName: {
                 type: 'string',
                 description:
-                  'Name of the team (e.g., "Manchester United", "Arsenal")',
+                  'Name of the team (e.g., "Manchester United", "Arsenal", "Real Madrid", "Bayern Munich")',
               },
               limit: {
                 type: 'number',
-                description: 'Number of matches to return',
+                description: 'Number of matches to return (default: 5)',
                 default: 5,
               },
             },
@@ -90,14 +91,22 @@ export class ChatService {
         type: 'function',
         function: {
           name: 'getStandings',
-          description: 'Get league standings/table',
+          description:
+            'Get current league standings/table. Use this when user asks about league rankings, positions, table, or standings.',
           parameters: {
             type: 'object',
             properties: {
               leagueName: {
                 type: 'string',
                 description:
-                  'Name of the league (e.g., "Premier League", "La Liga")',
+                  'Name of the league. Must be one of: "Premier League", "La Liga", "Serie A", "Bundesliga", "Ligue 1"',
+                enum: [
+                  'Premier League',
+                  'La Liga',
+                  'Serie A',
+                  'Bundesliga',
+                  'Ligue 1',
+                ],
               },
             },
             required: ['leagueName'],
@@ -108,13 +117,15 @@ export class ChatService {
         type: 'function',
         function: {
           name: 'getPlayerInfo',
-          description: 'Get information about a specific player',
+          description:
+            'Get detailed information about a specific football player. Use this when user asks about player stats, team, position, or nationality.',
           parameters: {
             type: 'object',
             properties: {
               playerName: {
                 type: 'string',
-                description: 'Name of the player',
+                description:
+                  'Full name or commonly known name of the player (e.g., "Cristiano Ronaldo", "Messi", "Salah")',
               },
             },
             required: ['playerName'],
@@ -124,9 +135,41 @@ export class ChatService {
     ];
 
     const systemPrompts = {
-      uz: "Siz professional futbol eksperti assistentisiz. Database dan eng so'nggi ma'lumotlarni oling va foydalanuvchiga javob bering.",
-      ru: 'Вы профессиональный футбольный эксперт-ассистент. Получайте последние данные из базы данных и отвечайте пользователю.',
-      en: 'You are a professional football expert assistant. Get the latest data from the database and respond to the user.',
+      uz: `Siz professional futbol ma'lumotlar bazasi assistentisiz. 
+  
+      MUHIM QOIDALAR:
+      1. Har doim database dan ma'lumot olish uchun function larni chaqiring
+      2. "Bilmayman" yoki "ma'lumot yo'q" deb javob bermang
+      3. Foydalanuvchi savoli bo'yicha tegishli function ni ishlatib, aniq ma'lumot bering
+
+      Mavjud function lar:
+      - getTeamMatches: Jamoa o'yinlarini olish
+      - getStandings: Liga turnir jadvalini olish  
+      - getPlayerInfo: Futbolchi ma'lumotini olish`,
+
+      ru: `Вы профессиональный футбольный ассистент с базой данных.
+
+      ВАЖНЫЕ ПРАВИЛА:
+      1. Всегда используйте функции для получения данных из базы
+      2. Не говорите "не знаю" или "нет информации"
+      3. По запросу пользователя используйте соответствующую функцию и дайте точный ответ
+
+      Доступные функции:
+      - getTeamMatches: Получить матчи команды
+      - getStandings: Получить турнирную таблицу
+      - getPlayerInfo: Получить информацию об игроке`,
+
+      en: `You are a professional football database assistant.
+
+      IMPORTANT RULES:
+      1. Always use functions to get data from database
+      2. Never say "I don't know" or "no information available"
+      3. Based on user's question, use the appropriate function and provide accurate data
+
+      Available functions:
+      - getTeamMatches: Get team matches
+      - getStandings: Get league standings
+      - getPlayerInfo: Get player information`,
     };
 
     const gptMessages = chatSession.messages.map((m) => ({
@@ -144,7 +187,7 @@ export class ChatService {
       model: 'gpt-4o-mini',
       messages: fullMessages as any,
       tools: tools as any,
-      tool_choice: 'auto',
+      tool_choice: 'required',
     });
 
     let assistantMessage = response.choices[0].message;

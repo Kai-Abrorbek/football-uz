@@ -48,4 +48,21 @@ export class ChatController {
   async deleteSession(@Param('sessionId') sessionId: string) {
     return this.chatService.deleteSession(sessionId);
   }
+
+  @Post('public')
+  @ApiOperation({ summary: '챗봇 메시지 전송 (비회원)' })
+  async sendMessagePublic(@Body() dto: ChatMessageDto) {
+    return this.chatService.sendMessage(
+      'anonymous',
+      dto.message,
+      dto.language || 'en',
+      dto.sessionId,
+    );
+  }
+
+  @Get('public/session/:sessionId')
+  @ApiOperation({ summary: '세션 상세 조회 (비회원)' })
+  async getSessionPublic(@Param('sessionId') sessionId: string) {
+    return this.chatService.getSession(sessionId);
+  }
 }

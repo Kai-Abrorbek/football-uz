@@ -71,4 +71,18 @@ export class PlayersController {
     this.playerScheduler.syncTopPlayers(); // 비동기로 실행
     return { message: '득점왕/어시스트왕 동기화 시작됨' };
   }
+
+  @Post('leauge-players/:leagueId/:season/:page')
+  @ApiOperation({ summary: '리그 선수들 동기화 시작' })
+  async syncPlayers(
+    @Param('leagueId') leagueId: string,
+    @Param('season') season: string,
+    @Param('page') page: string,
+  ) {
+    return await this.playerScheduler.syncPlayers(
+      Number(leagueId),
+      Number(season),
+      Number(page),
+    );
+  }
 }

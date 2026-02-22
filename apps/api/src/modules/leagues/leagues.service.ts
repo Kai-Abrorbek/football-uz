@@ -22,4 +22,8 @@ export class LeaguesService {
   async findById(id: number) {
     return this.leagueModel.findOne({ apiFootballId: id, isActive: true });
   }
+
+  async findByTeamIds(ids: number[]) {
+    return this.leagueModel.find({ apiFootballId: { $in: ids } });
+  }
 }

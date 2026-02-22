@@ -47,10 +47,10 @@ export class AuthService {
 
     if (!user) {
       // 신규 유저 생성
-      const username = this.generateUsername(profile.email, profile.name);
+      // const username = this.generateUsername(profile.email, profile.name);
 
       user = await this.userModel.create({
-        username,
+        username: profile.name,
         email: profile.email,
         password: crypto.randomBytes(32).toString('hex'), // 랜덤 비밀번호
         language: 'uz',

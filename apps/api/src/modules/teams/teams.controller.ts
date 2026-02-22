@@ -32,4 +32,10 @@ export class TeamsController {
   async findById(@Param('id') id: number) {
     return this.teamsService.findById(+id);
   }
+
+  @Get('leagues/:id')
+  @ApiOperation({ summary: '팀 모든 리그 상세 조회' })
+  async getTeamLeagues(@Param('id') id: number) {
+    return this.teamsService.getTeamLeagues(+id);
+  }
 }
