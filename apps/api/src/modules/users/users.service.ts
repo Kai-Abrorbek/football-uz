@@ -22,29 +22,46 @@ export class UsersService {
     return user;
   }
 
-  async updateProfile(
-    userId: string,
-    dto: UpdateProfileDto,
-  ): Promise<UserDocument> {
-    if (dto.username) {
-      const existing = await this.userModel.findOne({
-        username: dto.username,
-        _id: { $ne: userId },
-      });
-      if (existing) {
-        throw new ConflictException('이미 사용 중인 아이디입니다');
-      }
-    }
-
-    const user = await this.userModel
-      .findByIdAndUpdate(userId, { $set: dto }, { returnDocument: 'after' })
-      .select('-password');
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const user = await this.userModel.findById(userId);
 
     if (!user) {
-      throw new NotFoundException('유저를 찾을 수 없습니다');
+      throw new NotFoundException('사용자를 찾을 수 없습니다');
     }
 
-    return user;
+    if (dto.username) {
+      user.username = dto.username;
+    }
+
+    if (dto.avatar) {
+      user.avatar = dto.avatar;
+    }
+
+    await user.save();
+
+    return {
+      id: user._id.toString(),
+      username: user.username,
+      email: user.email,
+      language: user.language,
+      avatar: user.avatar,
+    };
+  }
+
+  async findById(userId: string) {
+    const user = await this.userModel.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다');
+    }
+
+    return {
+      id: user._id.toString(),
+      username: user.username,
+      email: user.email,
+      language: user.language,
+      avatar: user.avatar,
+    };
   }
 
   async updateFavorites(

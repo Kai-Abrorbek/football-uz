@@ -29,7 +29,13 @@ export class UsersController {
     return this.usersService.getProfile(req.user._id);
   }
 
-  @Post('me')
+  @Get('profile')
+  @ApiOperation({ summary: '내 프로필 조회' })
+  async getProfile(@Req() req) {
+    return this.usersService.findById(req.user._id);
+  }
+
+  @Post('profile')
   @ApiOperation({ summary: '프로필 수정' })
   async updateProfile(@Req() req, @Body() dto: UpdateProfileDto) {
     return this.usersService.updateProfile(req.user._id, dto);
