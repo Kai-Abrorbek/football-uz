@@ -37,6 +37,10 @@ export class UsersService {
       user.avatar = dto.avatar;
     }
 
+    if (dto.language) {
+      user.language = dto.language;
+    }
+
     await user.save();
 
     return {

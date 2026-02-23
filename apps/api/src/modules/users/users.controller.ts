@@ -39,6 +39,7 @@ export class UsersController {
   @Post('profile')
   @ApiOperation({ summary: '프로필 수정' })
   async updateProfile(@Req() req, @Body() dto: UpdateProfileDto) {
+    console.log(dto);
     return this.usersService.updateProfile(req.user._id, dto);
   }
 
