@@ -15,6 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateFavoritesDto } from './dto/update-favorites.dto';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
+import { UpdateNotificationSettingsDto } from '../notifications/dto/update-notification-settings.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -67,11 +68,11 @@ export class UsersController {
     return this.usersService.removeFavorite(req.user._id, type, id);
   }
 
-  @Post('settings/notifications')
-  @ApiOperation({ summary: '알림 설정 변경' })
-  async updateNotificationSettings(@Req() req, @Body() dto: UpdateSettingsDto) {
-    return this.usersService.updateNotificationSettings(req.user._id, dto);
-  }
+  // @Post('settings/notifications')
+  // @ApiOperation({ summary: '알림 설정 변경' })
+  // async updateNotificationSettings(@Req() req, @Body() dto: UpdateSettingsDto) {
+  //   return this.usersService.updateNotificationSettings(req.user._id, dto);
+  // }
 
   @Post('fcm-token')
   @ApiOperation({ summary: 'FCM 토큰 등록' })
@@ -85,5 +86,35 @@ export class UsersController {
   async removeFcmToken(@Req() req, @Body('token') token: string) {
     await this.usersService.removeFcmToken(req.user._id, token);
     return { message: '토큰이 삭제되었습니다' };
+  }
+
+  @Get('notification-settings')
+  @ApiOperation({ summary: '알림 설정 조회' })
+  async getNotificationSettings(@Req() req) {
+    const user = await this.usersService.findById(req.user._id);
+    return (
+      user.notificationSettings || {
+        matchStart: false,
+        goals: false,
+        matchEnd: false,
+        news: false,
+        predictions: false,
+      }
+    );
+  }
+
+  @Post('notification-settings')
+  @ApiOperation({ summary: '알림 설정 수정' })
+  async updateNotificationSettings(
+    @Req() req,
+    @Body() dto: UpdateNotificationSettingsDto,
+  ) {
+    return this.usersService.updateNotificationSettings(req.user._id, dto);
+  }
+
+  @Post('fcm-token')
+  @ApiOperation({ summary: 'FCM 토큰 등록' })
+  async registerFcmToken(@Req() req, @Body() body: { token: string }) {
+    return this.usersService.registerFcmToken(req.user._id, body.token);
   }
 }

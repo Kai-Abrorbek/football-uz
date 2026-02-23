@@ -8,6 +8,7 @@ import {
 import { User, UserDocument } from '../../schemas/user.schema';
 import { FcmService } from './fcm.service';
 import { SendNotificationDto } from './dto/send-notification.dto';
+import { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto';
 
 @Injectable()
 export class NotificationsService {

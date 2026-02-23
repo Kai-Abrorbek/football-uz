@@ -8,7 +8,7 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from '../../schemas/user.schema';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateFavoritesDto } from './dto/update-favorites.dto';
-import { UpdateSettingsDto } from './dto/update-settings.dto';
+import { UpdateNotificationSettingsDto } from '../notifications/dto/update-notification-settings.dto';
 
 @Injectable()
 export class UsersService {
@@ -61,6 +61,14 @@ export class UsersService {
       email: user.email,
       language: user.language,
       avatar: user.avatar,
+      notificationSettings: user.notificationSettings || {
+        // 추가
+        matchStart: false,
+        goals: false,
+        matchEnd: false,
+        news: false,
+        predictions: false,
+      },
     };
   }
 
@@ -144,25 +152,6 @@ export class UsersService {
     return user;
   }
 
-  async updateNotificationSettings(
-    userId: string,
-    dto: UpdateSettingsDto,
-  ): Promise<UserDocument> {
-    const user = await this.userModel
-      .findByIdAndUpdate(
-        userId,
-        { $set: { notificationSettings: dto } },
-        { returnDocument: 'after' },
-      )
-      .select('-password');
-
-    if (!user) {
-      throw new NotFoundException('유저를 찾을 수 없습니다');
-    }
-
-    return user;
-  }
-
   async addFcmToken(userId: string, token: string): Promise<void> {
     await this.userModel.findByIdAndUpdate(userId, {
       $addToSet: { fcmTokens: token },
@@ -173,5 +162,66 @@ export class UsersService {
     await this.userModel.findByIdAndUpdate(userId, {
       $pull: { fcmTokens: token },
     });
+  }
+
+  async updateNotificationSettings(
+    userId: string,
+    dto: UpdateNotificationSettingsDto,
+  ) {
+    const user = await this.userModel.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다');
+    }
+
+    // 기존 설정 가져오기 (없으면 기본값)
+    const currentSettings = user.notificationSettings || {
+      matchStart: false,
+      goals: false,
+      matchEnd: false,
+      news: false,
+      predictions: false,
+    };
+
+    // 전달된 필드만 업데이트
+    user.notificationSettings = {
+      matchStart:
+        dto.matchStart !== undefined
+          ? dto.matchStart
+          : currentSettings.matchStart,
+      goals: dto.goals !== undefined ? dto.goals : currentSettings.goals,
+      matchEnd:
+        dto.matchEnd !== undefined ? dto.matchEnd : currentSettings.matchEnd,
+      news: dto.news !== undefined ? dto.news : currentSettings.news,
+      predictions:
+        dto.predictions !== undefined
+          ? dto.predictions
+          : currentSettings.predictions,
+    };
+
+    user.markModified('notificationSettings');
+    await user.save();
+
+    return user.notificationSettings;
+  }
+
+  async registerFcmToken(userId: string, token: string) {
+    const user = await this.userModel.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다');
+    }
+
+    if (!user.fcmTokens) {
+      user.fcmTokens = [];
+    }
+
+    // 중복 체크
+    if (!user.fcmTokens.includes(token)) {
+      user.fcmTokens.push(token);
+      await user.save();
+    }
+
+    return { message: 'FCM 토큰이 등록되었습니다' };
   }
 }
