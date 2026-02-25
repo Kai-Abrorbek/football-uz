@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Player, PlayerDocument } from '../../schemas/player.schema';
 import { PlayerQueryDto } from './dto/player-query.dto';
-import { TeamDocument } from '../../schemas';
+import { Team, TeamDocument } from '../../schemas';
 import { PlayerScheduler } from './schedulers/player.scheduler';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class PlayersService {
   }
   constructor(
     @InjectModel(Player.name) private playerModel: Model<PlayerDocument>,
-    @InjectModel(Player.name) private teamModel: Model<TeamDocument>,
+    @InjectModel(Team.name) private teamModel: Model<TeamDocument>,
   ) {}
 
   async findAll(query: PlayerQueryDto) {
@@ -79,42 +79,86 @@ export class PlayersService {
 
   async getTopScorers(leagueId: number) {
     // leagues 배열에서 해당 리그 ID를 가진 팀들 찾기
-    const teams = await this.teamModel
-      .find({
-        'leagues.id': leagueId,
-      })
-      .select('_id');
+    const teams = await this.teamModel.find({
+      'leagues.id': leagueId,
+    });
 
-    const teamIds = teams.map((t) => t._id);
-
+    const teamIds = teams.map((t) => t.apiFootballId);
     return this.playerModel
       .find({
-        team: { $in: teamIds },
-        'statistics.goals': { $exists: true, $gt: 0 },
+        'currentTeam.id': { $in: teamIds },
+        'statistics.goals.total': { $exists: true, $gt: 0 },
       })
-      .sort({ 'statistics.goals': -1 })
-      .limit(20)
-      .populate('team', 'name logo')
+      .sort({ 'statistics.goals.total': -1 })
       .lean();
   }
 
   async getTopAssists(leagueId: number) {
     const teams = await this.teamModel
       .find({
-        'leagues.id': leagueId,
+        leagues: {
+          $elemMatch: { id: leagueId },
+        },
       })
-      .select('_id');
+      .lean();
 
-    const teamIds = teams.map((t) => t._id);
+    if (!teams || teams.length === 0) {
+      return [];
+    }
 
+    const teamIds = teams.map((t) => t.apiFootballId);
     return this.playerModel
       .find({
-        team: { $in: teamIds },
-        'statistics.assists': { $exists: true, $gt: 0 },
+        'currentTeam.id': { $in: teamIds },
+        'statistics.goals.assists': { $exists: true, $gt: 0 },
       })
-      .sort({ 'statistics.assists': -1 })
-      .limit(20)
-      .populate('team', 'name logo')
+      .sort({ 'statistics.goals.assists': -1 })
+      .lean();
+  }
+
+  async getYellowCards(leagueId: number) {
+    const teams = await this.teamModel
+      .find({
+        leagues: {
+          $elemMatch: { id: leagueId },
+        },
+      })
+      .lean();
+
+    if (!teams || teams.length === 0) {
+      return [];
+    }
+
+    const teamIds = teams.map((t) => t.apiFootballId);
+    return this.playerModel
+      .find({
+        'currentTeam.id': { $in: teamIds },
+        'statistics.cards.yellow': { $exists: true, $gt: 0 },
+      })
+      .sort({ 'statistics.cards.yellow': -1 })
+      .lean();
+  }
+
+  async getRedCards(leagueId: number) {
+    const teams = await this.teamModel
+      .find({
+        leagues: {
+          $elemMatch: { id: leagueId },
+        },
+      })
+      .lean();
+
+    if (!teams || teams.length === 0) {
+      return [];
+    }
+
+    const teamIds = teams.map((t) => t.apiFootballId);
+    return this.playerModel
+      .find({
+        'currentTeam.id': { $in: teamIds },
+        'statistics.cards.red': { $exists: true, $gt: 0 },
+      })
+      .sort({ 'statistics.cards.red': -1 })
       .lean();
   }
 }

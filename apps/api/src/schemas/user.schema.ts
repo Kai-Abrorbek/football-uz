@@ -50,7 +50,7 @@ export class User {
   @Prop({ default: null })
   avatar: string;
 
-  @Prop({ enum: ['uz', 'ru', 'en'], default: 'uz' })
+  @Prop({ enum: ['uz', 'ru', 'en', 'kr'], default: 'uz' })
   language: string;
 
   @Prop({ default: true })

@@ -64,6 +64,18 @@ export class PlayersController {
     return this.playersService.getTopAssists(Number(leagueId));
   }
 
+  @Get('top-yellowcards/:leagueId')
+  @ApiOperation({ summary: '경고장왕 조희' })
+  async getYellowCards(@Param('leagueId') leagueId: string) {
+    return this.playersService.getYellowCards(Number(leagueId));
+  }
+
+  @Get('top-redcards/:leagueId')
+  @ApiOperation({ summary: '퇴장왕 조희' })
+  async getRedCards(@Param('leagueId') leagueId: string) {
+    return this.playersService.getRedCards(Number(leagueId));
+  }
+
   @Post('sync-top-players')
   @ApiOperation({ summary: '득점왕/어시스트왕 동기화 시작' })
   async syncTopPlayers() {

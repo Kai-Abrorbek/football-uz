@@ -24,8 +24,8 @@ export class RegisterDto {
   @MinLength(6)
   password: string;
 
-  @ApiProperty({ enum: ['uz', 'ru', 'en'], default: 'uz' })
-  @IsEnum(['uz', 'ru', 'en'])
+  @ApiProperty({ enum: ['uz', 'ru', 'en', 'kr'], default: 'uz' })
+  @IsEnum(['uz', 'ru', 'en', 'kr'])
   @IsOptional()
   language?: string;
 }

@@ -92,12 +92,10 @@ export class DetailsScheduler {
         await this.apiFootballService.getFixtureLineups(fixtureId);
       const lineups = this.parseLineups(lineupsData.response);
 
-      console.log(lineupsData.response);
       // Statistics
       const statsData =
         await this.apiFootballService.getFixtureStatistics(fixtureId);
       const statistics = this.parseStatistics(statsData.response);
-      console.log(statsData.response);
 
       // Events
       const eventsData =

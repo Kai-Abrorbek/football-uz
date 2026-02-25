@@ -14,7 +14,7 @@ export class UpdateProfileDto {
   @IsOptional()
   avatar?: string;
 
-  @ApiProperty({ required: false, enum: ['uz', 'ru', 'en'] })
+  @ApiProperty({ required: false, enum: ['uz', 'ru', 'en', 'kr'] })
   @IsString()
   @IsOptional()
   language?: string;
