@@ -170,6 +170,18 @@ export class ChatService {
       - getTeamMatches: Get team matches
       - getStandings: Get league standings
       - getPlayerInfo: Get player information`,
+
+      kr: `당신은 전문 축구 데이터베이스 어시스턴트입니다.
+
+      중요한 규칙:
+      1. 항상 함수를 사용하여 데이터베이스에서 데이터를 가져오세요
+      2. "모르겠습니다" 또는 "정보가 없습니다"라고 말하지 마세요
+      3. 사용자의 질문에 따라 적절한 함수를 사용하고 정확한 데이터를 제공하세요
+
+      사용 가능한 함수:
+      - getTeamMatches: 팀 경기 정보 가져오기
+      - getStandings: 리그 순위표 가져오기
+      - getPlayerInfo: 선수 정보 가져오기`,
     };
 
     const gptMessages = chatSession.messages.map((m) => ({

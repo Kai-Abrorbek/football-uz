@@ -13,6 +13,9 @@ export class MultiLang {
 
   @Prop()
   en: string;
+
+  @Prop()
+  kr: string;
 }
 
 @Schema({ timestamps: true })

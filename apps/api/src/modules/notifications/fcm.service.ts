@@ -61,17 +61,54 @@ export class FcmService implements OnModuleInit {
     data?: any,
   ) {
     try {
-      console.log('FCM 전송 시도:', { tokens: tokens.length, title });
+      // 빈 배열 체크
+      if (!tokens || tokens.length === 0) {
+        this.logger.warn('No FCM tokens provided, skipping notification');
+        return {
+          successCount: 0,
+          failureCount: 0,
+          responses: [],
+        };
+      }
+
+      // 유효하지 않은 토큰 필터링
+      const validTokens = tokens.filter(
+        (token) => token && token.trim().length > 0,
+      );
+
+      if (validTokens.length === 0) {
+        this.logger.warn('No valid FCM tokens after filtering');
+        return {
+          successCount: 0,
+          failureCount: 0,
+          responses: [],
+        };
+      }
+
+      console.log('FCM 전송 시도:', { tokens: validTokens.length, title });
+
       const message = {
         notification: {
           title,
           body,
         },
         data: data || {},
-        tokens,
+        tokens: validTokens,
       };
 
       const response = await admin.messaging().sendEachForMulticast(message);
+
+      console.log('성공:', response.successCount);
+      console.log('실패:', response.failureCount);
+
+      if (response.failureCount > 0) {
+        response.responses.forEach((resp, idx) => {
+          if (!resp.success) {
+            this.logger.error(`토큰 ${idx} 실패:`, resp.error);
+          }
+        });
+      }
+
       this.logger.log(
         `Sent ${response.successCount} notifications, ${response.failureCount} failed`,
       );

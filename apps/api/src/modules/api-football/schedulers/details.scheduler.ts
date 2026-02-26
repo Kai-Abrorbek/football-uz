@@ -116,8 +116,8 @@ export class DetailsScheduler {
             statistics,
             statisticsRaw: statsData.response,
             events,
-            'homeTeam.coach': lineupsData?.response[0].coach,
-            'awayTeam.coach': lineupsData?.response[1].coach,
+            // 'homeTeam.coach': lineupsData?.response[0].coach,
+            // 'awayTeam.coach': lineupsData?.response[1].coach,
           },
         },
       );

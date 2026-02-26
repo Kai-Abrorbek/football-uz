@@ -6,8 +6,8 @@ export class ChatMessageDto {
   @IsString()
   message: string;
 
-  @ApiProperty({ enum: ['uz', 'ru', 'en'], default: 'uz' })
-  @IsEnum(['uz', 'ru', 'en'])
+  @ApiProperty({ enum: ['uz', 'ru', 'en', 'kr'], default: 'uz' })
+  @IsEnum(['uz', 'ru', 'en', 'kr'])
   @IsOptional()
   language?: string;
 
