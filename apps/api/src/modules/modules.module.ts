@@ -13,6 +13,7 @@ import { ChatModule } from './chat/chat.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { NewsModule } from './news/news.module';
 import { WorldCupModule } from './worldcup/worldcup.module';
+import { FixtureabsenceModule } from './fixtureabsence/fixtureabsence.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { WorldCupModule } from './worldcup/worldcup.module';
     NotificationsModule,
     NewsModule,
     WorldCupModule,
+    FixtureabsenceModule,
   ],
 })
 export class ModulesModule {}

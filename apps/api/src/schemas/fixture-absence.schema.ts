@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 export type FixtureAbsenceDocument = FixtureAbsence & Document;
 
-export type AbsenceStatus = 'injured' | 'suspended' | 'missing' | 'doubtful';
+// export type AbsenceStatus = 'injured' | 'suspended' | 'missing' | 'doubtful';
 
 @Schema({ _id: false })
 export class AbsencePlayer {
@@ -16,11 +16,11 @@ export class AbsencePlayer {
   @Prop()
   photo?: string;
 
-  @Prop({
-    required: true,
-    enum: ['injured', 'suspended', 'missing', 'doubtful'],
-  })
-  status!: AbsenceStatus;
+  // @Prop({
+  //   required: true,
+  //   enum: ['injured', 'suspended', 'missing', 'doubtful'],
+  // })
+  // status!: AbsenceStatus;
 
   @Prop()
   reason?: string; // ex) "Hamstring Injury", "Suspended - Red Card"

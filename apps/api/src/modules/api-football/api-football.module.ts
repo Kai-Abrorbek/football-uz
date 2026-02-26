@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -16,9 +16,11 @@ import { TeamScheduler } from './schedulers/team.scheduler';
 import { LeagueRecord, LeagueRecordSchema } from '../../schemas';
 import { ApiFootballController } from './api-football.controller';
 import { DetailsScheduler } from './schedulers/details.scheduler';
+import { FixtureabsenceModule } from '../fixtureabsence/fixtureabsence.module';
 
 @Module({
   imports: [
+    forwardRef(() => FixtureabsenceModule),
     HttpModule,
     ScheduleModule.forRoot(),
     MongooseModule.forFeature([

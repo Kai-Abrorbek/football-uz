@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ApiFootballService } from '../api-football.service';
 import { Match, MatchDocument } from '../../../schemas/match.schema';
+import { FixtureabsenceService } from '../../fixtureabsence/fixtureabsence.service';
 
 @Injectable()
 export class DetailsScheduler {
@@ -11,6 +12,7 @@ export class DetailsScheduler {
 
   constructor(
     private apiFootballService: ApiFootballService,
+    private fixtureAbsenceService: FixtureabsenceService,
     @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
   ) {}
 
@@ -87,6 +89,9 @@ export class DetailsScheduler {
 
   async syncMatchDetails(fixtureId: number) {
     try {
+      // fixtureAbsence
+      await this.fixtureAbsenceService.saveFixtureAbsences(fixtureId);
+
       // Lineups
       const lineupsData =
         await this.apiFootballService.getFixtureLineups(fixtureId);

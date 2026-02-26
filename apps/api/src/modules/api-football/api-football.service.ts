@@ -21,7 +21,7 @@ export class ApiFootballService {
     this.apiKey = this.config.get<string>('API_FOOTBALL_KEY') || '';
   }
 
-  async request(endpoint: string, params: any = {}): Promise<any> {
+  public async request(endpoint: string, params: any = {}): Promise<any> {
     const startedAt = new Date();
     try {
       const response = await firstValueFrom(
