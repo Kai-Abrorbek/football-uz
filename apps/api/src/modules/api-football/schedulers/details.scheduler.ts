@@ -54,7 +54,7 @@ export class DetailsScheduler {
   }
 
   // 종료 직후 - 5분마다 체크
-  // @Cron('*/15 * * * *')
+  // @Cron('*/1 * * * *')
   async syncFinishedMatchDetails() {
     this.logger.log('Checking recently finished matches...');
 
@@ -111,10 +111,14 @@ export class DetailsScheduler {
       await this.matchModel.findOneAndUpdate(
         { apiFootballId: fixtureId },
         {
-          lineups,
-          statistics,
-          statisticsRaw: statsData.response,
-          events,
+          $set: {
+            lineups,
+            statistics,
+            statisticsRaw: statsData.response,
+            events,
+            'homeTeam.coach': lineupsData?.response[0].coach,
+            'awayTeam.coach': lineupsData?.response[1].coach,
+          },
         },
       );
 

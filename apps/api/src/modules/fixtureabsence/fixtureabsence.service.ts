@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FixtureAbsence } from '../../schemas/fixture-absence.schema';
 import { Model } from 'mongoose';
 import { ApiFootballService } from '../api-football/api-football.service';
+import { Match } from '../../schemas';
 
 @Injectable()
 export class FixtureabsenceService {
@@ -11,6 +12,7 @@ export class FixtureabsenceService {
   constructor(
     @InjectModel(FixtureAbsence.name)
     private fixtureAbsenceModel: Model<FixtureAbsence>,
+    @InjectModel(Match.name) private matchModel: Model<Match>,
     private readonly apiFootballService: ApiFootballService,
   ) {}
 
@@ -23,17 +25,25 @@ export class FixtureabsenceService {
     const items: any[] = injuriesRes?.response ?? [];
 
     // 2) fixtures (홈/원정 확정)
-    const fixtureRes = await this.apiFootballService.request('/fixtures', {
-      id: String(fixtureId),
-    });
-    const fx = fixtureRes?.response?.[0];
-    if (!fx) throw new Error(`Fixture not found: ${fixtureId}`);
+    const match = await this.matchModel
+      .findOne({ apiFootballId: fixtureId })
+      .select({
+        league: 1,
+        season: 1,
+        date: 1,
+        homeTeam: 1,
+        awayTeam: 1,
+      })
+      .lean()
+      .exec();
 
-    const homeTeam = fx.teams?.home;
-    const awayTeam = fx.teams?.away;
+    if (!match) throw new Error(`Match not found in DB: ${fixtureId}`);
+
+    const homeTeam = match.homeTeam;
+    const awayTeam = match.awayTeam;
 
     if (!homeTeam?.id || !awayTeam?.id) {
-      throw new Error(`Teams not found in fixture: ${fixtureId}`);
+      throw new Error(`Team info missing in DB for fixtureId=${fixtureId}`);
     }
 
     // 중복 playerId 제거(가끔 API가 중복 내려줌)
@@ -75,9 +85,9 @@ export class FixtureabsenceService {
     // 4) 업데이트 문서 (빈 응답이면 players는 기존 유지)
     const update: any = {
       fixtureId,
-      leagueId: fx.league?.id,
-      season: fx.league?.season,
-      date: new Date(fx.fixture?.date),
+      leagueId: match?.league?.id,
+      season: match?.league?.season,
+      date: new Date(match?.date),
 
       home: {
         teamId: homeTeam.id,
@@ -105,5 +115,9 @@ export class FixtureabsenceService {
       { $set: update },
       { upsert: true, returnDocument: 'after' },
     );
+  }
+
+  async getFixtureAbsence(matchId: number) {
+    return await this.fixtureAbsenceModel.findOne({ fixtureId: matchId });
   }
 }

@@ -34,6 +34,18 @@ export class LeagueInfo {
 }
 
 @Schema({ _id: false })
+export class TeamCoach {
+  @Prop({ required: true })
+  id: number;
+
+  @Prop()
+  name?: string;
+
+  @Prop()
+  photo?: string;
+}
+
+@Schema({ _id: false })
 export class TeamInfo {
   @Prop({ required: true })
   id: number;
@@ -46,6 +58,9 @@ export class TeamInfo {
 
   @Prop({ type: Boolean, default: null })
   winner?: boolean | null;
+
+  @Prop({ type: TeamCoach, default: null })
+  coach?: TeamCoach;
 }
 
 @Schema({ _id: false })
