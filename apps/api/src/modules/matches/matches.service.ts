@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Match, MatchDocument } from '../../schemas/match.schema';
-import { MatchQueryDto } from './dto/match-query.dto';
-import { Player, PlayerDocument } from '../../schemas';
+import { LeagueMatchQueryDto, MatchQueryDto } from './dto/match-query.dto';
+import { League, LeagueDocument, Player, PlayerDocument } from '../../schemas';
 
 @Injectable()
 export class MatchesService {
@@ -39,6 +39,49 @@ export class MatchesService {
     }
 
     return this.matchModel.find(filter).sort({ date: -1 }).limit(limit).exec();
+  }
+
+  async getLeagueMatches(query: LeagueMatchQueryDto) {
+    const filter: any = {};
+    const limit = query.limit || 20;
+
+    const matches = await this.matchModel.find({
+      'league.id': query.leagueId,
+      'league.season': query.season,
+    });
+
+    const playedMatches = matches.filter(
+      (m) => m.status?.short === 'FT' || m.status?.short === '2H',
+    );
+
+    const currentRound = Math.max(
+      ...playedMatches.map((m) => Number(m.round?.split('-').pop()?.trim())),
+    );
+
+    if (currentRound) {
+      filter['round'] = `Regular Season - ${currentRound}`;
+    }
+
+    if (query.leagueId) {
+      filter['league.id'] = query.leagueId;
+    }
+
+    if (query.season) {
+      filter['league.season'] = query.season;
+    }
+
+    const result = await this.matchModel
+      .find(filter)
+      .sort({ date: -1 })
+      .lean()
+      .exec();
+
+    result['round'] = currentRound;
+
+    return {
+      currentRound,
+      matches: result,
+    };
   }
 
   async findLive() {

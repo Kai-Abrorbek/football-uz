@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MatchesController } from './matches.controller';
 import { MatchesService } from './matches.service';
 import { Match, MatchSchema } from '../../schemas/match.schema';
-import { Player, PlayerSchema } from '../../schemas';
+import { League, LeagueSchema, Player, PlayerSchema } from '../../schemas';
 
 @Module({
   imports: [

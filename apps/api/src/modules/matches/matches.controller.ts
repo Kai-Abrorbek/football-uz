@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { MatchesService } from './matches.service';
-import { MatchQueryDto } from './dto/match-query.dto';
+import { LeagueMatchQueryDto, MatchQueryDto } from './dto/match-query.dto';
 
 @ApiTags('Matches')
 @Controller('matches')
@@ -12,6 +12,12 @@ export class MatchesController {
   @ApiOperation({ summary: '경기 목록 조회 (필터링)' })
   async findAll(@Query() query: MatchQueryDto) {
     return this.matchesService.findAll(query);
+  }
+
+  @Get('/league-matches')
+  @ApiOperation({ summary: '경기 목록 조회 (필터링)' })
+  async getLeagueMatches(@Query() query: LeagueMatchQueryDto) {
+    return this.matchesService.getLeagueMatches(query);
   }
 
   @Get('live')

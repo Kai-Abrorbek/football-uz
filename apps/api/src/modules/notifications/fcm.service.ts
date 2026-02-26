@@ -61,6 +61,7 @@ export class FcmService implements OnModuleInit {
     data?: any,
   ) {
     try {
+      console.log('FCM 전송 시도:', { tokens: tokens.length, title });
       const message = {
         notification: {
           title,
