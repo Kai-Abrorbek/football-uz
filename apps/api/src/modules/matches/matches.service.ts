@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Match, MatchDocument } from '../../schemas/match.schema';
 import { LeagueMatchQueryDto, MatchQueryDto } from './dto/match-query.dto';
 import { Player, PlayerDocument } from '../../schemas';
+import { TeamMatchQueryDto } from './dto/team-match-query.dto';
 
 @Injectable()
 export class MatchesService {
@@ -215,7 +216,52 @@ export class MatchesService {
       .exec();
   }
 
-  async findByTeam(teamId: number, limit: number = 10) {
+  // matches.service.ts
+  async findByTeamMatches(query: TeamMatchQueryDto) {
+    const { teamId, limit = 15, cursor, direction } = query;
+
+    const baseFilter = {
+      $or: [{ 'homeTeam.id': teamId }, { 'awayTeam.id': teamId }],
+    };
+
+    let cursorFilter = {};
+    if (cursor) {
+      const cursorDate = new Date(cursor);
+      if (direction === 'next') {
+        // 아래 스크롤 → 커서보다 미래 경기
+        cursorFilter = { date: { $gt: cursorDate } };
+      } else if (direction === 'prev') {
+        // 위 스크롤 → 커서보다 과거 경기
+        cursorFilter = { date: { $lt: cursorDate } };
+      }
+    }
+
+    const filter = { ...baseFilter, ...cursorFilter };
+
+    // ✅ 항상 오름차순 (과거 → 미래)
+    const result = await this.matchModel
+      .find(filter)
+      .sort({ date: 1 })
+      .limit(limit)
+      .lean()
+      .exec();
+
+    return {
+      matches: result,
+      nextCursor:
+        result.length === limit
+          ? result[result.length - 1].date // 가장 미래 날짜
+          : null,
+      prevCursor:
+        result.length > 0
+          ? result[0].date // 가장 과거 날짜
+          : null,
+      hasMore: result.length === limit,
+    };
+  }
+
+  async findByTeam(query: { teamId: number; limit: number }) {
+    const { teamId, limit } = query;
     return this.matchModel
       .find({
         $or: [{ 'homeTeam.id': teamId }, { 'awayTeam.id': teamId }],
@@ -223,6 +269,33 @@ export class MatchesService {
       .sort({ date: -1 })
       .limit(limit)
       .exec();
+  }
+
+  // 탭용 - 오늘 기준 가장 가까운 경기 15개
+  async findByTeamRecent(teamId: number) {
+    const today = new Date();
+    const baseFilter = {
+      $or: [{ 'homeTeam.id': teamId }, { 'awayTeam.id': teamId }],
+    };
+
+    // 오늘 이후 경기 (미래)
+    const futureMatches = await this.matchModel
+      .find({ ...baseFilter, date: { $gte: today } })
+      .sort({ date: 1 }) // 가까운 것부터
+      .limit(10)
+      .lean()
+      .exec();
+
+    // 오늘 이전 경기 (과거)
+    const pastMatches = await this.matchModel
+      .find({ ...baseFilter, date: { $lt: today } })
+      .sort({ date: -1 }) // 가까운 것부터
+      .limit(7)
+      .lean()
+      .exec();
+
+    // 과거(오름차순) + 미래 합치기
+    return [...pastMatches.reverse(), ...futureMatches];
   }
 
   async findH2H(team1Id: number, team2Id: number, limit: number = 5) {

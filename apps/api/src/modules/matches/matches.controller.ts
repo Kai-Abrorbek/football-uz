@@ -1,7 +1,8 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { MatchesService } from './matches.service';
 import { LeagueMatchQueryDto, MatchQueryDto } from './dto/match-query.dto';
+import { TeamMatchQueryDto } from './dto/team-match-query.dto';
 
 @ApiTags('Matches')
 @Controller('matches')
@@ -42,14 +43,29 @@ export class MatchesController {
     return this.matchesService.findByLeagueAndSeason(+leagueId, +season);
   }
 
+  @Get('team-allmatches/:teamId')
+  @ApiOperation({ summary: '팀 경기 조회' })
+  async findByTeamMatches(
+    @Query() query: TeamMatchQueryDto,
+    @Param('teamId', ParseIntPipe) teamId: number,
+  ) {
+    return this.matchesService.findByTeamMatches({ ...query, teamId });
+  }
+
   @Get('team/:teamId')
   @ApiOperation({ summary: '팀 경기 조회' })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
   async findByTeam(
+    @Query('limit') limit: number,
     @Param('teamId') teamId: number,
-    @Query('limit') limit?: number,
   ) {
-    return this.matchesService.findByTeam(+teamId, limit ? +limit : 10);
+    const query = { teamId, limit };
+    return this.matchesService.findByTeam(query);
+  }
+
+  @Get('team-recent/:teamId')
+  @ApiOperation({ summary: '탭용 - 오늘 기준 가장 가까운 경기 15개' })
+  async findByTeamRecent(@Param('teamId', ParseIntPipe) teamId: number) {
+    return this.matchesService.findByTeamRecent(teamId);
   }
 
   @Get('h2h/:team1Id/:team2Id')
