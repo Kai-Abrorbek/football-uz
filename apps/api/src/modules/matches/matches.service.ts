@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Match, MatchDocument } from '../../schemas/match.schema';
 import { LeagueMatchQueryDto, MatchQueryDto } from './dto/match-query.dto';
-import { League, LeagueDocument, Player, PlayerDocument } from '../../schemas';
+import { Player, PlayerDocument } from '../../schemas';
 
 @Injectable()
 export class MatchesService {
@@ -42,9 +42,6 @@ export class MatchesService {
   }
 
   async getLeagueMatches(query: LeagueMatchQueryDto) {
-    const filter: any = {};
-    const limit = query.limit || 20;
-
     const matches = await this.matchModel.find({
       'league.id': query.leagueId,
       'league.season': query.season,
@@ -54,32 +51,74 @@ export class MatchesService {
       (m) => m.status?.short === 'FT' || m.status?.short === '2H',
     );
 
-    const currentRound = Math.max(
-      ...playedMatches.map((m) => Number(m.round?.split('-').pop()?.trim())),
-    );
+    const roundNumbers = playedMatches
+      .map((m) => {
+        const s = m.round ?? '';
+        const match = s.match(/(\d+)\s*$/);
+        return match ? Number(match[1]) : NaN;
+      })
+      .filter(Number.isFinite);
 
-    if (currentRound) {
-      filter['round'] = `Regular Season - ${currentRound}`;
+    let currentRound = roundNumbers.length ? Math.max(...roundNumbers) : 1;
+
+    // round=0이면 현재 라운드 자동 계산, 아니면 그대로 사용
+    if (query.round !== 0) {
+      currentRound = query.round!;
     }
 
-    if (query.leagueId) {
-      filter['league.id'] = query.leagueId;
+    const filter: any = {};
+    if (query.leagueId) filter['league.id'] = query.leagueId;
+    if (query.season) filter['league.season'] = query.season;
+
+    let rounds: number[];
+
+    // ✅ direction으로 범위 분리
+    if (query.direction === 'prev') {
+      // 이전 라운드들: currentRound-3 ~ currentRound
+      rounds = [
+        // currentRound - 3,
+        // currentRound - 2,
+        currentRound - 1,
+        currentRound,
+      ].filter((r) => r > 0 && Number.isFinite(r));
+    } else if (query.direction === 'next') {
+      // 다음 라운드들: currentRound ~ currentRound+3
+      rounds = [
+        currentRound,
+        currentRound + 1,
+        // currentRound + 2,
+        // currentRound + 3,
+      ].filter((r) => r > 0 && Number.isFinite(r));
+    } else {
+      // 초기(direction 없음): 현재 기준 앞뒤로
+      rounds = [
+        currentRound - 2,
+        currentRound - 1,
+        currentRound,
+        currentRound + 1,
+        currentRound + 2,
+      ].filter((r) => r > 0 && Number.isFinite(r));
     }
 
-    if (query.season) {
-      filter['league.season'] = query.season;
-    }
+    const roundStrings = rounds.map((r) => {
+      if (query.leagueId === 2 || query.leagueId === 3) {
+        return `Round of ${r}`;
+      } else {
+        return `Regular Season - ${r}`;
+      }
+    });
+
+    filter['round'] = { $in: roundStrings };
 
     const result = await this.matchModel
       .find(filter)
-      .sort({ date: -1 })
+      .sort({ date: 1 }) // ✅ 오름차순으로 통일
       .lean()
       .exec();
 
-    result['round'] = currentRound;
-
     return {
       currentRound,
+      roundsData: rounds,
       matches: result,
     };
   }

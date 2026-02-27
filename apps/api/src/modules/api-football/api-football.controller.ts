@@ -66,8 +66,8 @@ export class ApiFootballController {
 
   @Post('match-details/:fixtureId')
   @ApiOperation({ summary: '경기 상세 정보 수동 동기화' })
-  async syncMatchDetails(@Param('fixtureId') fixtureId: number) {
-    await this.detailsScheduler.syncMatchDetails(+fixtureId);
+  async syncMatchDetails() {
+    await this.detailsScheduler.syncUpcomingMatchDetails();
     return { message: '경기 상세 정보 동기화 완료' };
   }
 }

@@ -38,6 +38,7 @@ export class DetailsScheduler {
         })
         .exec();
 
+      console.log(upcomingMatches);
       for (const match of upcomingMatches) {
         await this.syncMatchDetails(match.apiFootballId);
         await this.sleep(2000);

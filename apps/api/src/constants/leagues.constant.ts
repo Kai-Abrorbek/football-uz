@@ -16,20 +16,20 @@ export const FEATURED_LEAGUES = [
 ];
 
 export const FEATURED_LEAGUES_Object = [
-  { id: 39, name: 'Premier League' },
-  { id: 140, name: 'La Liga' },
-  { id: 61, name: 'Ligue 1' },
-  { id: 78, name: 'Bundesliga' },
-  { id: 135, name: 'Serie A' },
-  { id: 369, name: 'Uzbekistan Super League' },
-  { id: 802, name: 'Uzbekistan Cup' },
-  { id: 2, name: 'UEFA Champions League' },
-  { id: 3, name: 'UEFA Europa League' },
-  { id: 203, name: 'Süper Lig' },
-  { id: 1, name: 'World Cup' },
-  { id: 4, name: 'Euro Championship' },
-  { id: 9, name: 'Copa America' },
-  { id: 31, name: 'AFC Asian Cup' },
+  { id: 39, name: 'Premier League', totalRounds: 38 },
+  { id: 140, name: 'La Liga', totalRounds: 38 },
+  { id: 61, name: 'Ligue 1', totalRounds: 34 },
+  { id: 78, name: 'Bundesliga', totalRounds: 34 },
+  { id: 135, name: 'Serie A', totalRounds: 38 },
+  { id: 369, name: 'Uzbekistan Super League', totalRounds: 26 },
+  { id: 802, name: 'Uzbekistan Cup', totalRounds: null }, // 토너먼트
+  { id: 2, name: 'UEFA Champions League', totalRounds: 8 }, // 리그 페이즈
+  { id: 3, name: 'UEFA Europa League', totalRounds: 8 }, // 리그 페이즈
+  { id: 203, name: 'Süper Lig', totalRounds: 38 },
+  { id: 1, name: 'World Cup', totalRounds: null }, // 토너먼트
+  { id: 4, name: 'Euro Championship', totalRounds: null }, // 토너먼트
+  { id: 9, name: 'Copa America', totalRounds: null }, // 토너먼트
+  { id: 31, name: 'AFC Asian Cup', totalRounds: null }, // 토너먼트
 ];
 
 interface LeagueConfig {

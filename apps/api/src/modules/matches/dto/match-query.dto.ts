@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsEnum,
   IsNotEmpty,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -78,4 +79,14 @@ export class LeagueMatchQueryDto {
   @Type(() => Number)
   @IsNumber()
   limit?: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  round?: number;
+
+  @IsOptional()
+  @IsIn(['prev', 'next'])
+  direction?: 'prev' | 'next';
 }
