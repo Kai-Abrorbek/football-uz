@@ -17,6 +17,42 @@ export class DetailsScheduler {
   ) {}
 
   // 경기 시작 1시간 전 - 매분 체크해서 딱 1시간 전에만 실행
+  // @Cron('* * * * *')
+  // async syncUpcomingMatchDetails() {
+  //   this.logger.log('Checking for matches starting in 1 hour...');
+
+  //   try {
+  //     const now = new Date();
+  //     const in59Min = new Date(now.getTime() + 59 * 60 * 1000);
+  //     const in61Min = new Date(now.getTime() + 61 * 60 * 1000);
+  //     // 정확히 약 1시간 후 시작하는 경기
+  //     const upcomingMatches = await this.matchModel
+  //       .find({
+  //         'status.short': 'NS',
+  //         date: {
+  //           $gte: in59Min,
+  //           $lte: in61Min,
+  //         },
+  //         lineups: { $exists: false }, // 아직 안 가져온 것만
+  //       })
+  //       .exec();
+
+  //     for (const match of upcomingMatches) {
+  //       await this.syncMatchDetails(match.apiFootballId);
+  //       await this.sleep(2000);
+  //     }
+
+  //     if (upcomingMatches.length > 0) {
+  //       this.logger.log(
+  //         `Synced details for ${upcomingMatches.length} matches starting in 1 hour`,
+  //       );
+  //     }
+  //   } catch (error) {
+  //     this.logger.error('Failed to sync upcoming match details', error);
+  //   }
+  // }
+
+  // 경기 시작 1시간 전 - 매분 체크해서 딱 1시간 전에만 실행
   @Cron('* * * * *')
   async syncUpcomingMatchDetails() {
     this.logger.log('Checking for matches starting in 1 hour...');
@@ -26,28 +62,65 @@ export class DetailsScheduler {
       const in59Min = new Date(now.getTime() + 59 * 60 * 1000);
       const in61Min = new Date(now.getTime() + 61 * 60 * 1000);
 
-      // 정확히 약 1시간 후 시작하는 경기
-      const upcomingMatches = await this.matchModel
+      const in29Min = new Date(now.getTime() + 29 * 60 * 1000);
+      const in31Min = new Date(now.getTime() + 31 * 60 * 1000);
+
+      const in14Min = new Date(now.getTime() + 14 * 60 * 1000);
+      const in16Min = new Date(now.getTime() + 16 * 60 * 1000);
+
+      // 1시간 전 (기존) - 첫 시도
+      const oneHourMatches = await this.matchModel
         .find({
           'status.short': 'NS',
-          date: {
-            $gte: in59Min,
-            $lte: in61Min,
-          },
-          lineups: { $exists: false }, // 아직 안 가져온 것만
+          date: { $gte: in59Min, $lte: in61Min },
+          lineups: { $exists: false },
+          lineupFetchAttempts: { $exists: false }, // 아직 한번도 안 시도한 것
         })
         .exec();
 
-      console.log(upcomingMatches);
-      for (const match of upcomingMatches) {
-        await this.syncMatchDetails(match.apiFootballId);
+      // 30분 전 - 2번째 시도
+      const thirtyMinMatches = await this.matchModel
+        .find({
+          'status.short': 'NS',
+          date: { $gte: in29Min, $lte: in31Min },
+          lineups: { $exists: false },
+          lineupFetchAttempts: 1,
+        })
+        .exec();
+
+      // 15분 전 - 마지막 시도
+      const fifteenMinMatches = await this.matchModel
+        .find({
+          'status.short': 'NS',
+          date: { $gte: in14Min, $lte: in16Min },
+          lineups: { $exists: false },
+          lineupFetchAttempts: 2,
+        })
+        .exec();
+
+      const allMatches = [
+        ...oneHourMatches,
+        ...thirtyMinMatches,
+        ...fifteenMinMatches,
+      ];
+
+      for (const match of allMatches) {
+        const success = await this.syncMatchDetails(match.apiFootballId);
+
+        if (!success) {
+          // 라인업 없으면 시도 횟수만 증가
+          await this.matchModel.updateOne(
+            { _id: match._id },
+            { $inc: { lineupFetchAttempts: 1 } },
+          );
+        }
+        // success면 syncMatchDetails 안에서 lineups 저장되니까 따로 처리 불필요
+
         await this.sleep(2000);
       }
 
-      if (upcomingMatches.length > 0) {
-        this.logger.log(
-          `Synced details for ${upcomingMatches.length} matches starting in 1 hour`,
-        );
+      if (allMatches.length > 0) {
+        this.logger.log(`Synced details for ${allMatches.length} matches`);
       }
     } catch (error) {
       this.logger.error('Failed to sync upcoming match details', error);
@@ -117,18 +190,20 @@ export class DetailsScheduler {
             statistics,
             statisticsRaw: statsData.response,
             events,
-            // 'homeTeam.coach': lineupsData?.response[0].coach,
-            // 'awayTeam.coach': lineupsData?.response[1].coach,
+            'homeTeam.coach': lineupsData?.response[0].coach,
+            'awayTeam.coach': lineupsData?.response[1].coach,
           },
         },
       );
 
       this.logger.log(`Updated details for fixture ${fixtureId}`);
+      return !!lineups;
     } catch (error) {
       this.logger.error(
         `Failed to sync details for fixture ${fixtureId}`,
         error,
       );
+      return false;
     }
   }
 

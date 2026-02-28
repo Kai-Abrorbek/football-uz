@@ -303,6 +303,9 @@ export class Match {
   @Prop({ type: Lineups, default: undefined })
   lineups?: Lineups;
 
+  @Prop({ type: Number, default: 0 })
+  lineupFetchAttempts: number;
+
   /** Normalized stats for UI */
   @Prop({ type: [MatchStatistic], default: [] })
   statistics: MatchStatistic[];
@@ -332,3 +335,4 @@ MatchSchema.index({ status: 1 });
 MatchSchema.index({ 'homeTeam.id': 1, date: -1 });
 MatchSchema.index({ 'awayTeam.id': 1, date: -1 });
 MatchSchema.index({ isWorldCup2026: 1, date: -1 });
+MatchSchema.index({ 'status.short': 1, date: 1, lineupFetchAttempts: 1 });

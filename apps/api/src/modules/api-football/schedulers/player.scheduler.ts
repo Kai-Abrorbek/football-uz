@@ -26,7 +26,7 @@ export class PlayerScheduler {
   @Cron('0 */12 * * *')
   async syncTopScorers() {
     this.logger.log('Syncing top scorers...');
-    const season = 2024;
+    const season = 2023;
 
     try {
       for (const leagueId of this.FEATURED_LEAGUES) {
@@ -36,7 +36,7 @@ export class PlayerScheduler {
         );
         const players = data.response;
 
-        const rows = players.slice(0, 20).map((item, index) => ({
+        const rows = players.map((item, index) => ({
           rank: index + 1,
           player: {
             playerId: item.player.id,
@@ -66,7 +66,7 @@ export class PlayerScheduler {
         );
 
         // 선수 정보도 저장
-        for (const item of players.slice(0, 20)) {
+        for (const item of players) {
           await this.savePlayer(item);
         }
       }

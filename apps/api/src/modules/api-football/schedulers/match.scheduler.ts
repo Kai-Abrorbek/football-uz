@@ -10,11 +10,10 @@ import { DetailsScheduler } from './details.scheduler';
 @Injectable()
 export class MatchScheduler {
   private readonly logger = new Logger(MatchScheduler.name);
-  private isInitialSyncDone = false;
+  private previousLiveIds: Set<number> = new Set();
 
   constructor(
     private apiFootballService: ApiFootballService,
-    private detailsScheduler: DetailsScheduler,
     @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
   ) {}
 
@@ -28,6 +27,15 @@ export class MatchScheduler {
     } else {
       this.logger.log(`Initial sync skipped - ${count} matches already exist`);
     }
+
+    const liveMatches = await this.matchModel
+      .find({
+        'status.short': { $in: ['1H', 'HT', '2H', 'ET', 'BT', 'P'] },
+      })
+      .exec();
+
+    this.previousLiveIds = new Set(liveMatches.map((m) => m.apiFootballId));
+    this.logger.log(`Initialized ${this.previousLiveIds.size} live matches`);
   }
 
   async initialSync() {
@@ -62,7 +70,8 @@ export class MatchScheduler {
   }
 
   // 최근 경기 업데이트 - 6시간마다
-  @Cron('0 */6 * * *')
+  // @Cron('0 */6 * * *')
+  // @Cron('*/1 * * * *')
   async syncRecentFixtures() {
     this.logger.log('Syncing recent fixtures...');
     const dates = this.getLast7Days();
@@ -89,13 +98,30 @@ export class MatchScheduler {
   }
 
   // 라이브 스코어 - 5분마다
-  @Cron('*/15 * * * *')
+  // @Cron('*/15 * * * *')
   async syncLiveScores() {
     this.logger.log('Syncing live scores...');
 
     try {
       const data = await this.apiFootballService.getFixtureLive();
       const liveFixtures = data.response;
+
+      const currentLiveIds = new Set(
+        (liveFixtures ?? [])
+          .filter((live) => FEATURED_LEAGUES.includes(live.league.id))
+          .map((live) => live.fixture.id) as number[],
+      );
+
+      const justFinished = [...this.previousLiveIds].filter(
+        (id) => !currentLiveIds.has(id),
+      );
+
+      for (const id of justFinished) {
+        await this.syncMatch(id);
+        await this.sleep(1000);
+      }
+
+      this.previousLiveIds = currentLiveIds;
 
       if (liveFixtures.length === 0) {
         this.logger.log('No live matches');
@@ -110,6 +136,21 @@ export class MatchScheduler {
       }
 
       this.logger.log(`Synced ${liveFixtures.length} live matches`);
+    } catch (error) {
+      this.logger.error('Failed to sync live scores', error);
+    }
+  }
+
+  private async syncMatch(apiFootballId: number) {
+    try {
+      const data = await this.apiFootballService.getFixtureById(apiFootballId);
+      const liveFixture = data.response?.[0];
+
+      if (!liveFixture) return;
+
+      if (FEATURED_LEAGUES.includes(liveFixture.league.id)) {
+        await this.saveFixture(liveFixture);
+      }
     } catch (error) {
       this.logger.error('Failed to sync live scores', error);
     }

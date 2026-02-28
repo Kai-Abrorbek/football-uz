@@ -32,6 +32,13 @@ export class ApiFootballController {
     return { message: '라이브 스코어 동기화 완료' };
   }
 
+  @Post('recent')
+  @ApiOperation({ summary: '최근 경기 업데이트 수동 동기화' })
+  async recentMatches() {
+    await this.matchScheduler.syncRecentFixtures();
+    return { message: '최근 경기 업데이트 수동 동기화 완' };
+  }
+
   @Post('standings')
   @ApiOperation({ summary: '순위표 수동 동기화' })
   async syncStandings() {
