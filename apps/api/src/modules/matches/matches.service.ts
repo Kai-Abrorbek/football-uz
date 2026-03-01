@@ -1,16 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Match, MatchDocument } from '../../schemas/match.schema';
 import { LeagueMatchQueryDto, MatchQueryDto } from './dto/match-query.dto';
 import { Player, PlayerDocument } from '../../schemas';
 import { TeamMatchQueryDto } from './dto/team-match-query.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class MatchesService {
+  private logger = new Logger(MatchesService.name);
   constructor(
     @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
     @InjectModel(Player.name) private playerModel: Model<PlayerDocument>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async findAll(query: MatchQueryDto) {
@@ -36,6 +40,24 @@ export class MatchesService {
 
     if (query.status && query.status !== 'all') {
       filter['status.short'] = query.status;
+    }
+
+    // ✅ date 있을 때만 캐싱 (오늘/내일/모레 경기)
+    if (query.date && !query.teamId && !query.status) {
+      const cacheKey = `matches:date:${query.date}:league:${query.leagueId || 'all'}`;
+
+      const cached = await this.cacheManager.get(cacheKey);
+      if (cached) {
+        this.logger.log(`✅ 캐시 히트: ${cacheKey}`);
+        return cached;
+      }
+
+      const matches = await this.matchModel
+        .find(filter)
+        .sort({ date: -1 })
+        .exec();
+      await this.cacheManager.set(cacheKey, matches, 60 * 60 * 1000); // 1시간
+      return matches;
     }
 
     return this.matchModel.find(filter).sort({ date: -1 }).exec();
@@ -124,12 +146,21 @@ export class MatchesService {
   }
 
   async findLive() {
-    return this.matchModel
-      .find({
-        'status.short': { $in: ['1H', 'HT', '2H', 'ET', 'BT', 'P'] },
-      })
+    const cacheKey = 'matches:live';
+
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) {
+      this.logger.log(`✅ 캐시 히트: ${cacheKey}`);
+      return cached;
+    }
+
+    const matches = await this.matchModel
+      .find({ 'status.short': { $in: ['1H', 'HT', '2H', 'ET', 'BT', 'P'] } })
       .sort({ date: 1 })
       .exec();
+
+    await this.cacheManager.set(cacheKey, matches, 60 * 1000);
+    return matches;
   }
 
   async findUpcoming(days: number = 7) {
@@ -309,5 +340,13 @@ export class MatchesService {
       .sort({ date: -1 })
       .limit(limit)
       .exec();
+  }
+
+  async clearLiveCache() {
+    await this.cacheManager.del('matches:live');
+  }
+
+  async clearDateCache(date: string) {
+    await this.cacheManager.del(`matches:date:${date}:league:all`);
   }
 }

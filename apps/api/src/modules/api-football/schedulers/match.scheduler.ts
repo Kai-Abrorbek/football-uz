@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -6,6 +6,8 @@ import { ApiFootballService } from '../api-football.service';
 import { Match, MatchDocument } from '../../../schemas/match.schema';
 import { FEATURED_LEAGUES } from '../../../constants/leagues.constant';
 import { PredictionsService } from '../../predictions/predictions.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class MatchScheduler {
@@ -16,6 +18,7 @@ export class MatchScheduler {
     private apiFootballService: ApiFootballService,
     private predictionService: PredictionsService,
     @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   // 서버 시작 시 1회 실행 - 리그별 전체 시즌 동기화
@@ -83,13 +86,13 @@ export class MatchScheduler {
         const fixtures = data.response;
 
         for (const fixture of fixtures) {
-          // FEATURED_LEAGUES에 있는 리그만 업데이트
           if (FEATURED_LEAGUES.includes(fixture.league.id)) {
             await this.saveFixture(fixture);
             await this.predictionService.findByMatch(fixture.id);
           }
         }
 
+        await this.cacheManager.del(`matches:date:${date}:league:all`);
         await this.sleep(500); // API 보호
       }
 
@@ -127,16 +130,18 @@ export class MatchScheduler {
 
       if (liveFixtures.length === 0) {
         this.logger.log('No live matches');
+        await this.cacheManager.del('matches:live');
         return;
       }
 
       for (const fixture of liveFixtures) {
-        // FEATURED_LEAGUES만 업데이트
         if (FEATURED_LEAGUES.includes(fixture.league.id)) {
           await this.saveFixture(fixture);
         }
       }
 
+      await this.cacheManager.del('matches:live');
+      this.logger.log(`🗑️ 라이브 캐시 삭제`);
       this.logger.log(`Synced ${liveFixtures.length} live matches`);
     } catch (error) {
       this.logger.error('Failed to sync live scores', error);

@@ -23,7 +23,7 @@ export class StandingScheduler {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  @Cron('0 */3 * * *')
+  // @Cron('0 */3 * * *')
   async syncStandings() {
     this.logger.log('Syncing standings...');
     const season = SEASON;
