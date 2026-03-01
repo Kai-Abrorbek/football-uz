@@ -88,7 +88,6 @@ export class DetailsScheduler {
         })
         .exec();
 
-      console.log(thirtyMinMatches);
       // 15분 전 - 마지막 시도
       const fifteenMinMatches = await this.matchModel
         .find({
@@ -115,7 +114,6 @@ export class DetailsScheduler {
             { $inc: { lineupFetchAttempts: 1 } },
           );
         }
-        // success면 syncMatchDetails 안에서 lineups 저장되니까 따로 처리 불필요
 
         await this.sleep(2000);
       }

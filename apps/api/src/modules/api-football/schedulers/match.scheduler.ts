@@ -88,7 +88,6 @@ export class MatchScheduler {
         for (const fixture of fixtures) {
           if (FEATURED_LEAGUES.includes(fixture.league.id)) {
             await this.saveFixture(fixture);
-            await this.predictionService.findByMatch(fixture.id);
           }
         }
 
@@ -103,7 +102,7 @@ export class MatchScheduler {
   }
 
   // 라이브 스코어 - 5분마다
-  // @Cron('*/15 * * * *')
+  @Cron('*/5 * * * *')
   async syncLiveScores() {
     this.logger.log('Syncing live scores...');
 
@@ -271,6 +270,20 @@ export class MatchScheduler {
       fixtureData,
       { upsert: true, returnDocument: 'after' },
     );
+
+    // ✅ NS 상태이고 예측 없을 때만 백그라운드에서 예측 생성
+    if (
+      fixture.fixture.status.short === 'NS' ||
+      fixture.fixture.status.short === '1H'
+    ) {
+      this.predictionService
+        .createPrediction(fixture.fixture.id)
+        .catch((err) => {
+          this.logger.warn(
+            `예측 생성 실패 (${fixture.fixture.id}): ${err.message}`,
+          );
+        });
+    }
   }
 
   private getLast7Days(): string[] {

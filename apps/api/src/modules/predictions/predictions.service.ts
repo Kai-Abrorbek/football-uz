@@ -155,15 +155,10 @@ export class PredictionsService {
   }
 
   async findByMatch(matchId: number) {
-    let prediction = await this.predictionModel.findOne({
+    const prediction = await this.predictionModel.findOne({
       apiFootballId: matchId,
     });
-
-    if (!prediction) {
-      prediction = await this.createPrediction(matchId);
-    }
-
-    return prediction;
+    return prediction; // 없으면 null 반환, 더 이상 생성 안 함
   }
 
   async findAll(limit: number = 20) {
