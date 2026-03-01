@@ -1,28 +1,32 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ApiFootballService } from '../api-football.service';
 import { Standing, StandingDocument } from '../../../schemas/standing.schema';
 import { League, LeagueDocument } from '../../../schemas/league.schema';
-import { FEATURED_LEAGUES } from 'apps/api/src/constants/leagues.constant';
+import {
+  FEATURED_LEAGUES,
+  SEASON,
+} from 'apps/api/src/constants/leagues.constant';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class StandingScheduler {
   private readonly logger = new Logger(StandingScheduler.name);
-  private readonly FEATURED_LEAGUES = FEATURED_LEAGUES; // EPL, La Liga, Ligue 1, Bundesliga, Serie A
+  private readonly FEATURED_LEAGUES = FEATURED_LEAGUES;
 
   constructor(
     private apiFootballService: ApiFootballService,
     @InjectModel(Standing.name) private standingModel: Model<StandingDocument>,
-    @InjectModel(League.name) private leagueModel: Model<LeagueDocument>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  // 순위표 - 3시간마다
   @Cron('0 */3 * * *')
   async syncStandings() {
     this.logger.log('Syncing standings...');
-    const season = 2024;
+    const season = SEASON;
 
     try {
       for (const leagueId of this.FEATURED_LEAGUES) {
@@ -70,6 +74,11 @@ export class StandingScheduler {
           },
           { upsert: true, returnDocument: 'after' },
         );
+
+        // ✅ DB 업데이트 후 캐시 삭제
+        await this.cacheManager.del(`standings:${leagueId}:${season}`);
+        await this.cacheManager.del(`standings:all:${season}`);
+        this.logger.log(`🗑️ 캐시 삭제: standings:${leagueId}:${season}`);
       }
 
       this.logger.log(
@@ -80,7 +89,6 @@ export class StandingScheduler {
     }
   }
 
-  // standing.scheduler.ts
   async syncLeagueSeason(leagueId: number, season: number) {
     this.logger.log(`Syncing league ${leagueId} season ${season}...`);
 
@@ -131,6 +139,10 @@ export class StandingScheduler {
         },
         { upsert: true, returnDocument: 'after' },
       );
+
+      // ✅ 캐시 삭제
+      await this.cacheManager.del(`standings:${leagueId}:${season}`);
+      await this.cacheManager.del(`standings:all:${season}`);
 
       this.logger.log(
         `Synced standings for league ${leagueId} season ${season}`,
