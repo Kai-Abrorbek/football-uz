@@ -84,17 +84,18 @@ export class DetailsScheduler {
           'status.short': 'NS',
           date: { $gte: in29Min, $lte: in31Min },
           lineups: { $exists: false },
-          lineupFetchAttempts: 1,
+          // lineupFetchAttempts: 1,
         })
         .exec();
 
+      console.log(thirtyMinMatches);
       // 15분 전 - 마지막 시도
       const fifteenMinMatches = await this.matchModel
         .find({
           'status.short': 'NS',
           date: { $gte: in14Min, $lte: in16Min },
           lineups: { $exists: false },
-          lineupFetchAttempts: 2,
+          // lineupFetchAttempts: 2,
         })
         .exec();
 
@@ -190,8 +191,8 @@ export class DetailsScheduler {
             statistics,
             statisticsRaw: statsData.response,
             events,
-            'homeTeam.coach': lineupsData?.response[0].coach,
-            'awayTeam.coach': lineupsData?.response[1].coach,
+            // 'homeTeam.coach': lineupsData?.response[0].coach,
+            // 'awayTeam.coach': lineupsData?.response[1].coach,
           },
         },
       );

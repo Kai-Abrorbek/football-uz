@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -35,9 +39,9 @@ export class PredictionsService {
       throw new NotFoundException('경기를 찾을 수 없습니다');
     }
 
-    // if (match.status.short !== 'NS') {
-    //   throw new BadRequestException('이미 시작했거나 종료된 경기입니다');
-    // }
+    if (match.status.short !== 'NS') {
+      throw new BadRequestException('이미 시작했거나 종료된 경기입니다');
+    }
 
     // H2H 조회
     const h2h = await this.matchModel
@@ -154,6 +158,7 @@ export class PredictionsService {
     let prediction = await this.predictionModel.findOne({
       apiFootballId: matchId,
     });
+
     if (!prediction) {
       prediction = await this.createPrediction(matchId);
     }

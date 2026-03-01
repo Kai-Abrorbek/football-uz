@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import { ApiFootballService } from '../api-football.service';
 import { Match, MatchDocument } from '../../../schemas/match.schema';
 import { FEATURED_LEAGUES } from '../../../constants/leagues.constant';
-import { DetailsScheduler } from './details.scheduler';
+import { PredictionsService } from '../../predictions/predictions.service';
 
 @Injectable()
 export class MatchScheduler {
@@ -14,6 +14,7 @@ export class MatchScheduler {
 
   constructor(
     private apiFootballService: ApiFootballService,
+    private predictionService: PredictionsService,
     @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
   ) {}
 
@@ -85,6 +86,7 @@ export class MatchScheduler {
           // FEATURED_LEAGUES에 있는 리그만 업데이트
           if (FEATURED_LEAGUES.includes(fixture.league.id)) {
             await this.saveFixture(fixture);
+            await this.predictionService.findByMatch(fixture.id);
           }
         }
 

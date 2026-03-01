@@ -17,11 +17,13 @@ import { LeagueRecord, LeagueRecordSchema } from '../../schemas';
 import { ApiFootballController } from './api-football.controller';
 import { DetailsScheduler } from './schedulers/details.scheduler';
 import { FixtureabsenceModule } from '../fixtureabsence/fixtureabsence.module';
+import { PredictionsModule } from '../predictions/predictions.module';
 
 @Module({
   imports: [
     forwardRef(() => FixtureabsenceModule),
     HttpModule,
+    PredictionsModule,
     ScheduleModule.forRoot(),
     MongooseModule.forFeature([
       { name: Match.name, schema: MatchSchema },

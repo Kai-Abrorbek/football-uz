@@ -15,7 +15,7 @@ export class NotificationScheduler {
   ) {}
 
   // 경기 시작 30분 전 알림 - 매분 체크
-  @Cron('* * * * *')
+  // @Cron('* * * * *')
   async checkUpcomingMatches() {
     const now = new Date();
     const in30Min = new Date(now.getTime() + 30 * 60 * 1000);

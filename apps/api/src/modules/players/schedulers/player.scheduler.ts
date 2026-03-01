@@ -26,7 +26,7 @@ export class PlayerScheduler {
   }
 
   // 매일 오전 4시에 득점왕/어시스트왕 업데이트
-  // @Cron('0 4 * * *')
+  @Cron('0 4 * * *')
   async syncTopPlayers() {
     this.logger.log('득점왕/어시스트왕 동기화 시작');
 

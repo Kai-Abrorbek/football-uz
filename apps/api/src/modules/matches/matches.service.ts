@@ -15,7 +15,6 @@ export class MatchesService {
 
   async findAll(query: MatchQueryDto) {
     const filter: any = {};
-    const limit = query.limit || 20;
 
     if (query.date) {
       const startDate = new Date(query.date);
@@ -39,7 +38,7 @@ export class MatchesService {
       filter['status.short'] = query.status;
     }
 
-    return this.matchModel.find(filter).sort({ date: -1 }).limit(limit).exec();
+    return this.matchModel.find(filter).sort({ date: -1 }).exec();
   }
 
   async getLeagueMatches(query: LeagueMatchQueryDto) {
