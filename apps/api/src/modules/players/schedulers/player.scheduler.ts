@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -7,6 +7,8 @@ import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { Player, Team } from 'apps/api/src/schemas';
 import { FEATURED_LEAGUES } from 'apps/api/src/constants/leagues.constant';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class PlayerScheduler {
@@ -17,6 +19,7 @@ export class PlayerScheduler {
   constructor(
     @InjectModel('Player') private playerModel: Model<Player>,
     @InjectModel('Team') private teamModel: Model<Team>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private httpService: HttpService,
     private configService: ConfigService,
   ) {
@@ -152,6 +155,8 @@ export class PlayerScheduler {
             returnDocument: 'after',
           },
         );
+
+        await this.cacheManager.del(`player:detail:${playerData.id}`);
       }
 
       this.logger.log(`리그 ${leagueId} 득점왕 동기화 완료`);
@@ -269,8 +274,9 @@ export class PlayerScheduler {
             returnDocument: 'after',
           },
         );
-      }
 
+        await this.cacheManager.del(`player:detail:${playerData.id}`);
+      }
       this.logger.log(`리그 ${leagueId} 어시스트왕 동기화 완료`);
     } catch (error) {
       this.logger.error(

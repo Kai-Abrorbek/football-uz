@@ -38,12 +38,6 @@ export class PlayersController {
     return this.playersService.findByTeam(+teamId);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: '선수 상세 조회' })
-  async findById(@Param('id') id: number) {
-    return this.playersService.findById(+id);
-  }
-
   @Get('league/:leagueId')
   @ApiOperation({ summary: '선수 상세 조회' })
   async findByLeaguePlayers(
@@ -96,5 +90,11 @@ export class PlayersController {
       Number(season),
       Number(page),
     );
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: '선수 상세 조회' })
+  async findById(@Param('id') id: number) {
+    return this.playersService.findPlayerDetail(+id);
   }
 }

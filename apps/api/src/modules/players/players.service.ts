@@ -1,19 +1,24 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Player, PlayerDocument } from '../../schemas/player.schema';
 import { PlayerQueryDto } from './dto/player-query.dto';
-import { Team, TeamDocument } from '../../schemas';
-import { PlayerScheduler } from './schedulers/player.scheduler';
+import { Match, MatchDocument, Team, TeamDocument } from '../../schemas';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class PlayersService {
   syncTopPlayers() {
     throw new Error('Method not implemented.');
   }
+  private logger = new Logger(PlayersService.name);
+
   constructor(
     @InjectModel(Player.name) private playerModel: Model<PlayerDocument>,
     @InjectModel(Team.name) private teamModel: Model<TeamDocument>,
+    @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async findAll(query: PlayerQueryDto) {
@@ -43,12 +48,49 @@ export class PlayersService {
     return this.playerModel.find(filter).limit(limit).exec();
   }
 
-  async findById(id: number) {
-    const player = await this.playerModel.findOne({ apiFootballId: id });
-    if (!player) {
-      throw new NotFoundException('선수를 찾을 수 없습니다');
-    }
-    return player;
+  async findPlayerDetail(id: number) {
+    const cacheKey = `player:detail:${id}`;
+
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) return cached;
+
+    const player = await this.playerModel.findOne({ apiFootballId: id }).lean();
+
+    if (!player) throw new NotFoundException('선수를 찾을 수 없습니다');
+
+    const matches = await this.matchModel
+      .find({
+        $or: [
+          { 'homeTeam.id': player.currentTeam?.id },
+          { 'awayTeam.id': player.currentTeam?.id },
+        ],
+        'status.short': 'FT',
+        'events.player.id': player.apiFootballId,
+      })
+      .sort({ date: -1 })
+      .limit(10)
+      .lean();
+
+    const recentMatches = matches.map((match) => ({
+      _id: match._id,
+      apiFootballId: match.apiFootballId,
+      date: match.date,
+      homeTeam: match.homeTeam,
+      awayTeam: match.awayTeam,
+      goals: match.goals,
+      status: match.status,
+      league: match.league,
+      playerEvents:
+        match.events?.filter(
+          (e) => e.player?.id === id || e.assist?.id === id,
+        ) ?? [],
+    }));
+
+    const result = { player, recentMatches };
+
+    await this.cacheManager.set(cacheKey, result, 60 * 60 * 1000); // 1시간
+
+    return result;
   }
 
   async findByLeaguePlayers(leagueId: number): Promise<Player[]> {

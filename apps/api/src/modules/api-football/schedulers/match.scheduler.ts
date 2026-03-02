@@ -56,7 +56,7 @@ export class MatchScheduler {
         const fixtures = data.response;
 
         for (const fixture of fixtures) {
-          await this.saveFixture(fixture);
+          await this.saveRecentFixture(fixture);
         }
 
         this.logger.log(
@@ -79,7 +79,7 @@ export class MatchScheduler {
   async syncRecentFixtures() {
     this.logger.log('Syncing recent fixtures...');
     const dates = this.getLast7Days();
-
+    console.log(dates);
     try {
       for (const date of dates) {
         const data = await this.apiFootballService.getFixturesByDate(date);
@@ -87,7 +87,7 @@ export class MatchScheduler {
 
         for (const fixture of fixtures) {
           if (FEATURED_LEAGUES.includes(fixture.league.id)) {
-            await this.saveFixture(fixture);
+            await this.saveRecentFixture(fixture);
           }
         }
 
@@ -102,7 +102,7 @@ export class MatchScheduler {
   }
 
   // 라이브 스코어 - 5분마다
-  @Cron('*/5 * * * *')
+  // @Cron('*/5 * * * *')
   async syncLiveScores() {
     this.logger.log('Syncing live scores...');
 
@@ -125,6 +125,11 @@ export class MatchScheduler {
         await this.sleep(1000);
       }
 
+      if (justFinished.length > 0) {
+        await this.cacheManager.del('matches:live');
+        this.logger.log(`🗑️ 종료된 경기 캐시 삭제`);
+      }
+
       this.previousLiveIds = currentLiveIds;
 
       if (liveFixtures.length === 0) {
@@ -135,7 +140,7 @@ export class MatchScheduler {
 
       for (const fixture of liveFixtures) {
         if (FEATURED_LEAGUES.includes(fixture.league.id)) {
-          await this.saveFixture(fixture);
+          await this.saveLiveFixture(fixture);
         }
       }
 
@@ -155,14 +160,109 @@ export class MatchScheduler {
       if (!liveFixture) return;
 
       if (FEATURED_LEAGUES.includes(liveFixture.league.id)) {
-        await this.saveFixture(liveFixture);
+        await this.saveRecentFixture(liveFixture);
       }
     } catch (error) {
       this.logger.error('Failed to sync live scores', error);
     }
   }
 
-  private async saveFixture(fixture: any) {
+  private async saveRecentFixture(fixture: any) {
+    const fixtureData = {
+      apiFootballId: fixture.fixture.id,
+      referee: fixture.fixture.referee,
+      league: {
+        id: fixture.league.id,
+        name: fixture.league.name,
+        country: fixture.league.country,
+        logo: fixture.league.logo,
+        season: fixture.league.season,
+        round: fixture.league.round,
+        standings: fixture.league.standings,
+      },
+      homeTeam: {
+        id: fixture.teams.home.id,
+        name: fixture.teams.home.name,
+        logo: fixture.teams.home.logo,
+        winner: fixture.teams.home.winner,
+      },
+      awayTeam: {
+        id: fixture.teams.away.id,
+        name: fixture.teams.away.name,
+        logo: fixture.teams.away.logo,
+        winner: fixture.teams.away.winner,
+      },
+      goals: {
+        home: fixture.goals.home,
+        away: fixture.goals.away,
+      },
+      score: {
+        halftime:
+          fixture.score.halftime.home !== null
+            ? {
+                home: fixture.score.halftime.home,
+                away: fixture.score.halftime.away,
+              }
+            : undefined,
+        fulltime:
+          fixture.score.fulltime.home !== null
+            ? {
+                home: fixture.score.fulltime.home,
+                away: fixture.score.fulltime.away,
+              }
+            : undefined,
+        extratime:
+          fixture.score.extratime.home !== null
+            ? {
+                home: fixture.score.extratime.home,
+                away: fixture.score.extratime.away,
+              }
+            : undefined,
+        penalty:
+          fixture.score.penalty.home !== null
+            ? {
+                home: fixture.score.penalty.home,
+                away: fixture.score.penalty.away,
+              }
+            : undefined,
+      },
+      status: {
+        long: fixture.fixture.status.long,
+        short: fixture.fixture.status.short,
+        elapsed: fixture.fixture.status.elapsed,
+        extra: fixture.fixture.status.extra,
+      },
+      date: new Date(fixture.fixture.date),
+      venue: {
+        name: fixture.fixture.venue?.name,
+        city: fixture.fixture.venue?.city,
+      },
+      round: fixture.league.round,
+      lastSyncAt: new Date(),
+    };
+
+    await this.matchModel.findOneAndUpdate(
+      { apiFootballId: fixture.fixture.id },
+      fixtureData,
+      { upsert: true, returnDocument: 'after' },
+    );
+
+    // ✅ NS 상태이고 예측 없을 때만 백그라운드에서 예측 생성
+    if (
+      fixture.fixture.status.short === 'NS' ||
+      fixture.fixture.status.short === '1H'
+    ) {
+      this.predictionService
+        .createPrediction(fixture.fixture.id)
+        .catch((err) => {
+          this.logger.warn(
+            `예측 생성 실패 (${fixture.fixture.id}): ${err.message}`,
+          );
+        });
+    }
+  }
+
+  private async saveLiveFixture(fixture: any) {
     const fixtureData = {
       apiFootballId: fixture.fixture.id,
       referee: fixture.fixture.referee,
@@ -290,7 +390,7 @@ export class MatchScheduler {
     const dates: string[] = [];
     for (let i = 0; i < 7; i++) {
       const date = new Date();
-      date.setDate(date.getDate() - i);
+      date.setDate(date.getDate() + i);
       dates.push(date.toISOString().split('T')[0]);
     }
     return dates;
