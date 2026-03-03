@@ -169,7 +169,7 @@ export class MatchScheduler {
     }
   }
 
-  private async saveFixture(fixture: any) {
+  public async saveFixture(fixture: any) {
     const statistics = await this.syncMatchDetails(fixture.fixture.id);
 
     const fixtureData: any = {

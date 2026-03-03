@@ -42,7 +42,7 @@ export class StandingsService {
   }
 
   async findCurrentByLeague(leagueId: number) {
-    return this.findByLeague(leagueId, SEASON);
+    return this.findByLeague(leagueId, 2022);
   }
 
   async findAll(season: number = SEASON) {

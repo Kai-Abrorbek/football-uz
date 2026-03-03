@@ -43,6 +43,17 @@ export class MatchQueryDto {
   @Type(() => Number)
   @IsNumber()
   limit?: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  round?: string;
+
+  @ApiProperty({ required: false, default: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  page?: number;
 }
 
 export class LeagueMatchQueryDto {

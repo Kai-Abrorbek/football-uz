@@ -18,6 +18,6 @@ import { HttpModule } from '@nestjs/axios';
   ],
   controllers: [PlayersController],
   providers: [PlayersService, PlayerScheduler],
-  exports: [PlayersService],
+  exports: [PlayersService, PlayerScheduler],
 })
 export class PlayersModule {}

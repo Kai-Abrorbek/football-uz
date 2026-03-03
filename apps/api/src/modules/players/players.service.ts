@@ -93,7 +93,7 @@ export class PlayersService {
     return result;
   }
 
-  async findByLeaguePlayers(leagueId: number): Promise<Player[]> {
+  async findByLeaguePlayers(leagueId: string): Promise<Player[]> {
     const player: Player[] = await this.playerModel.find({
       'statistics.league.id': leagueId,
     });

@@ -38,29 +38,46 @@ export class MatchesService {
       ];
     }
 
+    if (query.season) {
+      filter['league.season'] = query.season;
+    }
+
     if (query.status && query.status !== 'all') {
       filter['status.short'] = query.status;
     }
 
-    // ✅ date 있을 때만 캐싱 (오늘/내일/모레 경기)
+    // ✅ round 필터 추가
+    if (query.round) {
+      filter['league.round'] = query.round;
+    }
+
+    // ✅ date 있을 때만 캐싱
     if (query.date && !query.teamId && !query.status) {
       const cacheKey = `matches:date:${query.date}:league:${query.leagueId || 'all'}`;
-
       const cached = await this.cacheManager.get(cacheKey);
       if (cached) {
         this.logger.log(`✅ 캐시 히트: ${cacheKey}`);
         return cached;
       }
-
       const matches = await this.matchModel
         .find(filter)
-        .sort({ date: -1 })
+        .sort({ date: 1 })
         .exec();
-      await this.cacheManager.set(cacheKey, matches, 60 * 60 * 1000); // 1시간
+      await this.cacheManager.set(cacheKey, matches, 60 * 60 * 1000);
       return matches;
     }
 
-    return this.matchModel.find(filter).sort({ date: -1 }).exec();
+    // ✅ 페이지네이션
+    const limit = query.limit ?? 20;
+    const page = query.page ?? 1;
+    const skip = (page - 1) * limit;
+
+    return this.matchModel
+      .find(filter)
+      .sort({ date: 1 })
+      .skip(skip)
+      .limit(limit)
+      .exec();
   }
 
   async getLeagueMatches(query: LeagueMatchQueryDto) {

@@ -18,12 +18,14 @@ import { ApiFootballController } from './api-football.controller';
 import { DetailsScheduler } from './schedulers/details.scheduler';
 import { FixtureabsenceModule } from '../fixtureabsence/fixtureabsence.module';
 import { PredictionsModule } from '../predictions/predictions.module';
+import { PlayersModule } from '../players/players.module';
 
 @Module({
   imports: [
     forwardRef(() => FixtureabsenceModule),
     HttpModule,
     PredictionsModule,
+    PlayersModule,
     ScheduleModule.forRoot(),
     MongooseModule.forFeature([
       { name: Match.name, schema: MatchSchema },

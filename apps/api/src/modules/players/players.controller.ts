@@ -41,9 +41,9 @@ export class PlayersController {
   @Get('league/:leagueId')
   @ApiOperation({ summary: '선수 상세 조회' })
   async findByLeaguePlayers(
-    @Param('leagueId') leagueId: number,
+    @Param('leagueId') leagueId: string,
   ): Promise<Player[]> {
-    return this.playersService.findByLeaguePlayers(+leagueId);
+    return this.playersService.findByLeaguePlayers(leagueId);
   }
 
   @Get('top-scorers/:leagueId')

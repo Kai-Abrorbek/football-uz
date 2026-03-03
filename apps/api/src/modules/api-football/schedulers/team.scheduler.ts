@@ -20,7 +20,7 @@ export class TeamScheduler {
   // @Cron('0 */4 * * *')
   async syncTeams() {
     this.logger.log('Syncing teams...');
-    const season = 2024;
+    const season = 2022;
 
     try {
       for (const league of FEATURED_LEAGUES_Object) {

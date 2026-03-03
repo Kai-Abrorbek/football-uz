@@ -44,7 +44,7 @@ export class PlayerScheduler {
     this.logger.log('득점왕/어시스트왕 동기화 완료');
   }
 
-  private async syncTopScorers(leagueId: number, season: number) {
+  public async syncTopScorers(leagueId: number, season: number) {
     try {
       const response = await firstValueFrom(
         this.httpService.get(`${this.baseUrl}/players/topscorers`, {
@@ -165,7 +165,7 @@ export class PlayerScheduler {
     }
   }
 
-  private async syncTopAssists(leagueId: number, season: number) {
+  public async syncTopAssists(leagueId: number, season: number) {
     try {
       const response = await firstValueFrom(
         this.httpService.get(`${this.baseUrl}/players/topassists`, {
