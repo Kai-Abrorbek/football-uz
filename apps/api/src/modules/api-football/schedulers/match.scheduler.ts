@@ -8,6 +8,7 @@ import { FEATURED_LEAGUES } from '../../../constants/leagues.constant';
 import { PredictionsService } from '../../predictions/predictions.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import { DetailsScheduler } from './details.scheduler';
 
 @Injectable()
 export class MatchScheduler {
@@ -17,6 +18,7 @@ export class MatchScheduler {
   constructor(
     private apiFootballService: ApiFootballService,
     private predictionService: PredictionsService,
+    private detailScheduler: DetailsScheduler,
     @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
@@ -56,7 +58,7 @@ export class MatchScheduler {
         const fixtures = data.response;
 
         for (const fixture of fixtures) {
-          await this.saveRecentFixture(fixture);
+          await this.saveFixture(fixture);
         }
 
         this.logger.log(
@@ -87,7 +89,7 @@ export class MatchScheduler {
 
         for (const fixture of fixtures) {
           if (FEATURED_LEAGUES.includes(fixture.league.id)) {
-            await this.saveRecentFixture(fixture);
+            await this.saveFixture(fixture);
           }
         }
 
@@ -140,7 +142,7 @@ export class MatchScheduler {
 
       for (const fixture of liveFixtures) {
         if (FEATURED_LEAGUES.includes(fixture.league.id)) {
-          await this.saveLiveFixture(fixture);
+          await this.saveFixture(fixture);
         }
       }
 
@@ -160,180 +162,95 @@ export class MatchScheduler {
       if (!liveFixture) return;
 
       if (FEATURED_LEAGUES.includes(liveFixture.league.id)) {
-        await this.saveRecentFixture(liveFixture);
+        await this.saveFixture(liveFixture);
       }
     } catch (error) {
       this.logger.error('Failed to sync live scores', error);
     }
   }
 
-  private async saveRecentFixture(fixture: any) {
-    const fixtureData = {
-      apiFootballId: fixture.fixture.id,
-      referee: fixture.fixture.referee,
-      league: {
-        id: fixture.league.id,
-        name: fixture.league.name,
-        country: fixture.league.country,
-        logo: fixture.league.logo,
-        season: fixture.league.season,
+  private async saveFixture(fixture: any) {
+    const statistics = await this.syncMatchDetails(fixture.fixture.id);
+
+    const fixtureData: any = {
+      $set: {
+        apiFootballId: fixture.fixture.id,
+        referee: fixture.fixture.referee,
+        league: {
+          id: fixture.league.id,
+          name: fixture.league.name,
+          country: fixture.league.country,
+          logo: fixture.league.logo,
+          season: fixture.league.season,
+          round: fixture.league.round,
+          standings: fixture.league.standings,
+        },
+        homeTeam: {
+          id: fixture.teams.home.id,
+          name: fixture.teams.home.name,
+          logo: fixture.teams.home.logo,
+          winner: fixture.teams.home.winner,
+        },
+        awayTeam: {
+          id: fixture.teams.away.id,
+          name: fixture.teams.away.name,
+          logo: fixture.teams.away.logo,
+          winner: fixture.teams.away.winner,
+        },
+        goals: {
+          home: fixture.goals.home,
+          away: fixture.goals.away,
+        },
+        score: {
+          halftime:
+            fixture.score.halftime.home !== null
+              ? {
+                  home: fixture.score.halftime.home,
+                  away: fixture.score.halftime.away,
+                }
+              : undefined,
+          fulltime:
+            fixture.score.fulltime.home !== null
+              ? {
+                  home: fixture.score.fulltime.home,
+                  away: fixture.score.fulltime.away,
+                }
+              : undefined,
+          extratime:
+            fixture.score.extratime.home !== null
+              ? {
+                  home: fixture.score.extratime.home,
+                  away: fixture.score.extratime.away,
+                }
+              : undefined,
+          penalty:
+            fixture.score.penalty.home !== null
+              ? {
+                  home: fixture.score.penalty.home,
+                  away: fixture.score.penalty.away,
+                }
+              : undefined,
+        },
+        status: {
+          long: fixture.fixture.status.long,
+          short: fixture.fixture.status.short,
+          elapsed: fixture.fixture.status.elapsed,
+          extra: fixture.fixture.status.extra,
+        },
+        date: new Date(fixture.fixture.date),
+        venue: {
+          name: fixture.fixture.venue?.name,
+          city: fixture.fixture.venue?.city,
+        },
         round: fixture.league.round,
-        standings: fixture.league.standings,
+        statistics,
+        lastSyncAt: new Date(),
       },
-      homeTeam: {
-        id: fixture.teams.home.id,
-        name: fixture.teams.home.name,
-        logo: fixture.teams.home.logo,
-        winner: fixture.teams.home.winner,
-      },
-      awayTeam: {
-        id: fixture.teams.away.id,
-        name: fixture.teams.away.name,
-        logo: fixture.teams.away.logo,
-        winner: fixture.teams.away.winner,
-      },
-      goals: {
-        home: fixture.goals.home,
-        away: fixture.goals.away,
-      },
-      score: {
-        halftime:
-          fixture.score.halftime.home !== null
-            ? {
-                home: fixture.score.halftime.home,
-                away: fixture.score.halftime.away,
-              }
-            : undefined,
-        fulltime:
-          fixture.score.fulltime.home !== null
-            ? {
-                home: fixture.score.fulltime.home,
-                away: fixture.score.fulltime.away,
-              }
-            : undefined,
-        extratime:
-          fixture.score.extratime.home !== null
-            ? {
-                home: fixture.score.extratime.home,
-                away: fixture.score.extratime.away,
-              }
-            : undefined,
-        penalty:
-          fixture.score.penalty.home !== null
-            ? {
-                home: fixture.score.penalty.home,
-                away: fixture.score.penalty.away,
-              }
-            : undefined,
-      },
-      status: {
-        long: fixture.fixture.status.long,
-        short: fixture.fixture.status.short,
-        elapsed: fixture.fixture.status.elapsed,
-        extra: fixture.fixture.status.extra,
-      },
-      date: new Date(fixture.fixture.date),
-      venue: {
-        name: fixture.fixture.venue?.name,
-        city: fixture.fixture.venue?.city,
-      },
-      round: fixture.league.round,
-      lastSyncAt: new Date(),
     };
 
-    await this.matchModel.findOneAndUpdate(
-      { apiFootballId: fixture.fixture.id },
-      fixtureData,
-      { upsert: true, returnDocument: 'after' },
-    );
-
-    // ✅ NS 상태이고 예측 없을 때만 백그라운드에서 예측 생성
-    if (
-      fixture.fixture.status.short === 'NS' ||
-      fixture.fixture.status.short === '1H'
-    ) {
-      this.predictionService
-        .createPrediction(fixture.fixture.id)
-        .catch((err) => {
-          this.logger.warn(
-            `예측 생성 실패 (${fixture.fixture.id}): ${err.message}`,
-          );
-        });
-    }
-  }
-
-  private async saveLiveFixture(fixture: any) {
-    const fixtureData = {
-      apiFootballId: fixture.fixture.id,
-      referee: fixture.fixture.referee,
-      league: {
-        id: fixture.league.id,
-        name: fixture.league.name,
-        country: fixture.league.country,
-        logo: fixture.league.logo,
-        season: fixture.league.season,
-        round: fixture.league.round,
-        standings: fixture.league.standings,
-      },
-      homeTeam: {
-        id: fixture.teams.home.id,
-        name: fixture.teams.home.name,
-        logo: fixture.teams.home.logo,
-        winner: fixture.teams.home.winner,
-      },
-      awayTeam: {
-        id: fixture.teams.away.id,
-        name: fixture.teams.away.name,
-        logo: fixture.teams.away.logo,
-        winner: fixture.teams.away.winner,
-      },
-      goals: {
-        home: fixture.goals.home,
-        away: fixture.goals.away,
-      },
-      score: {
-        halftime:
-          fixture.score.halftime.home !== null
-            ? {
-                home: fixture.score.halftime.home,
-                away: fixture.score.halftime.away,
-              }
-            : undefined,
-        fulltime:
-          fixture.score.fulltime.home !== null
-            ? {
-                home: fixture.score.fulltime.home,
-                away: fixture.score.fulltime.away,
-              }
-            : undefined,
-        extratime:
-          fixture.score.extratime.home !== null
-            ? {
-                home: fixture.score.extratime.home,
-                away: fixture.score.extratime.away,
-              }
-            : undefined,
-        penalty:
-          fixture.score.penalty.home !== null
-            ? {
-                home: fixture.score.penalty.home,
-                away: fixture.score.penalty.away,
-              }
-            : undefined,
-      },
-      status: {
-        long: fixture.fixture.status.long,
-        short: fixture.fixture.status.short,
-        elapsed: fixture.fixture.status.elapsed,
-        extra: fixture.fixture.status.extra,
-      },
-      date: new Date(fixture.fixture.date),
-      venue: {
-        name: fixture.fixture.venue?.name,
-        city: fixture.fixture.venue?.city,
-      },
-      round: fixture.league.round,
-      events:
+    // events 있을 때만 업데이트
+    if (fixture.events?.length > 0) {
+      fixtureData.$set.events =
         fixture.events?.map((event: any) => ({
           time: {
             elapsed: event.time.elapsed,
@@ -361,9 +278,8 @@ export class MatchScheduler {
           type: event.type,
           detail: event.detail,
           comments: event.comments,
-        })) || [],
-      lastSyncAt: new Date(),
-    };
+        })) || [];
+    }
 
     await this.matchModel.findOneAndUpdate(
       { apiFootballId: fixture.fixture.id },
@@ -383,6 +299,24 @@ export class MatchScheduler {
             `예측 생성 실패 (${fixture.fixture.id}): ${err.message}`,
           );
         });
+    }
+  }
+
+  private async syncMatchDetails(fixtureId: number) {
+    try {
+      const statsData =
+        await this.apiFootballService.getFixtureStatistics(fixtureId);
+      const statistics = this.detailScheduler.parseStatistics(
+        statsData.response,
+      );
+
+      return statistics;
+    } catch (error: any) {
+      this.logger.error(
+        `Failed to sync details for fixture ${fixtureId}`,
+        error,
+      );
+      return false;
     }
   }
 

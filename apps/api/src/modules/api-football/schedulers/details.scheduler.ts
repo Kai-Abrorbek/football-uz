@@ -189,8 +189,8 @@ export class DetailsScheduler {
             statistics,
             statisticsRaw: statsData.response,
             events,
-            // 'homeTeam.coach': lineupsData?.response[0].coach,
-            // 'awayTeam.coach': lineupsData?.response[1].coach,
+            'homeTeam.coach': lineupsData?.response[0]?.coach ?? undefined,
+            'awayTeam.coach': lineupsData?.response[1]?.coach ?? undefined,
           },
         },
       );
@@ -256,7 +256,7 @@ export class DetailsScheduler {
     };
   }
 
-  private parseStatistics(data: any) {
+  public parseStatistics(data: any) {
     if (!data || data.length === 0) return [];
 
     const stats: any[] = [];
