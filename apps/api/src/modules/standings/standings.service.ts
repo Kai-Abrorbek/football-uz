@@ -41,9 +41,9 @@ export class StandingsService {
     return standing;
   }
 
-  async findCurrentByLeague(leagueId: number) {
-    return this.findByLeague(leagueId, 2022);
-  }
+  // async findCurrentByLeague(leagueId: number) {
+  //   return this.findByLeague(leagueId, season);
+  // }
 
   async findAll(season: number = SEASON) {
     const cacheKey = `standings:all:${season}`;

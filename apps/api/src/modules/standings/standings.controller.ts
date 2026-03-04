@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { StandingsService } from './standings.service';
+import { SEASON } from '../../constants/leagues.constant';
 
 @ApiTags('Standings')
 @Controller('standings')
@@ -11,14 +12,14 @@ export class StandingsController {
   @ApiOperation({ summary: '전체 순위표 조회' })
   @ApiQuery({ name: 'season', required: false, type: Number })
   async findAll(@Query('season') season?: number) {
-    return this.standingsService.findAll(season ? +season : 2024);
+    return this.standingsService.findAll(season ? +season : SEASON);
   }
 
-  @Get('league/:leagueId')
-  @ApiOperation({ summary: '리그 현재 시즌 순위표 조회' })
-  async findCurrentByLeague(@Param('leagueId') leagueId: number) {
-    return this.standingsService.findCurrentByLeague(+leagueId);
-  }
+  // @Get('league/:leagueId')
+  // @ApiOperation({ summary: '리그 현재 시즌 순위표 조회' })
+  // async findCurrentByLeague(@Param('leagueId') leagueId: number) {
+  //   return this.standingsService.findCurrentByLeague(+leagueId);
+  // }
 
   @Get('league/:leagueId/season/:season')
   @ApiOperation({ summary: '리그별 시즌 순위표 조회' })

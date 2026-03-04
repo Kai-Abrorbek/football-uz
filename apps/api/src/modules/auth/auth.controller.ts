@@ -22,6 +22,7 @@ export class AuthController {
   @Post('register')
   @ApiOperation({ summary: '회원가입' })
   async register(@Body() dto: RegisterDto): Promise<AuthResponseDto> {
+    console.log(dto, 'CONTROLLER');
     return this.authService.register(dto);
   }
 

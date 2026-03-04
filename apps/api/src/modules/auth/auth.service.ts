@@ -133,6 +133,7 @@ export class AuthService {
         username: user.username,
         email: user.email,
         language: user.language,
+        isEmailVerified: user.isEmailVerified,
       },
     };
   }
@@ -217,6 +218,7 @@ export class AuthService {
         username: user.username,
         email: user.email,
         language: user.language,
+        isEmailVerified: user.isEmailVerified,
       },
     };
   }

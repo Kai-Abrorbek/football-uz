@@ -10,5 +10,6 @@ export class AuthResponseDto {
     username: string;
     email: string;
     language: string;
+    isEmailVerified?: boolean;
   };
 }

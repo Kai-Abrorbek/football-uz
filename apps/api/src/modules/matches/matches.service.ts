@@ -46,7 +46,6 @@ export class MatchesService {
       filter['status.short'] = query.status;
     }
 
-    // ✅ round 필터 추가
     if (query.round) {
       filter['league.round'] = query.round;
     }
