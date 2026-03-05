@@ -15,10 +15,10 @@ export class NotificationScheduler {
   ) {}
 
   // 경기 시작 30분 전 알림 - 매분 체크
-  // @Cron('* * * * *')
+  @Cron('* * * * *')
   async checkUpcomingMatches() {
     const now = new Date();
-    const in30Min = new Date(now.getTime() + 30 * 60 * 1000);
+    const in30Min = new Date(now.getTime() + 10 * 60 * 1000);
 
     const upcomingMatches = await this.matchModel.find({
       'status.short': 'NS',
@@ -43,46 +43,61 @@ export class NotificationScheduler {
 
   // 골 알림 - 5분마다 라이브 경기 체크
   // @Cron('*/5 * * * *')
+  @Cron('*/5 * * * *')
   async checkLiveMatchGoals() {
-    // 라이브 경기 조회
     const liveMatches = await this.matchModel.find({
       'status.short': { $in: ['1H', '2H', 'ET'] },
     });
 
     for (const match of liveMatches) {
-      // events에서 최근 5분 내 골 체크
       const recentGoals = match.events.filter((event) => {
         if (event.type !== 'Goal') return false;
-
         const now = new Date();
         const eventTime = event.time.elapsed || 0;
         const matchStart = match.date;
         const eventDate = new Date(
           matchStart.getTime() + eventTime * 60 * 1000,
         );
-
         return now.getTime() - eventDate.getTime() < 5 * 60 * 1000;
       });
 
-      if (recentGoals.length > 0) {
-        const lastGoal = recentGoals[recentGoals.length - 1];
+      for (const goal of recentGoals) {
+        const goalKey = `${match._id}_${goal.time.elapsed}_${goal.player?.id}`;
+
+        // 이미 알림 보낸 골이면 스킵
+        if (match.notifiedEvents?.includes(goalKey)) continue;
+
         this.logger.log(
-          `Goal scored: ${lastGoal.player?.name} - ${match.homeTeam.name} vs ${match.awayTeam.name}`,
+          `Goal scored: ${goal.player?.name} - ${match.homeTeam.name} vs ${match.awayTeam.name}`,
         );
 
-        // 골 알림 전송 (나중에 구현)
+        await this.notificationsService.sendGoalNotification(
+          match.apiFootballId,
+          match.homeTeam.name!,
+          match.awayTeam.name!,
+          goal.player?.name ?? 'Unknown',
+          match.goals?.home ?? 0,
+          match.goals?.away ?? 0,
+        );
+
+        // 알림 보낸 골 기록
+        await this.matchModel.findByIdAndUpdate(match._id, {
+          $addToSet: { notifiedEvents: goalKey },
+        });
       }
     }
   }
 
   // 경기 종료 알림 - 5분마다 체크
   // @Cron('*/5 * * * *')
+  @Cron('*/5 * * * *')
   async checkFinishedMatches() {
     const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
 
     const recentlyFinished = await this.matchModel.find({
       'status.short': 'FT',
       updatedAt: { $gte: fiveMinAgo },
+      notifiedEvents: { $not: { $elemMatch: { $eq: 'matchEnd' } } }, // 이미 알림 보낸 경기 제외
     });
 
     for (const match of recentlyFinished) {
@@ -90,7 +105,18 @@ export class NotificationScheduler {
         `Match finished: ${match.homeTeam.name} ${match.goals?.home}-${match.goals?.away} ${match.awayTeam.name}`,
       );
 
-      // 종료 알림 전송 (나중에 구현)
+      await this.notificationsService.sendMatchEndNotification(
+        match.apiFootballId,
+        match.homeTeam.name!,
+        match.awayTeam.name!,
+        match.goals?.home ?? 0,
+        match.goals?.away ?? 0,
+      );
+
+      // 종료 알림 보낸 경기 기록
+      await this.matchModel.findByIdAndUpdate(match._id, {
+        $addToSet: { notifiedEvents: 'matchEnd' },
+      });
     }
   }
 }

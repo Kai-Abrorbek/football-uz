@@ -31,7 +31,7 @@ export class Notification {
 
   @Prop({
     required: true,
-    enum: ['matchStart', 'goal', 'matchEnd', 'news', 'prediction'],
+    enum: ['matchStart', 'goal', 'matchEnd', 'news', 'prediction', 'general'],
   })
   type: string;
 

@@ -55,4 +55,12 @@ export class NotificationsController {
   async markAllAsRead(@Req() req) {
     return this.notificationsService.markAllAsRead(req.user._id);
   }
+
+  @Post('fcm-token')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'FCM 토큰 저장' })
+  async saveFcmToken(@Req() req, @Body() body: { token: string }) {
+    return this.notificationsService.saveFcmToken(req.user._id, body.token);
+  }
 }

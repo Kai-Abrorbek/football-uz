@@ -8,7 +8,6 @@ import {
 import { User, UserDocument } from '../../schemas/user.schema';
 import { FcmService } from './fcm.service';
 import { SendNotificationDto } from './dto/send-notification.dto';
-import { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto';
 
 @Injectable()
 export class NotificationsService {
@@ -200,5 +199,117 @@ export class NotificationsService {
       { isRead: true },
     );
     return { message: '모든 알림이 읽음 처리되었습니다' };
+  }
+
+  async sendGoalNotification(
+    matchId: number,
+    homeTeam: string,
+    awayTeam: string,
+    scorerName: string,
+    homeScore: number,
+    awayScore: number,
+  ) {
+    const users = await this.userModel.find({
+      'notificationSettings.goal': true,
+    });
+
+    if (users.length === 0) return;
+
+    const tokens = users.flatMap((u) => u.fcmTokens);
+
+    await this.fcmService.sendToMultipleDevices(
+      tokens,
+      `⚽ ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
+      `${scorerName} 골!`,
+      {
+        type: 'goal',
+        screen: 'Match',
+        referenceId: matchId.toString(),
+      },
+    );
+
+    const notifications = users.map((user) => ({
+      userId: user._id,
+      type: 'goal',
+      title: {
+        uz: `⚽ ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
+        ru: `⚽ ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
+        en: `⚽ ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
+        kr: `⚽ ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
+      },
+      body: {
+        uz: `${scorerName} gol urdi!`,
+        ru: `${scorerName} забил гол!`,
+        en: `${scorerName} scored!`,
+        kr: `${scorerName} 골!`,
+      },
+      data: {
+        screen: 'Match',
+        referenceId: matchId.toString(),
+      },
+      isRead: false,
+      sentAt: new Date(),
+    }));
+
+    await this.notificationModel.insertMany(notifications);
+  }
+
+  async sendMatchEndNotification(
+    matchId: number,
+    homeTeam: string,
+    awayTeam: string,
+    homeScore: number,
+    awayScore: number,
+  ) {
+    const users = await this.userModel.find({
+      'notificationSettings.matchEnd': true,
+    });
+
+    if (users.length === 0) return;
+
+    const tokens = users.flatMap((u) => u.fcmTokens);
+
+    await this.fcmService.sendToMultipleDevices(
+      tokens,
+      `🏁 ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
+      '경기 종료!',
+      {
+        type: 'matchEnd',
+        screen: 'Match',
+        referenceId: matchId.toString(),
+      },
+    );
+
+    const notifications = users.map((user) => ({
+      userId: user._id,
+      type: 'matchEnd',
+      title: {
+        uz: `🏁 ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
+        ru: `🏁 ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
+        en: `🏁 ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
+        kr: `🏁 ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
+      },
+      body: {
+        uz: `O'yin tugadi!`,
+        ru: `Матч завершён!`,
+        en: `Match finished!`,
+        kr: `경기 종료!`,
+      },
+      data: {
+        screen: 'Match',
+        referenceId: matchId.toString(),
+      },
+      isRead: false,
+      sentAt: new Date(),
+    }));
+
+    await this.notificationModel.insertMany(notifications);
+  }
+
+  async saveFcmToken(userId: string, token: string) {
+    await this.userModel.findByIdAndUpdate(userId, {
+      $addToSet: { fcmTokens: token }, // 중복 방지
+    });
+    return { message: 'FCM 토큰 저장 완료' };
   }
 }

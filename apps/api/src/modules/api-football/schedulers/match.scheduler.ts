@@ -104,14 +104,13 @@ export class MatchScheduler {
   }
 
   // 라이브 스코어 - 5분마다
-  // @Cron('*/5 * * * *')
+  @Cron('*/5 * * * *')
   async syncLiveScores() {
     this.logger.log('Syncing live scores...');
 
     try {
       const data = await this.apiFootballService.getFixtureLive();
       const liveFixtures = data.response;
-
       const currentLiveIds = new Set(
         (liveFixtures ?? [])
           .filter((live) => FEATURED_LEAGUES.includes(live.league.id))
@@ -280,7 +279,6 @@ export class MatchScheduler {
           comments: event.comments,
         })) || [];
     }
-
     await this.matchModel.findOneAndUpdate(
       { apiFootballId: fixture.fixture.id },
       fixtureData,

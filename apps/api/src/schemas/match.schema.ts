@@ -318,6 +318,9 @@ export class Match {
   @Prop({ type: [MatchEvent], default: [] })
   events: MatchEvent[];
 
+  @Prop({ type: [String], default: [] })
+  notifiedEvents: string[];
+
   /** last time you synced this match from API */
   @Prop()
   lastSyncAt?: Date;

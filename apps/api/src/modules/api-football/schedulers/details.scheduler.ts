@@ -74,7 +74,7 @@ export class DetailsScheduler {
           'status.short': 'NS',
           date: { $gte: in59Min, $lte: in61Min },
           lineups: { $exists: false },
-          lineupFetchAttempts: { $exists: false }, // 아직 한번도 안 시도한 것
+          // lineupFetchAttempts: { $exists: false }, // 아직 한번도 안 시도한 것
         })
         .exec();
 
