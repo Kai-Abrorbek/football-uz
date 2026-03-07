@@ -1,8 +1,27 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { MatchesService } from './matches.service';
 import { LeagueMatchQueryDto, MatchQueryDto } from './dto/match-query.dto';
 import { TeamMatchQueryDto } from './dto/team-match-query.dto';
+import {
+  JwtAuthGuard,
+  OptionalJwtAuthGuard,
+} from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Matches')
 @Controller('matches')
@@ -89,5 +108,26 @@ export class MatchesController {
   @ApiOperation({ summary: '경기 상세 조회 (API-Football ID)' })
   async findByApiId(@Param('apiFootballId') apiFootballId: number) {
     return this.matchesService.findByApiFootballId(+apiFootballId);
+  }
+
+  @Post(':id/vote')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '경기 결과 투표' })
+  async vote(
+    @Param('id') id: string,
+    @Req() req,
+    @Body() body: { vote: 'home' | 'draw' | 'away' },
+  ) {
+    return this.matchesService.vote(id, req.user._id, body.vote);
+  }
+
+  @Get(':id/vote')
+  @ApiBearerAuth()
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiOperation({ summary: '경기 투표 결과 조회' })
+  async getVote(@Param('id') id: string, @Req() req) {
+    const userId = req.user?._id ?? null;
+    return this.matchesService.getVote(id, userId);
   }
 }

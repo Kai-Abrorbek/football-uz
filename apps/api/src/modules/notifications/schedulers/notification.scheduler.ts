@@ -43,7 +43,7 @@ export class NotificationScheduler {
 
   // 골 알림 - 5분마다 라이브 경기 체크
   // @Cron('*/5 * * * *')
-  @Cron('*/5 * * * *')
+  // @Cron('*/5 * * * *')
   async checkLiveMatchGoals() {
     const liveMatches = await this.matchModel.find({
       'status.short': { $in: ['1H', '2H', 'ET'] },
@@ -90,7 +90,7 @@ export class NotificationScheduler {
 
   // 경기 종료 알림 - 5분마다 체크
   // @Cron('*/5 * * * *')
-  @Cron('*/5 * * * *')
+  // @Cron('*/5 * * * *')
   async checkFinishedMatches() {
     const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
 

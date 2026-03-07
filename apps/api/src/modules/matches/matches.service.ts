@@ -7,6 +7,7 @@ import { Player, PlayerDocument } from '../../schemas';
 import { TeamMatchQueryDto } from './dto/team-match-query.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import { MatchVoteDocument, MatchVote } from '../../schemas/match-vote.schema';
 
 @Injectable()
 export class MatchesService {
@@ -14,6 +15,8 @@ export class MatchesService {
   constructor(
     @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
     @InjectModel(Player.name) private playerModel: Model<PlayerDocument>,
+    @InjectModel(MatchVote.name)
+    private matchVoteModel: Model<MatchVoteDocument>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -364,5 +367,42 @@ export class MatchesService {
 
   async clearDateCache(date: string) {
     await this.cacheManager.del(`matches:date:${date}:league:all`);
+  }
+
+  async vote(matchId: string, userId: string, vote: 'home' | 'draw' | 'away') {
+    await this.matchVoteModel.findOneAndUpdate(
+      { matchId, userId },
+      { vote },
+      { upsert: true, new: true },
+    );
+    return this.getVote(matchId, userId);
+  }
+
+  async getVote(matchId: string, userId: string | null) {
+    const [home, draw, away, userVote] = await Promise.all([
+      this.matchVoteModel.countDocuments({ matchId, vote: 'home' }),
+      this.matchVoteModel.countDocuments({ matchId, vote: 'draw' }),
+      this.matchVoteModel.countDocuments({ matchId, vote: 'away' }),
+      userId ? this.matchVoteModel.findOne({ matchId, userId }) : null,
+    ]);
+
+    const total = home + draw + away;
+
+    return {
+      total,
+      home: {
+        count: home,
+        percent: total ? Math.round((home / total) * 100) : 0,
+      },
+      draw: {
+        count: draw,
+        percent: total ? Math.round((draw / total) * 100) : 0,
+      },
+      away: {
+        count: away,
+        percent: total ? Math.round((away / total) * 100) : 0,
+      },
+      userVote: userVote?.vote ?? null,
+    };
   }
 }
