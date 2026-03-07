@@ -8,6 +8,7 @@ import {
   Query,
   Req,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
@@ -62,5 +63,33 @@ export class NotificationsController {
   @ApiOperation({ summary: 'FCM 토큰 저장' })
   async saveFcmToken(@Req() req, @Body() body: { token: string }) {
     return this.notificationsService.saveFcmToken(req.user._id, body.token);
+  }
+
+  @Get('match-alert/:matchId')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '경기 알람 설정 조회' })
+  async getMatchAlert(@Param('matchId') matchId: string, @Req() req) {
+    return this.notificationsService.getMatchAlert(req.user._id, matchId);
+  }
+
+  @Post('match-alert/:matchId')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '경기 알람 설정 저장' })
+  async setMatchAlert(
+    @Param('matchId') matchId: string,
+    @Req() req,
+    @Body() body: { matchStart: boolean; goals: boolean; matchEnd: boolean },
+  ) {
+    return this.notificationsService.setMatchAlert(req.user._id, matchId, body);
+  }
+
+  @Delete('match-alert/:matchId')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '경기 알람 삭제' })
+  async deleteMatchAlert(@Param('matchId') matchId: string, @Req() req) {
+    return this.notificationsService.deleteMatchAlert(req.user._id, matchId);
   }
 }

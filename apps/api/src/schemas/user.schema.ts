@@ -21,6 +21,21 @@ export class NotificationSettings {
   predictions: boolean;
 }
 
+@Schema({ _id: false })
+export class MatchAlert {
+  @Prop({ required: true })
+  matchId: string;
+
+  @Prop({ default: true })
+  matchStart: boolean;
+
+  @Prop({ default: true })
+  goals: boolean;
+
+  @Prop({ default: true })
+  matchEnd: boolean;
+}
+
 @Schema({ timestamps: true })
 export class User {
   @Prop({ required: true, trim: true })
@@ -64,6 +79,9 @@ export class User {
 
   @Prop({ type: [Number], default: [] })
   favoriteLeagues: number[];
+
+  @Prop({ type: [MatchAlert], default: [] })
+  matchAlerts: MatchAlert[];
 
   @Prop({ type: [String], default: [] })
   fcmTokens: string[];

@@ -219,6 +219,7 @@ export class AuthService {
         email: user.email,
         language: user.language,
         isEmailVerified: user.isEmailVerified,
+        notificationSettings: user.notificationSettings,
       },
     };
   }

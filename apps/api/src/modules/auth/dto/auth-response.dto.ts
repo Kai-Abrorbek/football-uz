@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { NotificationSettings } from 'apps/api/src/schemas';
 
 export class AuthResponseDto {
   @ApiProperty()
@@ -11,5 +12,6 @@ export class AuthResponseDto {
     email: string;
     language: string;
     isEmailVerified?: boolean;
+    notificationSettings?: NotificationSettings;
   };
 }

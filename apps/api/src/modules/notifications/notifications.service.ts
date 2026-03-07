@@ -132,9 +132,21 @@ export class NotificationsService {
     // 해당 팀을 즐겨찾기한 유저 찾기
     const users = await this.userModel.find({
       $or: [
-        { favoriteTeams: { $exists: true } }, // 팀 즐겨찾기 있는 유저
+        // 전체 알람 ON + 경기별 알람 없음
+        {
+          'notificationSettings.matchStart': true,
+          'matchAlerts.matchId': { $exists: false },
+        },
+        // 경기별 알람 ON
+        {
+          matchAlerts: {
+            $elemMatch: {
+              matchId: matchId.toString(),
+              matchStart: true,
+            },
+          },
+        },
       ],
-      'notificationSettings.matchStart': true,
     });
 
     if (users.length === 0) return;
@@ -304,6 +316,40 @@ export class NotificationsService {
     }));
 
     await this.notificationModel.insertMany(notifications);
+  }
+
+  async getMatchAlert(userId: string, matchId: string) {
+    const user = await this.userModel.findById(userId);
+    const alert = user?.matchAlerts?.find((a) => a.matchId === matchId);
+    return alert ?? null;
+  }
+
+  async setMatchAlert(
+    userId: string,
+    matchId: string,
+    settings: { matchStart: boolean; goals: boolean; matchEnd: boolean },
+  ) {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new NotFoundException('유저를 찾을 수 없습니다');
+
+    const existing = user.matchAlerts?.findIndex((a) => a.matchId === matchId);
+
+    if (existing !== -1) {
+      user.matchAlerts[existing] = { matchId, ...settings };
+    } else {
+      user.matchAlerts.push({ matchId, ...settings });
+    }
+
+    user.markModified('matchAlerts');
+    await user.save();
+    return user.matchAlerts.find((a) => a.matchId === matchId);
+  }
+
+  async deleteMatchAlert(userId: string, matchId: string) {
+    await this.userModel.findByIdAndUpdate(userId, {
+      $pull: { matchAlerts: { matchId } },
+    });
+    return { message: '알람이 삭제되었습니다' };
   }
 
   async saveFcmToken(userId: string, token: string) {
