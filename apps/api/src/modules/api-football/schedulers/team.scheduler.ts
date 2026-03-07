@@ -63,6 +63,7 @@ export class TeamScheduler {
             { upsert: true, returnDocument: 'after' },
           );
         }
+
         this.logger.log(`Synced ${teams.length} teams from league ${leagueId}`);
       }
     } catch (error) {

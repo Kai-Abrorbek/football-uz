@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Match, MatchDocument } from '../../schemas/match.schema';
 import { LeagueMatchQueryDto, MatchQueryDto } from './dto/match-query.dto';
-import { Player, PlayerDocument } from '../../schemas';
+import { Player, PlayerDocument, Team, TeamDocument } from '../../schemas';
 import { TeamMatchQueryDto } from './dto/team-match-query.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
@@ -17,6 +17,7 @@ export class MatchesService {
     @InjectModel(Player.name) private playerModel: Model<PlayerDocument>,
     @InjectModel(MatchVote.name)
     private matchVoteModel: Model<MatchVoteDocument>,
+    @InjectModel(Team.name) private teamModel: Model<TeamDocument>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -243,6 +244,20 @@ export class MatchesService {
         );
       }
     }
+
+    const [homeTeam, awayTeam] = await Promise.all([
+      this.teamModel
+        .findOne({ apiFootballId: matchObj.homeTeam.id })
+        .select('color')
+        .lean(),
+      this.teamModel
+        .findOne({ apiFootballId: matchObj.awayTeam.id })
+        .select('color')
+        .lean(),
+    ]);
+
+    matchObj.homeTeam.color = homeTeam?.color ?? undefined;
+    matchObj.awayTeam.color = awayTeam?.color ?? undefined;
 
     return matchObj;
   }

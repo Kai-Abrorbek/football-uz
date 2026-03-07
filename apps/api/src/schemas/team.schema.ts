@@ -76,6 +76,9 @@ export class Team {
 
   @Prop()
   lastSyncAt: Date;
+
+  @Prop()
+  color?: string;
 }
 
 export const TeamSchema = SchemaFactory.createForClass(Team);

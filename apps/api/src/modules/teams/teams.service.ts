@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -8,9 +9,12 @@ import { Model } from 'mongoose';
 import { Team, TeamDocument } from '../../schemas/team.schema';
 import { TeamQueryDto } from './dto/team-query.dto';
 import { LeaguesService } from '../leagues/leagues.service';
+import sharp = require('sharp');
+import ColorThief = require('colorthief');
 
 @Injectable()
 export class TeamsService {
+  private logger = new Logger(TeamsService.name);
   constructor(
     @InjectModel(Team.name) private teamModel: Model<TeamDocument>,
     private readonly leaguesService: LeaguesService,
@@ -82,5 +86,42 @@ export class TeamsService {
     });
 
     return Array.from(teamIds);
+  }
+
+  async extractColors() {
+    const teams = await this.teamModel.find({ color: { $exists: false } });
+
+    for (const team of teams) {
+      if (!team.logo) continue;
+      const color = await this.extractColorFromUrl(team.logo);
+      if (color) {
+        await this.teamModel.findByIdAndUpdate(team._id, { color });
+      }
+    }
+
+    return { message: `${teams.length}개 팀 색상 추출 완료` };
+  }
+
+  private async extractColorFromUrl(url: string): Promise<string | null> {
+    try {
+      const response = await fetch(url);
+      const buffer = Buffer.from(await response.arrayBuffer());
+
+      const processedBuffer = await sharp(buffer)
+        .flatten({ background: { r: 255, g: 255, b: 255 } })
+        .png()
+        .toBuffer();
+
+      const result = (await ColorThief.getColor(processedBuffer)) as any;
+
+      const r = result._r;
+      const g = result._g;
+      const b = result._b;
+
+      return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    } catch (e) {
+      this.logger.error('색상 추출 실패:', e);
+      return null;
+    }
   }
 }

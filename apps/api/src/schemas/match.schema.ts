@@ -61,6 +61,9 @@ export class TeamInfo {
 
   @Prop({ type: TeamCoach, default: null })
   coach?: TeamCoach;
+
+  @Prop()
+  color?: string;
 }
 
 @Schema({ _id: false })

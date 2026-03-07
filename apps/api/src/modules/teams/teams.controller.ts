@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { TeamsService } from './teams.service';
 import { TeamQueryDto } from './dto/team-query.dto';
@@ -37,5 +37,11 @@ export class TeamsController {
   @ApiOperation({ summary: '팀 모든 리그 상세 조회' })
   async getTeamLeagues(@Param('id') id: number) {
     return this.teamsService.getTeamLeagues(+id);
+  }
+
+  @Post('extract-colors')
+  @ApiOperation({ summary: '팀 색상 추출 (어드민용)' })
+  async extractColors() {
+    return this.teamsService.extractColors();
   }
 }

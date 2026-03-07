@@ -104,7 +104,7 @@ export class MatchScheduler {
   }
 
   // 라이브 스코어 - 5분마다
-  @Cron('*/5 * * * *')
+  // @Cron('*/5 * * * *')
   async syncLiveScores() {
     this.logger.log('Syncing live scores...');
 

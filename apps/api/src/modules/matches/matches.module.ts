@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MatchesController } from './matches.controller';
 import { MatchesService } from './matches.service';
 import { Match, MatchSchema } from '../../schemas/match.schema';
-import { Player, PlayerSchema } from '../../schemas';
+import { Player, PlayerSchema, Team, TeamSchema } from '../../schemas';
 import { MatchVote, MatchVoteSchema } from '../../schemas/match-vote.schema';
 
 @Module({
@@ -12,6 +12,7 @@ import { MatchVote, MatchVoteSchema } from '../../schemas/match-vote.schema';
       { name: Match.name, schema: MatchSchema },
       { name: Player.name, schema: PlayerSchema },
       { name: MatchVote.name, schema: MatchVoteSchema },
+      { name: Team.name, schema: TeamSchema },
     ]),
   ],
   controllers: [MatchesController],
