@@ -83,8 +83,11 @@ export class MatchesController {
 
   @Get('team-recent/:teamId')
   @ApiOperation({ summary: '탭용 - 오늘 기준 가장 가까운 경기 15개' })
-  async findByTeamRecent(@Param('teamId', ParseIntPipe) teamId: number) {
-    return this.matchesService.findByTeamRecent(teamId);
+  async findByTeamRecent(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.matchesService.findByTeamRecent(teamId, limit);
   }
 
   @Get('h2h/:team1Id/:team2Id')
@@ -96,6 +99,21 @@ export class MatchesController {
     @Query('limit') limit?: number,
   ) {
     return this.matchesService.findH2H(+team1Id, +team2Id, limit ? +limit : 5);
+  }
+
+  @Get('recent-matches/:team1Id/:team2Id')
+  @ApiOperation({ summary: '맞대결 기록 조회' })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  async findTeamsRecentMatches(
+    @Param('team1Id') team1Id: number,
+    @Param('team2Id') team2Id: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.matchesService.findTeamsRecentMatches(
+      +team1Id,
+      +team2Id,
+      limit ? +limit : 5,
+    );
   }
 
   @Get(':id')

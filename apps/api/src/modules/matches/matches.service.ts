@@ -336,7 +336,7 @@ export class MatchesService {
   }
 
   // 탭용 - 오늘 기준 가장 가까운 경기 15개
-  async findByTeamRecent(teamId: number) {
+  async findByTeamRecent(teamId: number, limit: number = 10) {
     const today = new Date();
     const baseFilter = {
       $or: [{ 'homeTeam.id': teamId }, { 'awayTeam.id': teamId }],
@@ -346,7 +346,7 @@ export class MatchesService {
     const futureMatches = await this.matchModel
       .find({ ...baseFilter, date: { $gte: today } })
       .sort({ date: 1 }) // 가까운 것부터
-      .limit(10)
+      .limit(limit)
       .lean()
       .exec();
 
@@ -354,7 +354,7 @@ export class MatchesService {
     const pastMatches = await this.matchModel
       .find({ ...baseFilter, date: { $lt: today } })
       .sort({ date: -1 }) // 가까운 것부터
-      .limit(7)
+      .limit(limit)
       .lean()
       .exec();
 
@@ -369,10 +369,45 @@ export class MatchesService {
           { 'homeTeam.id': team1Id, 'awayTeam.id': team2Id },
           { 'homeTeam.id': team2Id, 'awayTeam.id': team1Id },
         ],
-        'status.short': 'FT', // 수정
+        'status.short': 'FT',
       })
       .sort({ date: -1 })
       .exec();
+  }
+
+  async findTeamsRecentMatches(
+    team1Id: number,
+    team2Id: number,
+    limit: number = 5,
+  ) {
+    const team1 = await this.matchModel
+      .find({
+        $or: [
+          { 'homeTeam.id': team1Id }, // ✅ 두 조건으로 분리
+          { 'awayTeam.id': team1Id },
+        ],
+        'status.short': 'FT',
+      })
+      .sort({ date: -1 })
+      .limit(limit)
+      .exec();
+
+    const team2 = await this.matchModel
+      .find({
+        $or: [
+          { 'homeTeam.id': team2Id }, // ✅
+          { 'awayTeam.id': team2Id },
+        ],
+        'status.short': 'FT',
+      })
+      .sort({ date: -1 })
+      .limit(limit)
+      .exec();
+
+    return {
+      homeTeam: team1,
+      awayTeam: team2,
+    };
   }
 
   async clearLiveCache() {
