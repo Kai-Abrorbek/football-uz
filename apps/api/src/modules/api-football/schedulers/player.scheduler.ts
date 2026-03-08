@@ -23,7 +23,7 @@ export class PlayerScheduler {
   ) {}
 
   // 득점왕/도움왕 - 12시간마다
-  @Cron('0 */12 * * *')
+  // @Cron('0 */12 * * *')
   async syncTopScorers() {
     this.logger.log('Syncing top scorers...');
     const season = 2023;

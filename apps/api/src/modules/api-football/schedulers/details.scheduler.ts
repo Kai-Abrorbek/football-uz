@@ -5,6 +5,8 @@ import { Model } from 'mongoose';
 import { ApiFootballService } from '../api-football.service';
 import { Match, MatchDocument } from '../../../schemas/match.schema';
 import { FixtureabsenceService } from '../../fixtureabsence/fixtureabsence.service';
+import { Player, PlayerDocument } from 'apps/api/src/schemas';
+import { MatchScheduler } from './match.scheduler';
 
 @Injectable()
 export class DetailsScheduler {
@@ -14,6 +16,7 @@ export class DetailsScheduler {
     private apiFootballService: ApiFootballService,
     private fixtureAbsenceService: FixtureabsenceService,
     @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
+    @InjectModel(Player.name) private playerModel: Model<PlayerDocument>,
   ) {}
 
   // 경기 시작 1시간 전 - 매분 체크해서 딱 1시간 전에만 실행
@@ -147,6 +150,7 @@ export class DetailsScheduler {
 
       for (const match of matches) {
         await this.syncMatchDetails(match.apiFootballId);
+        await this.syncMatchPlayerRatings(match);
         await this.sleep(2000);
       }
 
@@ -323,6 +327,57 @@ export class DetailsScheduler {
       detail: event.detail,
       comments: event.comments,
     }));
+  }
+
+  private async syncMatchPlayerRatings(match: MatchDocument) {
+    try {
+      const data = await this.apiFootballService.getFixturePlayers(
+        match.apiFootballId,
+      );
+      const teams = data.response;
+
+      for (const team of teams) {
+        const side = team.team.id === match.homeTeam.id ? 'home' : 'away';
+        for (const player of team.players) {
+          const rating = player.statistics[0]?.games?.rating;
+          if (!rating) continue;
+
+          // startXI 에서 찾기
+          await this.matchModel.findByIdAndUpdate(
+            match._id,
+            {
+              $set: {
+                [`lineups.${side}.startXI.$[elem].rating`]: parseFloat(rating),
+              },
+            },
+            {
+              arrayFilters: [{ 'elem.playerId': player.player.id }],
+            },
+          );
+
+          // substitutes 에서도 찾기
+          await this.matchModel.findByIdAndUpdate(
+            match._id,
+            {
+              $set: {
+                [`lineups.${side}.substitutes.$[elem].rating`]:
+                  parseFloat(rating),
+              },
+            },
+            {
+              arrayFilters: [{ 'elem.playerId': player.player.id }],
+            },
+          );
+        }
+      }
+
+      this.logger.log(`선수 평점 저장 완료 (match: ${match.apiFootballId})`);
+    } catch (e) {
+      this.logger.error(
+        `선수 평점 저장 실패 (match: ${match.apiFootballId})`,
+        e,
+      );
+    }
   }
 
   private sleep(ms: number): Promise<void> {

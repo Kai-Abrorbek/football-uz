@@ -125,6 +125,9 @@ export class PlayerInfo {
   // API-FOOTBALL: pos like "G", "D", "M", "F"
   @Prop()
   pos?: string;
+
+  @Prop({ type: Number, default: null }) // ✅ 추가
+  rating?: number | null;
 }
 
 @Schema({ _id: false })

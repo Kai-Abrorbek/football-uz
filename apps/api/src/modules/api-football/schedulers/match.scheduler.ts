@@ -81,7 +81,6 @@ export class MatchScheduler {
   async syncRecentFixtures() {
     this.logger.log('Syncing recent fixtures...');
     const dates = this.getLast7Days();
-    console.log(dates);
     try {
       for (const date of dates) {
         const data = await this.apiFootballService.getFixturesByDate(date);
@@ -99,7 +98,7 @@ export class MatchScheduler {
 
       this.logger.log('Recent fixtures sync completed');
     } catch (error) {
-      this.logger.error('Failed to sync recent fixtures', error);
+      this.logger.error('Failed to sync recent fixtures', error.message);
     }
   }
 
@@ -153,7 +152,7 @@ export class MatchScheduler {
     }
   }
 
-  private async syncMatch(apiFootballId: number) {
+  public async syncMatch(apiFootballId: number) {
     try {
       const data = await this.apiFootballService.getFixtureById(apiFootballId);
       const liveFixture = data.response?.[0];

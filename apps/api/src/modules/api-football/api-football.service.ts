@@ -125,6 +125,10 @@ export class ApiFootballService {
     return this.request('/teams', { id: teamId });
   }
 
+  async getFixturePlayers(fixtureId: number) {
+    return this.request(`/fixtures/players?fixture=${fixtureId}`);
+  }
+
   async getTeamsByLeague(leagueId: number, season: number) {
     return this.request('/teams', { league: leagueId, season });
   }

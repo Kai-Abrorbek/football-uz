@@ -203,4 +203,11 @@ export class PlayersService {
       .sort({ 'statistics.cards.red': -1 })
       .lean();
   }
+
+  async getPlayersByIds(ids: number[]) {
+    return this.playerModel
+      .find({ apiFootballId: { $in: ids } })
+      .select('apiFootballId nationality age photo')
+      .lean();
+  }
 }

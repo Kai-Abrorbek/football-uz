@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { PlayersService } from './players.service';
 import { PlayerQueryDto } from './dto/player-query.dto';
@@ -96,5 +96,11 @@ export class PlayersController {
   @ApiOperation({ summary: '선수 상세 조회' })
   async findById(@Param('id') id: number) {
     return this.playersService.findPlayerDetail(+id);
+  }
+
+  @Post('by-ids')
+  @ApiOperation({ summary: '선수 ID 배열로 조회' })
+  async getPlayersByIds(@Body() body: { ids: number[] }) {
+    return this.playersService.getPlayersByIds(body.ids);
   }
 }

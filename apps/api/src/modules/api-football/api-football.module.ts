@@ -45,7 +45,7 @@ import { PlayersModule } from '../players/players.module';
     PlayerScheduler,
     DetailsScheduler,
   ],
-  exports: [ApiFootballService],
+  exports: [ApiFootballService, MatchScheduler],
   controllers: [ApiFootballController],
 })
 export class ApiFootballModule {}
