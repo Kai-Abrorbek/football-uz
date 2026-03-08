@@ -372,7 +372,6 @@ export class MatchesService {
         'status.short': 'FT', // 수정
       })
       .sort({ date: -1 })
-      .limit(limit)
       .exec();
   }
 

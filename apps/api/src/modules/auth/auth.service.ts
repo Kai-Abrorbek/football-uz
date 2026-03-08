@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  Inject,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -16,11 +17,14 @@ import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { SocialLoginDto } from './dto/social-login.dto';
 import { OAuth2Client } from 'google-auth-library';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class AuthService {
+  private loginRequests = new Map<string, any>();
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private jwtService: JwtService,
     private emailService: EmailService,
     private config: ConfigService,
@@ -311,5 +315,69 @@ export class AuthService {
       name?.replace(/\s+/g, '_').toLowerCase() || email.split('@')[0];
     const random = Math.random().toString(36).substring(2, 6);
     return `${base}_${random}`;
+  }
+
+  async completeTelegramLogin(loginToken: string, telegramUser: any) {
+    // 5분 TTL
+    await this.cacheManager.set(
+      `telegram:login:${loginToken}`,
+      JSON.stringify(telegramUser),
+      300000, // ms 단위
+    );
+  }
+
+  async checkLoginStatus(loginToken: string) {
+    const data = await this.cacheManager.get<string>(
+      `telegram:login:${loginToken}`,
+    );
+
+    if (data) {
+      await this.cacheManager.del(`telegram:login:${loginToken}`);
+      const telegramUser = JSON.parse(data);
+
+      // 봇에서 온 데이터는 이미 검증된 거니까 바로 유저 찾거나 생성
+      const email = telegramUser.username
+        ? `${telegramUser.username}@telegram.footballuz`
+        : `tg_${telegramUser.id}@telegram.footballuz`;
+
+      let user = await this.userModel.findOne({ email });
+
+      if (!user) {
+        user = await this.userModel.create({
+          username:
+            `${telegramUser.first_name} ${telegramUser.last_name ?? ''}`.trim(),
+          email,
+          password: crypto.randomBytes(32).toString('hex'),
+          language: 'uz',
+          role: 'user',
+          isActive: true,
+          isEmailVerified: true,
+          avatar: telegramUser.photo_url,
+          telegramId: telegramUser.id,
+        });
+      }
+
+      const payload = {
+        sub: user._id,
+        username: user.username,
+        email: user.email,
+      };
+      const accessToken = this.jwtService.sign(payload);
+
+      return {
+        status: 'SUCCESS',
+        accessToken,
+        user: {
+          id: user._id.toString(),
+          username: user.username,
+          email: user.email,
+          language: user.language,
+          isEmailVerified: user.isEmailVerified,
+          notificationSettings: user.notificationSettings,
+        },
+      };
+    }
+
+    return { status: 'PENDING' };
   }
 }

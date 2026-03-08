@@ -6,7 +6,6 @@ import { ApiFootballService } from '../api-football.service';
 import { Match, MatchDocument } from '../../../schemas/match.schema';
 import { FixtureabsenceService } from '../../fixtureabsence/fixtureabsence.service';
 import { Player, PlayerDocument } from 'apps/api/src/schemas';
-import { MatchScheduler } from './match.scheduler';
 
 @Injectable()
 export class DetailsScheduler {

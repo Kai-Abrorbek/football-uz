@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -42,5 +42,11 @@ export class AuthController {
   @ApiOperation({ summary: '인증 이메일 재발송' })
   async resendVerification(@Body() dto: ResendVerificationDto) {
     return this.authService.resendVerification(dto.email);
+  }
+
+  // RN에서 2초마다 GET /auth/telegram/status?token=랜덤열쇠 로 찌를 API
+  @Get('telegram/status')
+  async checkStatus(@Query('token') token: string) {
+    return this.authService.checkLoginStatus(token);
   }
 }
