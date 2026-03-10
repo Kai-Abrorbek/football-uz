@@ -278,6 +278,7 @@ export class MatchScheduler {
           comments: event.comments,
         })) || [];
     }
+
     await this.matchModel.findOneAndUpdate(
       { apiFootballId: fixture.fixture.id },
       fixtureData,

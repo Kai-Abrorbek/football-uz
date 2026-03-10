@@ -204,7 +204,6 @@ export class MatchesService {
       throw new NotFoundException('경기를 찾을 수 없습니다');
     }
 
-    // console.log(match);
     const matchObj = match.toObject();
 
     // lineups에 선수 사진 추가
@@ -363,7 +362,7 @@ export class MatchesService {
   }
 
   async findH2H(team1Id: number, team2Id: number, limit: number = 5) {
-    return this.matchModel
+    const h2hMatches = await this.matchModel
       .find({
         $or: [
           { 'homeTeam.id': team1Id, 'awayTeam.id': team2Id },
@@ -373,6 +372,28 @@ export class MatchesService {
       })
       .sort({ date: -1 })
       .exec();
+
+    const result = await Promise.all(
+      h2hMatches.map(async (m) => {
+        const [homeTeam, awayTeam] = await Promise.all([
+          this.teamModel
+            .findOne({ apiFootballId: m.homeTeam.id })
+            .select('color')
+            .lean(),
+          this.teamModel
+            .findOne({ apiFootballId: m.awayTeam.id })
+            .select('color')
+            .lean(),
+        ]);
+
+        m.homeTeam.color = homeTeam?.color ?? undefined;
+        m.awayTeam.color = awayTeam?.color ?? undefined;
+
+        return m;
+      }),
+    );
+
+    return result;
   }
 
   async findTeamsRecentMatches(
