@@ -6,11 +6,13 @@ import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { Highlight } from '../../schemas/highlight.schema';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { Match, MatchDocument } from '../../schemas';
 
 @Injectable()
 export class HighlightsService {
   constructor(
     @InjectModel(Highlight.name) private highlightModel: Model<Highlight>,
+    @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
     private httpService: HttpService,
     private configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -98,5 +100,37 @@ export class HighlightsService {
     const mm = h > 0 ? `${h}:${String(m).padStart(2, '0')}` : `${m}`;
     const ss = String(s).padStart(2, '0');
     return `${mm}:${ss}`;
+  }
+
+  async getHighlights(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    const [items, total] = await Promise.all([
+      this.highlightModel
+        .find({ videoId: { $exists: true } })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.highlightModel.countDocuments({ videoId: { $exists: true } }),
+    ]);
+
+    // match 정보 합치기
+    const enriched = await Promise.all(
+      items.map(async (item) => {
+        if (!item.matchId) return { ...item, match: null };
+        const match = await this.matchModel
+          .findById(item.matchId)
+          .select('homeTeam awayTeam goals status')
+          .lean();
+        return { ...item, match };
+      }),
+    );
+
+    return {
+      items: enriched,
+      total,
+      page,
+      hasMore: skip + items.length < total,
+    };
   }
 }

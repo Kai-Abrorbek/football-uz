@@ -74,10 +74,12 @@ export class MatchesController {
   @Get('team/:teamId')
   @ApiOperation({ summary: '팀 경기 조회' })
   async findByTeam(
-    @Query('limit') limit: number,
+    @Query('limit') limit: string,
+    @Query('season') season: string,
     @Param('teamId') teamId: number,
   ) {
-    const query = { teamId, limit };
+    const query = { teamId, limit, season };
+    console.log(query);
     return this.matchesService.findByTeam(query);
   }
 

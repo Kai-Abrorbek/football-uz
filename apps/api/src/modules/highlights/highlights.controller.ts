@@ -19,4 +19,12 @@ export class HighlightsController {
       date,
     );
   }
+
+  @Get()
+  async getHighlights(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+  ) {
+    return this.highlightsService.getHighlights(Number(page), Number(limit));
+  }
 }

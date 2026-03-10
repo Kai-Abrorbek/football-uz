@@ -324,14 +324,15 @@ export class MatchesService {
     };
   }
 
-  async findByTeam(query: { teamId: number; limit: number }) {
-    const { teamId, limit } = query;
+  async findByTeam(query: { teamId: number; limit: string; season: string }) {
+    const { teamId, limit, season } = query;
     return this.matchModel
       .find({
         $or: [{ 'homeTeam.id': teamId }, { 'awayTeam.id': teamId }],
+        'league.season': Number(season),
       })
       .sort({ date: -1 })
-      .limit(limit)
+      .limit(Number(limit))
       .exec();
   }
 
