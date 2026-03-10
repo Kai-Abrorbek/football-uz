@@ -18,11 +18,8 @@ import { AuthModule } from './modules/auth/auth.module';
     }),
 
     TelegrafModule.forRoot({
-      token:
-        process.env.TELEGRAM_BOT_TOKEN ||
-        '8267568246:AAFCmvn9VZjtYYaNrg8Rlc5EJn90mxYY8SY',
+      token: process.env.TELEGRAM_BOT_TOKEN ?? '',
     }),
-
     DatabaseModule,
     RedisModule,
     ModulesModule,

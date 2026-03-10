@@ -14,6 +14,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { NewsModule } from './news/news.module';
 import { WorldCupModule } from './worldcup/worldcup.module';
 import { FixtureabsenceModule } from './fixtureabsence/fixtureabsence.module';
+import { HighlightsModule } from './highlights/highlights.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { FixtureabsenceModule } from './fixtureabsence/fixtureabsence.module';
     NewsModule,
     WorldCupModule,
     FixtureabsenceModule,
+    HighlightsModule,
   ],
 })
 export class ModulesModule {}

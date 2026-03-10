@@ -281,10 +281,11 @@ export class MatchesService {
 
   // matches.service.ts
   async findByTeamMatches(query: TeamMatchQueryDto) {
-    const { teamId, limit = 15, cursor, direction } = query;
+    const { teamId, limit = 15, cursor, direction, season } = query;
 
     const baseFilter = {
       $or: [{ 'homeTeam.id': teamId }, { 'awayTeam.id': teamId }],
+      'league.season': season,
     };
 
     let cursorFilter = {};

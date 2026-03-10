@@ -16,4 +16,8 @@ export class TeamMatchQueryDto {
   @IsOptional()
   @IsIn(['prev', 'next'])
   direction?: 'prev' | 'next';
+
+  @IsOptional()
+  @IsNumber()
+  season?: number;
 }
