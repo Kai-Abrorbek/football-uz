@@ -11,6 +11,7 @@ import { Team, TeamSchema } from '../../schemas/team.schema';
 import { Player, PlayerSchema } from '../../schemas/player.schema';
 import { Standing, StandingSchema } from '../../schemas/standing.schema';
 import { PredictionsModule } from '../predictions/predictions.module';
+import { LiveChatGateway } from './live-chat.gateway';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { PredictionsModule } from '../predictions/predictions.module';
     PredictionsModule,
   ],
   controllers: [ChatController],
-  providers: [ChatService],
+  providers: [ChatService, LiveChatGateway],
   exports: [ChatService],
 })
 export class ChatModule {}
