@@ -330,6 +330,16 @@ export class Match {
   /** last time you synced this match from API */
   @Prop()
   lastSyncAt?: Date;
+
+  /** 라이브 스트리밍 */
+  @Prop({ type: Boolean, default: false })
+  isStreaming: boolean;
+
+  @Prop({ type: String, default: undefined })
+  streamUrl?: string; // HLS URL (예: http://서버IP:8080/hls/match123.m3u8)
+
+  @Prop({ type: String, default: undefined })
+  streamKey?: string; // RTMP 스트림 키 (예: match123)
 }
 
 export const MatchSchema = SchemaFactory.createForClass(Match);

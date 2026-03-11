@@ -320,9 +320,9 @@ export class MatchScheduler {
 
   private getLast7Days(): string[] {
     const dates: string[] = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 2; i++) {
       const date = new Date();
-      date.setDate(date.getDate() + i);
+      date.setDate(date.getDate() - i);
       dates.push(date.toISOString().split('T')[0]);
     }
     return dates;

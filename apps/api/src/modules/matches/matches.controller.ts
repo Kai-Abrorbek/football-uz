@@ -14,6 +14,7 @@ import {
   ApiOperation,
   ApiQuery,
   ApiBearerAuth,
+  ApiBody,
 } from '@nestjs/swagger';
 import { MatchesService } from './matches.service';
 import { LeagueMatchQueryDto, MatchQueryDto } from './dto/match-query.dto';
@@ -118,12 +119,6 @@ export class MatchesController {
     );
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: '경기 상세 조회 (MongoDB ID)' })
-  async findById(@Param('id') id: string) {
-    return this.matchesService.findById(id);
-  }
-
   @Get('api/:apiFootballId')
   @ApiOperation({ summary: '경기 상세 조회 (API-Football ID)' })
   async findByApiId(@Param('apiFootballId') apiFootballId: number) {
@@ -149,5 +144,40 @@ export class MatchesController {
   async getVote(@Param('id') id: string, @Req() req) {
     const userId = req.user?._id ?? null;
     return this.matchesService.getVote(id, userId);
+  }
+
+  // ADMIN
+  @Post(':id/streaming')
+  @ApiOperation({ summary: '스트리밍 ON/OFF (관리자용)' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        isStreaming: { type: 'boolean' },
+        streamKey: { type: 'string' },
+      },
+    },
+  })
+  async setStreaming(
+    @Param('id') id: string,
+    @Body() body: { isStreaming: boolean; streamKey?: string },
+  ) {
+    return this.matchesService.setStreaming(
+      id,
+      body.isStreaming,
+      body.streamKey,
+    );
+  }
+
+  @Get('streaming/live')
+  @ApiOperation({ summary: '스트리밍 중인 경기 목록' })
+  async findStreaming() {
+    return this.matchesService.findStreaming();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: '경기 상세 조회 (MongoDB ID)' })
+  async findById(@Param('id') id: string) {
+    return this.matchesService.findById(id);
   }
 }

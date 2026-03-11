@@ -477,4 +477,29 @@ export class MatchesService {
       userVote: userVote?.vote ?? null,
     };
   }
+
+  // ADMIN
+  async setStreaming(id: string, isStreaming: boolean, streamKey?: string) {
+    const streamUrl =
+      isStreaming && streamKey
+        ? `http://localhost:8080/hls/${streamKey}.m3u8`
+        : undefined;
+
+    const match = await this.matchModel.findByIdAndUpdate(
+      id,
+      { isStreaming, streamKey, streamUrl },
+      { new: true },
+    );
+
+    if (!match) throw new NotFoundException('경기를 찾을 수 없습니다');
+    return match;
+  }
+
+  async findStreaming() {
+    return this.matchModel
+      .find({ isStreaming: true })
+      .sort({ date: 1 })
+      .lean()
+      .exec();
+  }
 }
