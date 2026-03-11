@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { MobileService } from './mobile.service';
+import { MobileService } from './admin.service';
 
 @Controller()
 export class MobileController {

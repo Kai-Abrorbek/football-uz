@@ -9,8 +9,7 @@ import { Model } from 'mongoose';
 import { Team, TeamDocument } from '../../schemas/team.schema';
 import { TeamQueryDto } from './dto/team-query.dto';
 import { LeaguesService } from '../leagues/leagues.service';
-import sharp = require('sharp');
-import ColorThief = require('colorthief');
+import { Vibrant } from 'node-vibrant/node';
 
 @Injectable()
 export class TeamsService {
@@ -89,7 +88,7 @@ export class TeamsService {
   }
 
   async extractColors() {
-    const teams = await this.teamModel.find({ color: { $exists: false } });
+    const teams = await this.teamModel.find();
 
     for (const team of teams) {
       if (!team.logo) continue;
@@ -104,21 +103,18 @@ export class TeamsService {
 
   private async extractColorFromUrl(url: string): Promise<string | null> {
     try {
-      const response = await fetch(url);
-      const buffer = Buffer.from(await response.arrayBuffer());
+      const palette = await Vibrant.from(url).getPalette();
 
-      const processedBuffer = await sharp(buffer)
-        .flatten({ background: { r: 255, g: 255, b: 255 } })
-        .png()
-        .toBuffer();
+      // Vibrant → DarkVibrant → Muted 순으로 시도
+      const swatch =
+        palette.Vibrant ??
+        palette.DarkVibrant ??
+        palette.Muted ??
+        palette.DarkMuted;
 
-      const result = (await ColorThief.getColor(processedBuffer)) as any;
+      if (!swatch) return null;
 
-      const r = result._r;
-      const g = result._g;
-      const b = result._b;
-
-      return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+      return swatch.hex;
     } catch (e) {
       this.logger.error('색상 추출 실패:', e);
       return null;

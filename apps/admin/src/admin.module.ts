@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { MobileController } from './mobile.controller';
-import { MobileService } from './mobile.service';
+import { MobileController } from './admin.controller';
+import { MobileService } from './admin.service';
 
 @Module({
   imports: [],

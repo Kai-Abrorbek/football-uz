@@ -19,13 +19,13 @@
         "tsConfigPath": "apps/api/tsconfig.app.json"
       }
     },
-    "mobile": {
+    "admin": {
       "type": "application",
-      "root": "apps/mobile",
+      "root": "apps/admin",
       "entryFile": "main",
-      "sourceRoot": "apps/mobile/src",
+      "sourceRoot": "apps/admin/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/mobile/tsconfig.app.json"
+        "tsConfigPath": "apps/admin/tsconfig.app.json"
       }
     }
   }

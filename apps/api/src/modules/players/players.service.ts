@@ -207,7 +207,7 @@ export class PlayersService {
   async getPlayersByIds(ids: number[]) {
     return this.playerModel
       .find({ apiFootballId: { $in: ids } })
-      .select('apiFootballId nationality age photo')
+      .select('apiFootballId nationality age photo statistics')
       .lean();
   }
 }

@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { MobileModule } from './mobile.module';
+import { MobileModule } from './admin.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(MobileModule);
