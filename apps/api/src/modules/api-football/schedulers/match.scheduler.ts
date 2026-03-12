@@ -103,7 +103,7 @@ export class MatchScheduler {
   }
 
   // 라이브 스코어 - 5분마다
-  @Cron('*/5 * * * *')
+  // @Cron('*/5 * * * *')
   async syncLiveScores() {
     this.logger.log('Syncing live scores...');
 
@@ -322,7 +322,7 @@ export class MatchScheduler {
     const dates: string[] = [];
     for (let i = 0; i < 2; i++) {
       const date = new Date();
-      date.setDate(date.getDate() - i);
+      date.setDate(date.getDate() + i);
       dates.push(date.toISOString().split('T')[0]);
     }
     return dates;

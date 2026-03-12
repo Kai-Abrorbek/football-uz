@@ -1,65 +1,161 @@
-import Image from "next/image";
+import { PageLayout } from './components/Layout';
+import { StatCard } from './components/ui/StatCard';
+import { PageCard, SectionHeader } from './components/ui/PageCard';
+import { Toggle } from './components/ui/Toggle';
+import { Pill } from './components/ui/Pill';
 
-export default function Home() {
+const SCHEDULE = [
+  {
+    time: '14:00',
+    home: 'Pakhtakor',
+    away: 'Navbahor',
+    league: 'UPL',
+    on: true,
+  },
+  {
+    time: '16:30',
+    home: 'Lokomotiv',
+    away: 'Bunyodkor',
+    league: 'UPL',
+    on: true,
+  },
+  { time: '19:00', home: 'AGMK', away: 'Nasaf', league: 'UPL', on: false },
+  {
+    time: '21:00',
+    home: 'Sogdiana',
+    away: 'Metallurg',
+    league: 'UPL',
+    on: false,
+  },
+];
+
+const NOTIF_LOG = [
+  { msg: 'UPL 라운드 12 시작!', time: '2시간 전', color: 'var(--cyan)' },
+  {
+    msg: 'Pakhtakor 하이라이트 업로드',
+    time: '5시간 전',
+    color: 'var(--amber)',
+  },
+  { msg: '신규 유저 인증 완료 안내', time: '1일 전', color: 'var(--purple)' },
+];
+
+export default function DashboardPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <PageLayout title="대시보드">
+      {/* Stat Cards */}
+      <div
+        style={{ display: 'flex', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}
+      >
+        <StatCard
+          label="라이브 경기"
+          value="3"
+          sub="현재 진행 중"
+          color="#FF3D57"
+          iconPath="M23 7l-7 5 7 5V7z M1 5h15a2 2 0 012 2v10a2 2 0 01-2 2H1z"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+        <StatCard
+          label="스트리밍"
+          value="3"
+          sub="12,847 시청자"
+          color="#00E5FF"
+          iconPath="M10 8l6 4-6 4V8z M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+        <StatCard
+          label="하이라이트"
+          value="148"
+          sub="오늘 +7 업로드"
+          color="#FFB800"
+          iconPath="M23 7l-7 5 7 5V7z M1 5h15a2 2 0 012 2v10a2 2 0 01-2 2H1z"
+        />
+        <StatCard
+          label="총 유저"
+          value="24.1k"
+          sub="이번 주 +312명"
+          color="#A78BFA"
+          iconPath="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2 M12 11a4 4 0 100-8 4 4 0 000 8z"
+        />
+      </div>
+
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+        {/* 경기 일정 */}
+        <PageCard style={{ flex: 2, minWidth: 260 }}>
+          <SectionHeader title="오늘의 경기 일정" action="전체 보기" />
+          <div className="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>시간</th>
+                  <th>홈팀</th>
+                  <th>어웨이팀</th>
+                  <th>리그</th>
+                  <th>스트리밍</th>
+                </tr>
+              </thead>
+              <tbody>
+                {SCHEDULE.map((row, i) => (
+                  <tr key={i}>
+                    <td className="mono" style={{ color: 'var(--amber)' }}>
+                      {row.time}
+                    </td>
+                    <td>{row.home}</td>
+                    <td>{row.away}</td>
+                    <td>
+                      <Pill color="#6B7A99">{row.league}</Pill>
+                    </td>
+                    <td>
+                      <Toggle defaultOn={row.on} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </PageCard>
+
+        {/* 알림 이력 */}
+        <PageCard style={{ flex: 1, minWidth: 200 }}>
+          <SectionHeader title="최근 알림 발송" />
+          {NOTIF_LOG.map((n, i) => (
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                gap: 10,
+                alignItems: 'flex-start',
+                paddingBottom: 12,
+                marginBottom: 12,
+                borderBottom:
+                  i < NOTIF_LOG.length - 1 ? '1px solid var(--border)' : 'none',
+              }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+              <div
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: 4,
+                  background: n.color,
+                  marginTop: 5,
+                  flexShrink: 0,
+                }}
+              />
+              <div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: 'var(--text)',
+                    marginBottom: 3,
+                  }}
+                >
+                  {n.msg}
+                </div>
+                <div style={{ fontSize: 10, color: 'var(--muted)' }}>
+                  {n.time}
+                </div>
+              </div>
+            </div>
+          ))}
+        </PageCard>
+      </div>
+    </PageLayout>
   );
 }

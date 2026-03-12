@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, ObjectId, Types } from 'mongoose';
 
-export type UserDocument = User & Document;
+export type UserDocument = User & Document & { _id: Types.ObjectId };
 
 @Schema({ _id: false })
 export class NotificationSettings {
@@ -34,6 +34,11 @@ export class MatchAlert {
 
   @Prop({ default: true })
   matchEnd: boolean;
+}
+
+export enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin',
 }
 
 @Schema({ timestamps: true })
@@ -91,8 +96,8 @@ export class User {
   })
   notificationSettings: NotificationSettings;
 
-  @Prop({ enum: ['user', 'admin'], default: 'user' })
-  role: string;
+  @Prop({ type: String, enum: UserRole, default: UserRole.USER })
+  role: UserRole;
 
   @Prop({ default: true })
   isActive: boolean;

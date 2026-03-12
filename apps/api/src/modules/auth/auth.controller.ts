@@ -1,12 +1,27 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { SocialLoginDto } from './dto/social-login.dto';
+import {
+  Body,
+  Post,
+  Get,
+  Req,
+  Res,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  Controller,
+  Query,
+} from '@nestjs/common';
+import type { Response, Request } from 'express';
+import { LoginDto } from './dto/login.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { AdminGuard } from './guards/admin.guard';
+import { AdminLoginDto } from './dto/admin-login.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -44,9 +59,44 @@ export class AuthController {
     return this.authService.resendVerification(dto.email);
   }
 
-  // RN에서 2초마다 GET /auth/telegram/status?token=랜덤열쇠 로 찌를 API
   @Get('telegram/status')
   async checkStatus(@Query('token') token: string) {
     return this.authService.checkLoginStatus(token);
+  }
+
+  // ====== ADMIN =====
+  @Post('admin/login')
+  @HttpCode(HttpStatus.OK)
+  async adminLogin(
+    @Body() dto: AdminLoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken, user } = await this.authService.adminLogin(dto);
+
+    // HttpOnly 쿠키로 저장
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+      path: '/',
+    });
+
+    return { message: '로그인 성공', user };
+  }
+
+  // POST /auth/admin/logout
+  @Post('admin/logout')
+  @HttpCode(HttpStatus.OK)
+  adminLogout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('access_token', { path: '/' });
+    return { message: '로그아웃 성공' };
+  }
+
+  // GET /auth/me
+  @Get('me')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  getMe(@Req() req: Request) {
+    return this.authService.getMe((req.user as any)._id.toString());
   }
 }

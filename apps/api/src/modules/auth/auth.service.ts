@@ -8,7 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { User, UserDocument } from '../../schemas/user.schema';
+import { User, UserDocument, UserRole } from '../../schemas/user.schema';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
@@ -18,6 +18,8 @@ import { ConfigService } from '@nestjs/config';
 import { SocialLoginDto } from './dto/social-login.dto';
 import { OAuth2Client } from 'google-auth-library';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { UsersService } from '../users/users.service';
+import { AdminLoginDto } from './dto/admin-login.dto';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +29,7 @@ export class AuthService {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private jwtService: JwtService,
     private emailService: EmailService,
+    private usersService: UsersService,
     private config: ConfigService,
   ) {}
 
@@ -379,5 +382,50 @@ export class AuthService {
     }
 
     return { status: 'PENDING' };
+  }
+
+  async adminLogin(dto: AdminLoginDto) {
+    const user = (await this.usersService.findByEmail(
+      dto.email,
+    )) as UserDocument;
+
+    if (!user) {
+      throw new UnauthorizedException(
+        '이메일 또는 비밀번호가 올바르지 않습니다.',
+      );
+    }
+
+    const isMatch = await bcrypt.compare(dto.password, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException(
+        '이메일 또는 비밀번호가 올바르지 않습니다.',
+      );
+    }
+
+    if (user.role !== UserRole.ADMIN) {
+      throw new UnauthorizedException('관리자 계정이 아닙니다.');
+    }
+
+    const payload = {
+      sub: user._id.toString(),
+      email: user.email,
+      role: user.role,
+    };
+
+    const accessToken = await this.jwtService.signAsync(payload, {
+      secret: this.config.get<string>('JWT_SECRET'),
+      expiresIn: '7d',
+    });
+
+    return {
+      accessToken,
+      user: { id: user._id.toString(), email: user.email, role: user.role },
+    };
+  }
+
+  async getMe(userId: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user) throw new UnauthorizedException();
+    return { id: user.id, email: user.email, role: user.role };
   }
 }

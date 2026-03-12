@@ -63,6 +63,7 @@ export class UsersService {
       id: user._id.toString(),
       username: user.username,
       email: user.email,
+      role: user.role,
       language: user.language,
       avatar: user.avatar,
       notificationSettings: user.notificationSettings || {
@@ -227,5 +228,9 @@ export class UsersService {
     }
 
     return { message: 'FCM 토큰이 등록되었습니다' };
+  }
+
+  async findByEmail(email: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ email }).exec();
   }
 }

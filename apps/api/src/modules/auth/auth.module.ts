@@ -8,6 +8,9 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { User, UserSchema } from '../../schemas/user.schema';
 import { EmailModule } from '../email/email.module';
+import { RolesGuard } from './guards/roles.guard';
+import { AdminGuard } from './guards/admin.guard';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -22,9 +25,10 @@ import { EmailModule } from '../email/email.module';
       inject: [ConfigService],
     }),
     EmailModule,
+    UsersModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService, JwtStrategy, PassportModule],
+  providers: [AuthService, JwtStrategy, RolesGuard, AdminGuard],
+  exports: [AuthService, JwtStrategy, PassportModule, RolesGuard, AdminGuard],
 })
 export class AuthModule {}
