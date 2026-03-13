@@ -6,10 +6,9 @@ COPY package*.json ./
 COPY nest-cli.json ./
 COPY tsconfig*.json ./
 
-RUN npm install
+RUN npm ci
 
-COPY apps/api ./apps/api
-COPY apps/api ./apps/api
+COPY apps/ ./apps/
 
 RUN npm run build
 
