@@ -64,12 +64,12 @@ export function Sidebar() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [me, setMe] = useState<{ email: string; id: string } | null>(null);
 
-  // useEffect(() => {
-  //   adminApi
-  //     .getMe()
-  //     .then((res) => setMe(res.data))
-  //     .catch(() => {}); // 인터셉터가 처리
-  // }, []);
+  useEffect(() => {
+    adminApi
+      .getMe()
+      .then((res) => setMe(res.data))
+      .catch(() => {}); // 인터셉터가 처리
+  }, []);
 
   const handleLogout = async () => {
     setLoggingOut(true);
