@@ -14,8 +14,9 @@ import { Connection } from 'mongoose';
         autoIndex: true, // 개발 환경에서만 true, 프로덕션은 false
         maxPoolSize: 10,
         minPoolSize: 2,
-        serverSelectionTimeoutMS: 5000,
+        serverSelectionTimeoutMS: 30000,
         socketTimeoutMS: 45000,
+        connectTimeoutMS: 30000,
       }),
       inject: [ConfigService],
     }),
