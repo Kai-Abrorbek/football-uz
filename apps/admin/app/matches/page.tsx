@@ -44,7 +44,7 @@ const STATUS_COLOR: Record<string, string> = {
   TBD: '#6B7A99',
 };
 
-const FILTERS = ['전체', '오늘', '이번주', '완료'];
+const FILTERS = ['전체', '어제', '오늘', '이번주', '완료'];
 
 const toDateString = (d: Date) => d.toISOString().split('T')[0];
 
@@ -54,7 +54,7 @@ export default function MatchesPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState(0);
   const [search, setSearch] = useState('');
-  const [selectedDate, setSelectedDate] = useState(toDateString(new Date()));
+  const [selectedDate, setSelectedDate] = useState('');
 
   const fetchMatches = useCallback(async (date?: string) => {
     setLoading(true);
@@ -70,27 +70,37 @@ export default function MatchesPage() {
   }, []);
 
   useEffect(() => {
-    fetchMatches(selectedDate);
+    setSelectedDate(toDateString(new Date()));
+  }, []);
+
+  useEffect(() => {
+    fetchMatches(undefined);
   }, [fetchMatches, selectedDate]);
 
   const handleFilterClick = (i: number) => {
     setFilter(i);
     const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
     if (i === 0) {
       setSelectedDate('');
       fetchMatches(undefined);
     } else if (i === 1) {
+      const y = toDateString(yesterday);
+      setSelectedDate(y);
+      fetchMatches(y);
+    } else if (i === 2) {
       const d = toDateString(today);
       setSelectedDate(d);
       fetchMatches(d);
-    } else if (i === 2) {
+    } else if (i === 3) {
       // 이번주 시작일
       const mon = new Date(today);
       mon.setDate(today.getDate() - today.getDay() + 1);
       const d = toDateString(mon);
       setSelectedDate(d);
       fetchMatches(d);
-    } else if (i === 3) {
+    } else if (i === 4) {
       setSelectedDate('');
       fetchMatches(undefined);
     }

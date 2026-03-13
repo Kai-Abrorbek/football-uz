@@ -7,6 +7,11 @@ import { User, UserSchema } from '../../schemas/user.schema';
 import { Team, TeamSchema } from '../../schemas';
 import { Highlight, HighlightSchema } from '../../schemas/highlight.schema';
 import { AuthModule } from '../auth/auth.module';
+import { NotificationsModule } from '../notifications/notifications.module';
+import {
+  NotificationHistory,
+  NotificationHistorySchema,
+} from '../../schemas/notification-history.schema';
 
 @Module({
   imports: [
@@ -15,8 +20,10 @@ import { AuthModule } from '../auth/auth.module';
       { name: User.name, schema: UserSchema },
       { name: Team.name, schema: TeamSchema },
       { name: Highlight.name, schema: HighlightSchema },
+      { name: NotificationHistory.name, schema: NotificationHistorySchema },
     ]),
     AuthModule,
+    NotificationsModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],

@@ -27,6 +27,7 @@ export const adminApi = {
   // 경기
   getMatches: (date?: string, page = 1) =>
     api.get(`/admin/matches?date=${date ?? ''}&page=${page}`),
+
   setStreaming: (
     id: string,
     data: { isStreaming: boolean; streamKey?: string },
@@ -57,4 +58,10 @@ export const adminApi = {
 
   logout: () => api.post('/auth/admin/logout'),
   getMe: () => api.get('/auth/me'),
+
+  // 알림
+  sendNotification: (title: string, body: string, target: string) =>
+    api.post('/admin/notifications/send', { title, body, target }),
+  getNotificationHistory: (page = 1) =>
+    api.get(`/admin/notifications/history?page=${page}`),
 };

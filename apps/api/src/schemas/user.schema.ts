@@ -104,6 +104,9 @@ export class User {
 
   @Prop({ default: null })
   lastLoginAt: Date;
+
+  @Prop({ type: Boolean, default: false })
+  isBanned: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

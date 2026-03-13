@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { adminApi } from '../lib/api';
 
 const NAV = [
   {
@@ -15,7 +16,7 @@ const NAV = [
   {
     href: '/matches',
     label: '경기 관리',
-    badge: '12',
+    badge: null,
     live: false,
     icon: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
   },
@@ -34,16 +35,9 @@ const NAV = [
     icon: 'M10 8l6 4-6 4V8z M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
   },
   {
-    href: '/teams',
-    label: '팀 관리',
-    badge: null,
-    live: false,
-    icon: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M9 11a4 4 0 100-8 4 4 0 000 8z M23 21v-2a4 4 0 00-3-3.87 M16 3.13a4 4 0 010 7.75',
-  },
-  {
     href: '/users',
     label: '유저 관리',
-    badge: '2',
+    badge: null,
     live: false,
     icon: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2 M12 11a4 4 0 100-8 4 4 0 000 8z',
   },
@@ -68,23 +62,29 @@ export function Sidebar() {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [me, setMe] = useState<{ email: string; id: string } | null>(null);
+
+  useEffect(() => {
+    adminApi
+      .getMe()
+      .then((res) => setMe(res.data))
+      .catch(() => {}); // 인터셉터가 처리
+  }, []);
 
   const handleLogout = async () => {
     setLoggingOut(true);
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/admin/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      });
+      await adminApi.logout();
       router.push('/login');
-    } catch (error) {
-      console.error('로그아웃 실패:', error);
+    } catch {
       router.push('/login');
     } finally {
       setLoggingOut(false);
       setShowConfirm(false);
     }
   };
+
+  const avatarLetter = me?.email?.[0]?.toUpperCase() ?? '?';
 
   return (
     <aside
@@ -205,29 +205,14 @@ export function Sidebar() {
                     }}
                   />
                 )}
-                {item.badge && (
-                  <span
-                    style={{
-                      fontSize: 9,
-                      fontWeight: 700,
-                      borderRadius: 8,
-                      padding: '1px 6px',
-                      background: isActive ? 'var(--cyan)' : 'var(--border2)',
-                      color: isActive ? 'var(--bg)' : 'var(--muted2)',
-                    }}
-                  >
-                    {item.badge}
-                  </span>
-                )}
               </div>
             </Link>
           );
         })}
       </nav>
 
-      {/* Bottom - 어드민 정보 + 로그아웃 */}
+      {/* Bottom */}
       <div style={{ borderTop: '1px solid var(--border)' }}>
-        {/* 로그아웃 확인 팝업 */}
         {showConfirm && (
           <div
             style={{
@@ -311,7 +296,6 @@ export function Sidebar() {
           </div>
         )}
 
-        {/* 어드민 정보 row */}
         <div
           style={{
             padding: '12px 14px',
@@ -320,7 +304,6 @@ export function Sidebar() {
             gap: 10,
           }}
         >
-          {/* 아바타 */}
           <div
             style={{
               width: 30,
@@ -336,22 +319,25 @@ export function Sidebar() {
               flexShrink: 0,
             }}
           >
-            K
+            {avatarLetter}
           </div>
-
-          {/* 이름/역할 */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
-              style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--text)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
             >
-              kai-dev
+              {me?.email ?? '...'}
             </div>
             <div style={{ fontSize: 9, color: 'var(--muted)' }}>
               Administrator
             </div>
           </div>
-
-          {/* 로그아웃 버튼 */}
           <button
             onClick={() => setShowConfirm(!showConfirm)}
             title="로그아웃"
@@ -373,7 +359,6 @@ export function Sidebar() {
               if (!showConfirm) e.currentTarget.style.color = 'var(--muted)';
             }}
           >
-            {/* 로그아웃 아이콘 */}
             <svg
               width={15}
               height={15}
@@ -393,10 +378,8 @@ export function Sidebar() {
       </div>
 
       <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
       `}</style>
     </aside>
   );

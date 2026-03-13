@@ -1,237 +1,214 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { PageLayout } from '../components/Layout';
 import { PageCard, SectionHeader } from '../components/ui/PageCard';
 import { Pill } from '../components/ui/Pill';
+import { adminApi } from '../lib/api';
 
-const INIT_STREAMS = [
-  {
-    team: 'Pakhtakor vs Navbahor',
-    viewers: '8,241',
-    quality: '1080p',
-    uptime: '01:24:33',
-    url: 'rtmp://live.footballuz.uz/stream1',
-    alive: true,
-  },
-  {
-    team: 'Lokomotiv vs Bunyodkor',
-    viewers: '3,892',
-    quality: '720p',
-    uptime: '00:51:17',
-    url: 'rtmp://live.footballuz.uz/stream2',
-    alive: true,
-  },
-  {
-    team: 'AGMK vs Nasaf',
-    viewers: '714',
-    quality: '480p',
-    uptime: '00:08:02',
-    url: 'rtmp://live.footballuz.uz/stream3',
-    alive: true,
-  },
-];
-
-const LOGS = [
-  {
-    time: '14:02:11',
-    event: '스트림 시작',
-    match: 'Pakhtakor vs Navbahor',
-    status: '성공',
-    color: '#00E5FF',
-  },
-  {
-    time: '14:01:58',
-    event: 'RTMP 연결',
-    match: 'Pakhtakor vs Navbahor',
-    status: '성공',
-    color: '#00E5FF',
-  },
-  {
-    time: '12:30:05',
-    event: '스트림 종료',
-    match: 'Nasaf vs AGMK',
-    status: '정상종료',
-    color: '#6B7A99',
-  },
-  {
-    time: '12:15:22',
-    event: '화질 저하 감지',
-    match: 'Nasaf vs AGMK',
-    status: '경고',
-    color: '#FFB800',
-  },
-];
+interface StreamMatch {
+  _id: string;
+  homeTeam: { name?: string };
+  awayTeam: { name?: string };
+  isStreaming: boolean;
+  streamKey?: string;
+  streamUrl?: string;
+  status?: { short?: string; elapsed?: number };
+}
 
 export default function StreamingPage() {
-  const [streams, setStreams] = useState(INIT_STREAMS);
+  const [streams, setStreams] = useState<StreamMatch[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const toggle = (i: number) =>
-    setStreams((prev) =>
-      prev.map((s, idx) => (idx === i ? { ...s, alive: !s.alive } : s)),
-    );
+  const fetchStreams = useCallback(async () => {
+    try {
+      const res = await adminApi.getStreamingMatches();
+      setStreams(res.data);
+    } catch {
+      // 인터셉터가 처리
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStreams();
+  }, [fetchStreams]);
+
+  const handleToggle = async (match: StreamMatch) => {
+    try {
+      await adminApi.setStreaming(match._id, {
+        isStreaming: !match.isStreaming,
+        streamKey: match.streamKey,
+      });
+      setStreams((prev) =>
+        prev.map((s) =>
+          s._id === match._id ? { ...s, isStreaming: !s.isStreaming } : s,
+        ),
+      );
+    } catch {
+      alert('스트리밍 설정 실패');
+    }
+  };
+
+  const getMatchTitle = (m: StreamMatch) =>
+    `${m.homeTeam.name ?? '?'} vs ${m.awayTeam.name ?? '?'}`;
 
   return (
     <PageLayout title="스트리밍">
-      {/* Stream Cards */}
-      <div
-        style={{ display: 'flex', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}
-      >
-        {streams.map((s, i) => (
+      {loading ? (
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '60px 0',
+            color: 'var(--muted2)',
+            fontSize: 13,
+          }}
+        >
+          불러오는 중...
+        </div>
+      ) : (
+        <>
+          {/* Stream Cards */}
           <div
-            key={i}
             style={{
-              flex: 1,
-              minWidth: 180,
-              background: 'var(--card)',
-              border: `1px solid ${s.alive ? 'rgba(255,61,87,0.35)' : 'var(--border)'}`,
-              borderRadius: 12,
-              padding: 16,
+              display: 'flex',
+              gap: 12,
+              marginBottom: 18,
+              flexWrap: 'wrap',
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 10,
-              }}
-            >
-              <Pill color={s.alive ? '#FF3D57' : '#6B7A99'}>
-                {s.alive ? '● LIVE' : '중단됨'}
-              </Pill>
-              <span
+            {streams.length === 0 ? (
+              <div
                 style={{
-                  fontSize: 10,
                   color: 'var(--muted2)',
-                  fontFamily: "'DM Mono', monospace",
+                  fontSize: 13,
+                  padding: '20px 0',
                 }}
               >
-                {s.uptime}
-              </span>
-            </div>
-            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>
-              {s.team}
-            </div>
-            <div
-              style={{
-                fontSize: 10,
-                color: 'var(--muted)',
-                marginBottom: 10,
-                wordBreak: 'break-all',
-              }}
-            >
-              {s.url}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginBottom: 12,
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    fontSize: 9,
-                    color: 'var(--muted2)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
-                    marginBottom: 2,
-                  }}
-                >
-                  시청자
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'DM Mono', monospace",
-                    fontWeight: 700,
-                    fontSize: 13,
-                  }}
-                >
-                  {s.alive ? s.viewers : '—'}
-                </div>
+                스트리밍 중인 경기가 없습니다.
               </div>
-              <div>
+            ) : (
+              streams.map((s) => (
                 <div
+                  key={s._id}
                   style={{
-                    fontSize: 9,
-                    color: 'var(--muted2)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
-                    marginBottom: 2,
+                    flex: 1,
+                    minWidth: 180,
+                    background: 'var(--card)',
+                    border: `1px solid ${s.isStreaming ? 'rgba(255,61,87,0.35)' : 'var(--border)'}`,
+                    borderRadius: 12,
+                    padding: 16,
                   }}
                 >
-                  화질
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 10,
+                    }}
+                  >
+                    <Pill color={s.isStreaming ? '#FF3D57' : '#6B7A99'}>
+                      {s.isStreaming ? '● LIVE' : '중단됨'}
+                    </Pill>
+                    {s.status?.elapsed && (
+                      <span
+                        style={{
+                          fontSize: 10,
+                          color: 'var(--muted2)',
+                          fontFamily: "'DM Mono', monospace",
+                        }}
+                      >
+                        {s.status.elapsed}'
+                      </span>
+                    )}
+                  </div>
+                  <div
+                    style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}
+                  >
+                    {getMatchTitle(s)}
+                  </div>
+                  {s.streamUrl && (
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: 'var(--muted)',
+                        marginBottom: 10,
+                        wordBreak: 'break-all',
+                      }}
+                    >
+                      {s.streamUrl}
+                    </div>
+                  )}
+                  {s.streamKey && (
+                    <div style={{ marginBottom: 12 }}>
+                      <div
+                        style={{
+                          fontSize: 9,
+                          color: 'var(--muted2)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.06em',
+                          marginBottom: 2,
+                        }}
+                      >
+                        스트림 키
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: "'DM Mono', monospace",
+                          fontWeight: 700,
+                          fontSize: 12,
+                          color: 'var(--cyan)',
+                        }}
+                      >
+                        {s.streamKey}
+                      </div>
+                    </div>
+                  )}
+                  <button
+                    onClick={() => handleToggle(s)}
+                    style={{
+                      width: '100%',
+                      borderRadius: 7,
+                      padding: '8px 0',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      border: '1px solid',
+                      background: s.isStreaming
+                        ? 'rgba(255,61,87,0.12)'
+                        : 'rgba(0,229,255,0.08)',
+                      color: s.isStreaming ? 'var(--red)' : 'var(--cyan)',
+                      borderColor: s.isStreaming
+                        ? 'rgba(255,61,87,0.3)'
+                        : 'rgba(0,229,255,0.25)',
+                    }}
+                  >
+                    {s.isStreaming ? '⏹ 스트리밍 중단' : '▶ 재시작'}
+                  </button>
                 </div>
-                <div
-                  style={{
-                    color: 'var(--cyan)',
-                    fontWeight: 700,
-                    fontSize: 13,
-                  }}
-                >
-                  {s.quality}
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={() => toggle(i)}
-              style={{
-                width: '100%',
-                borderRadius: 7,
-                padding: '8px 0',
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                border: '1px solid',
-                background: s.alive
-                  ? 'rgba(255,61,87,0.12)'
-                  : 'rgba(0,229,255,0.08)',
-                color: s.alive ? 'var(--red)' : 'var(--cyan)',
-                borderColor: s.alive
-                  ? 'rgba(255,61,87,0.3)'
-                  : 'rgba(0,229,255,0.25)',
-              }}
-            >
-              {s.alive ? '⏹ 스트리밍 중단' : '▶ 재시작'}
-            </button>
+              ))
+            )}
           </div>
-        ))}
-      </div>
 
-      {/* Log Table */}
-      <PageCard>
-        <SectionHeader title="스트리밍 로그" />
-        <table>
-          <thead>
-            <tr>
-              <th>시간</th>
-              <th>이벤트</th>
-              <th>경기</th>
-              <th>상태</th>
-            </tr>
-          </thead>
-          <tbody>
-            {LOGS.map((l, i) => (
-              <tr key={i}>
-                <td
-                  className="mono"
-                  style={{ fontSize: 10, color: 'var(--muted2)' }}
-                >
-                  {l.time}
-                </td>
-                <td>{l.event}</td>
-                <td>{l.match}</td>
-                <td>
-                  <Pill color={l.color}>{l.status}</Pill>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </PageCard>
+          {/* 로그 - 실제 데이터 없으니까 빈 상태로 */}
+          <PageCard>
+            <SectionHeader title="스트리밍 로그" />
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '24px 0',
+                color: 'var(--muted2)',
+                fontSize: 12,
+              }}
+            >
+              로그 기능은 추후 구현 예정입니다.
+            </div>
+          </PageCard>
+        </>
+      )}
     </PageLayout>
   );
 }

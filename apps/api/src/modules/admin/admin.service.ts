@@ -3,8 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Match, MatchDocument } from '../../schemas/match.schema';
 import { User, UserDocument } from '../../schemas/user.schema';
-import { Team, TeamDocument } from '../../schemas';
+import { NotificationDocument, Team, TeamDocument } from '../../schemas';
 import { Highlight, HighlightDocument } from '../../schemas/highlight.schema';
+import { FcmService } from '../notifications/fcm.service';
+import {
+  NotificationHistory,
+  NotificationHistoryDocument,
+} from '../../schemas/notification-history.schema';
 
 @Injectable()
 export class AdminService {
@@ -12,12 +17,21 @@ export class AdminService {
     @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Team.name) private teamModel: Model<TeamDocument>,
+    @InjectModel(NotificationHistory.name)
+    private notificationHistoryModel: Model<NotificationHistoryDocument>,
     @InjectModel(Highlight.name)
     private highlightModel: Model<HighlightDocument>,
+    private fcmService: FcmService,
   ) {}
 
   // ─── 대시보드 ───────────────────────────────────────────────
   async getDashboard() {
+    const now = new Date();
+    const todayStart = new Date(now);
+    todayStart.setUTCHours(0, 0, 0, 0);
+    const todayEnd = new Date(now);
+    todayEnd.setUTCHours(23, 59, 59, 999);
+
     const [
       liveMatches,
       streamingMatches,
@@ -74,6 +88,9 @@ export class AdminService {
       const end = new Date(date);
       end.setDate(end.getDate() + 1);
       filter.date = { $gte: start, $lt: end };
+    } else {
+      const start = new Date();
+      filter.date = { $gte: start };
     }
 
     const [matches, total] = await Promise.all([
@@ -203,5 +220,54 @@ export class AdminService {
     if (!highlight)
       throw new NotFoundException('하이라이트를 찾을 수 없습니다');
     return { message: '삭제되었습니다' };
+  }
+
+  // ─── 알람 푸시 ──────────────────────────────────────────────
+  async sendNotification(title: string, body: string, target: string) {
+    let tokens: string[] = [];
+
+    if (target === 'all') {
+      const users = await this.userModel
+        .find({ fcmTokens: { $exists: true, $ne: [] } })
+        .select('fcmTokens')
+        .lean();
+      tokens = users.flatMap((u: any) => u.fcmTokens ?? []);
+    } else if (target === 'verified') {
+      const users = await this.userModel
+        .find({ isEmailVerified: true, fcmTokens: { $exists: true, $ne: [] } })
+        .select('fcmTokens')
+        .lean();
+      tokens = users.flatMap((u: any) => u.fcmTokens ?? []);
+    }
+
+    const result = await this.fcmService.sendToMultipleDevices(
+      tokens,
+      title,
+      body,
+    );
+
+    // 발송 이력 저장
+    await this.notificationHistoryModel.create({
+      title,
+      body,
+      target,
+      successCount: result.successCount,
+      failureCount: result.failureCount,
+    });
+
+    return result;
+  }
+
+  async getNotificationHistory(page = 1, limit = 20) {
+    const [items, total] = await Promise.all([
+      this.notificationHistoryModel
+        .find()
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.notificationHistoryModel.countDocuments(),
+    ]);
+    return { items, total, page, hasMore: page * limit < total };
   }
 }

@@ -10,7 +10,6 @@ import {
 } from '../../schemas/notification.schema';
 import { User, UserSchema } from '../../schemas/user.schema';
 import { Match, MatchSchema } from '../../schemas/match.schema';
-import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [

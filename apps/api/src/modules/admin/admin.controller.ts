@@ -13,13 +13,10 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { Roles } from '../auth/roles.decorator';
-import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
-// @Roles('admin')
-// @UseGuards(AdminGuard)
+@UseGuards(JwtAuthGuard, AdminGuard)
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
@@ -32,8 +29,6 @@ export class AdminController {
   }
 
   // ─── 경기 ────────────────────────────────────────────────────
-  @Roles('admin')
-  @UseGuards(JwtAuthGuard, AdminGuard)
   @Get('matches')
   @ApiOperation({ summary: '경기 목록' })
   getMatches(
@@ -44,6 +39,12 @@ export class AdminController {
     return this.adminService.getMatches(date, Number(page), Number(limit));
   }
 
+  @Get('matches/streaming')
+  @ApiOperation({ summary: '스트리밍 중인 경기 목록' })
+  getStreamingMatches() {
+    return this.adminService.getStreamingMatches();
+  }
+
   @Post('matches/:id/streaming')
   @ApiOperation({ summary: '스트리밍 설정' })
   setStreaming(
@@ -51,12 +52,6 @@ export class AdminController {
     @Body() body: { isStreaming: boolean; streamKey?: string },
   ) {
     return this.adminService.setStreaming(id, body.isStreaming, body.streamKey);
-  }
-
-  @Get('matches/streaming')
-  @ApiOperation({ summary: '스트리밍 중인 경기 목록' })
-  getStreamingMatches() {
-    return this.adminService.getStreamingMatches();
   }
 
   // ─── 유저 ────────────────────────────────────────────────────
@@ -113,5 +108,22 @@ export class AdminController {
   @ApiOperation({ summary: '하이라이트 삭제' })
   deleteHighlight(@Param('id') id: string) {
     return this.adminService.deleteHighlight(id);
+  }
+
+  // ─── 알람 푸시 ──────────────────────────────────────────────
+  @Post('notifications/send')
+  sendNotification(
+    @Body() body: { title: string; body: string; target: string },
+  ) {
+    return this.adminService.sendNotification(
+      body.title,
+      body.body,
+      body.target,
+    );
+  }
+
+  @Get('notifications/history')
+  getNotificationHistory(@Query('page') page = 1) {
+    return this.adminService.getNotificationHistory(Number(page));
   }
 }
