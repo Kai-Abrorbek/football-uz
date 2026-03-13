@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: . # ← 루트
+      dockerfile: apps/api/Dockerfile
+    container_name: footballuz-api
+    restart: always
+    ports:
+      - '4000:4000'
+    env_file:
+      - .env
+    networks:
+      - footballuz
+
+  admin:
+    build:
+      context: apps/admin # ← admin 폴더
+      dockerfile: Dockerfile
+    container_name: footballuz-admin
+    restart: always
+    ports:
+      - '3000:3000'
+    env_file:
+      - apps/admin/.env.local
+    networks:
+      - footballuz
+
+networks:
+  footballuz:
+    driver: bridge

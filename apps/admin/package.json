@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build": "nest build",
+    "build:admin": "next build --prefix-paths",
+    "start:admin": "next start"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.21",
