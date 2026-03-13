@@ -75,9 +75,9 @@ export class AuthController {
     // HttpOnly 쿠키로 저장
     res.cookie('access_token', accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // ← 일단 false로
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+      maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/',
     });
 
