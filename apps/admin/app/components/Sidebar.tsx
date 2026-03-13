@@ -72,10 +72,13 @@ export function Sidebar() {
   const handleLogout = async () => {
     setLoggingOut(true);
     try {
-      // TODO: 실제 API 연동
-      // await api.post('/auth/admin/logout')
-      // localStorage.removeItem('adminToken')
-      await new Promise((r) => setTimeout(r, 600)); // mock delay
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/admin/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      router.push('/login');
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
       router.push('/login');
     } finally {
       setLoggingOut(false);

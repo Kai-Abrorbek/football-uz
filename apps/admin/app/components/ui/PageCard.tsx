@@ -69,7 +69,15 @@ export function SectionHeader({
   );
 }
 
-export function SearchBar({ placeholder }: { placeholder?: string }) {
+export function SearchBar({
+  placeholder,
+  value,
+  onChange,
+}: {
+  placeholder?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
   return (
     <div style={{ position: 'relative', marginBottom: 14 }}>
       <svg
@@ -95,6 +103,8 @@ export function SearchBar({ placeholder }: { placeholder?: string }) {
       </svg>
       <input
         placeholder={placeholder ?? '검색...'}
+        value={value}
+        onChange={onChange}
         style={{
           width: '100%',
           background: 'var(--surface)',

@@ -35,7 +35,7 @@ export class News {
   @Prop()
   source: string;
 
-  @Prop()
+  @Prop({ required: true, unique: true })
   sourceUrl: string;
 
   @Prop({

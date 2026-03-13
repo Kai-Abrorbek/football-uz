@@ -190,7 +190,7 @@ export class AdminService {
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
-        .populate('match', 'homeTeam awayTeam goals')
+        .populate('matchId', 'homeTeam awayTeam goals')
         .lean(),
       this.highlightModel.countDocuments(),
     ]);

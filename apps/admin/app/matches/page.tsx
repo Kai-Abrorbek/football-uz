@@ -1,72 +1,153 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { PageLayout } from '../components/Layout';
 import { PageCard, SectionHeader, SearchBar } from '../components/ui/PageCard';
 import { Pill } from '../components/ui/Pill';
 import { Toggle } from '../components/ui/Toggle';
+import { adminApi } from '../lib/api';
 
-const MATCHES = [
-  {
-    date: '03/12',
-    time: '14:00',
-    home: 'Pakhtakor',
-    away: 'Navbahor',
-    league: 'UPL',
-    status: 'LIVE',
-    on: true,
-  },
-  {
-    date: '03/12',
-    time: '16:30',
-    home: 'Lokomotiv',
-    away: 'Bunyodkor',
-    league: 'UPL',
-    status: 'LIVE',
-    on: true,
-  },
-  {
-    date: '03/12',
-    time: '19:00',
-    home: 'AGMK',
-    away: 'Nasaf',
-    league: 'UPL',
-    status: '예정',
-    on: false,
-  },
-  {
-    date: '03/11',
-    time: '18:00',
-    home: 'Sogdiana',
-    away: 'Metallurg',
-    league: 'UPL',
-    status: '종료',
-    on: false,
-  },
-  {
-    date: '03/11',
-    time: '20:30',
-    home: 'Nasaf',
-    away: 'AGMK',
-    league: 'AFC',
-    status: '종료',
-    on: false,
-  },
-];
+interface Match {
+  _id: string;
+  homeTeam: { name?: string; logo?: string };
+  awayTeam: { name?: string; logo?: string };
+  league?: { name?: string; round?: string };
+  status?: { short?: string; elapsed?: number };
+  goals?: { home: number | null; away: number | null };
+  date: string;
+  isStreaming: boolean;
+  streamKey?: string;
+  streamUrl?: string;
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  NS: '예정',
+  '1H': 'LIVE',
+  HT: '하프타임',
+  '2H': 'LIVE',
+  ET: 'LIVE',
+  FT: '종료',
+  AET: '종료',
+  PEN: '종료',
+  PST: '연기',
+  CANC: '취소',
+  TBD: 'TBD',
+};
 
 const STATUS_COLOR: Record<string, string> = {
   LIVE: '#FF3D57',
+  하프타임: '#FFB800',
   예정: '#FFB800',
   종료: '#6B7A99',
+  연기: '#6B7A99',
+  취소: '#6B7A99',
+  TBD: '#6B7A99',
 };
 
 const FILTERS = ['전체', '오늘', '이번주', '완료'];
 
+const toDateString = (d: Date) => d.toISOString().split('T')[0];
+
 export default function MatchesPage() {
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState(0);
+  const [search, setSearch] = useState('');
+  const [selectedDate, setSelectedDate] = useState(toDateString(new Date()));
+
+  const fetchMatches = useCallback(async (date?: string) => {
+    setLoading(true);
+    try {
+      const res = await adminApi.getMatches(date);
+      setMatches(res.data.matches);
+      setTotal(res.data.total);
+    } catch (err: any) {
+      alert('경기 불러오기 실패');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMatches(selectedDate);
+  }, [fetchMatches, selectedDate]);
+
+  const handleFilterClick = (i: number) => {
+    setFilter(i);
+    const today = new Date();
+    if (i === 0) {
+      setSelectedDate('');
+      fetchMatches(undefined);
+    } else if (i === 1) {
+      const d = toDateString(today);
+      setSelectedDate(d);
+      fetchMatches(d);
+    } else if (i === 2) {
+      // 이번주 시작일
+      const mon = new Date(today);
+      mon.setDate(today.getDate() - today.getDay() + 1);
+      const d = toDateString(mon);
+      setSelectedDate(d);
+      fetchMatches(d);
+    } else if (i === 3) {
+      setSelectedDate('');
+      fetchMatches(undefined);
+    }
+  };
+
+  const handleStreamingToggle = async (match: Match, val: boolean) => {
+    try {
+      await adminApi.setStreaming(match._id, {
+        isStreaming: val,
+        streamKey: match.streamKey,
+      });
+      setMatches((prev) =>
+        prev.map((m) => (m._id === match._id ? { ...m, isStreaming: val } : m)),
+      );
+    } catch {
+      alert('스트리밍 설정 실패');
+    }
+  };
+
+  const getStatusLabel = (match: Match) => {
+    const short = match.status?.short ?? 'NS';
+    const base = STATUS_LABEL[short] ?? short;
+    if (
+      (short === '1H' || short === '2H' || short === 'ET') &&
+      match.status?.elapsed
+    ) {
+      return `${match.status.elapsed}'`;
+    }
+    return base;
+  };
+
+  const getStatusColor = (match: Match) => {
+    const label = STATUS_LABEL[match.status?.short ?? 'NS'] ?? '예정';
+    return STATUS_COLOR[label] ?? '#6B7A99';
+  };
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  const formatTime = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  };
+
+  const filtered = matches.filter((m) => {
+    const q = search.toLowerCase();
+    return (
+      m.homeTeam.name?.toLowerCase().includes(q) ||
+      m.awayTeam.name?.toLowerCase().includes(q) ||
+      m.league?.name?.toLowerCase().includes(q)
+    );
+  });
 
   return (
-    <PageLayout title="경기 관리">
+    <PageLayout title={`경기 관리 (${total})`}>
       <div
         style={{
           display: 'flex',
@@ -76,11 +157,15 @@ export default function MatchesPage() {
           alignItems: 'center',
         }}
       >
-        <SearchBar placeholder="팀명 검색..." />
+        <SearchBar
+          placeholder="팀명 검색..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         {FILTERS.map((f, i) => (
           <button
             key={f}
-            onClick={() => setFilter(i)}
+            onClick={() => handleFilterClick(i)}
             style={{
               background: filter === i ? 'var(--cyan)' : 'var(--card)',
               color: filter === i ? 'var(--bg)' : 'var(--muted2)',
@@ -98,7 +183,11 @@ export default function MatchesPage() {
         ))}
         <input
           type="date"
-          defaultValue="2026-03-12"
+          value={selectedDate}
+          onChange={(e) => {
+            setSelectedDate(e.target.value);
+            fetchMatches(e.target.value);
+          }}
           style={{
             background: 'var(--card)',
             border: '1px solid var(--border2)',
@@ -112,70 +201,93 @@ export default function MatchesPage() {
       </div>
 
       <PageCard>
-        <SectionHeader title="경기 목록" action="+ 경기 추가" />
-        <div className="tbl-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>날짜</th>
-                <th>시간</th>
-                <th>홈팀</th>
-                <th>어웨이팀</th>
-                <th>리그</th>
-                <th>상태</th>
-                <th>스트리밍</th>
-                <th>편집</th>
-              </tr>
-            </thead>
-            <tbody>
-              {MATCHES.map((m, i) => (
-                <tr key={i}>
-                  <td className="mono" style={{ color: 'var(--muted2)' }}>
-                    {m.date}
-                  </td>
-                  <td
-                    className="mono"
-                    style={{
-                      color:
-                        m.status === '종료' ? 'var(--muted2)' : 'var(--amber)',
-                    }}
-                  >
-                    {m.time}
-                  </td>
-                  <td>
-                    <strong>{m.home}</strong>
-                  </td>
-                  <td>{m.away}</td>
-                  <td>
-                    <Pill color="#6B7A99">{m.league}</Pill>
-                  </td>
-                  <td>
-                    <Pill color={STATUS_COLOR[m.status]}>{m.status}</Pill>
-                  </td>
-                  <td>
-                    <Toggle defaultOn={m.on} />
-                  </td>
-                  <td>
-                    <button
-                      style={{
-                        background: 'transparent',
-                        color: 'var(--cyan)',
-                        border: '1px solid rgba(0,229,255,0.25)',
-                        borderRadius: 5,
-                        padding: '3px 10px',
-                        fontSize: 10,
-                        cursor: 'pointer',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      편집
-                    </button>
-                  </td>
+        <SectionHeader title="경기 목록" />
+        {loading ? (
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '40px 0',
+              color: 'var(--muted2)',
+              fontSize: 13,
+            }}
+          >
+            불러오는 중...
+          </div>
+        ) : filtered.length === 0 ? (
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '40px 0',
+              color: 'var(--muted2)',
+              fontSize: 13,
+            }}
+          >
+            경기가 없습니다.
+          </div>
+        ) : (
+          <div className="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>날짜</th>
+                  <th>시간</th>
+                  <th>홈팀</th>
+                  <th>스코어</th>
+                  <th>어웨이팀</th>
+                  <th>리그</th>
+                  <th>상태</th>
+                  <th>스트리밍</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtered.map((m) => {
+                  const statusLabel = getStatusLabel(m);
+                  const statusColor = getStatusColor(m);
+                  const isLive = ['1H', '2H', 'ET', 'HT'].includes(
+                    m.status?.short ?? '',
+                  );
+                  return (
+                    <tr key={m._id}>
+                      <td className="mono" style={{ color: 'var(--muted2)' }}>
+                        {formatDate(m.date)}
+                      </td>
+                      <td
+                        className="mono"
+                        style={{
+                          color: isLive ? 'var(--red)' : 'var(--amber)',
+                        }}
+                      >
+                        {formatTime(m.date)}
+                      </td>
+                      <td>
+                        <strong>{m.homeTeam.name ?? '—'}</strong>
+                      </td>
+                      <td
+                        className="mono"
+                        style={{ color: 'var(--text)', fontWeight: 700 }}
+                      >
+                        {m.goals?.home ?? '—'} : {m.goals?.away ?? '—'}
+                      </td>
+                      <td>{m.awayTeam.name ?? '—'}</td>
+                      <td>
+                        <Pill color="#6B7A99">{m.league?.name ?? '—'}</Pill>
+                      </td>
+                      <td>
+                        <Pill color={statusColor}>{statusLabel}</Pill>
+                      </td>
+                      <td>
+                        <Toggle
+                          defaultOn={m.isStreaming}
+                          onChange={(val) => handleStreamingToggle(m, val)}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </PageCard>
     </PageLayout>
   );

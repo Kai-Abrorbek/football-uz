@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { adminApi } from '../lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,16 +18,15 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      // TODO: 실제 API 연동
-      // const res = await api.post('/auth/admin/login', { email, password })
-      await new Promise((r) => setTimeout(r, 1200)); // mock delay
-      if (email === 'admin@footballuz.uz' && password === 'admin1234') {
-        router.push('/');
+      await adminApi.login(email, password);
+      router.push('/');
+    } catch (err: any) {
+      const message = err.response?.data?.message;
+      if (message) {
+        setError(message);
       } else {
-        setError('이메일 또는 비밀번호가 올바르지 않습니다.');
+        setError('서버 오류가 발생했습니다. 다시 시도해주세요.');
       }
-    } catch {
-      setError('서버 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setLoading(false);
     }
@@ -201,10 +201,10 @@ export default function LoginPage() {
                   boxSizing: 'border-box',
                 }}
                 onFocus={(e) => {
-                  if (!error) e.target.style.borderColor = 'var(--cyan)';
+                  e.target.style.borderColor = 'var(--cyan)';
                 }}
                 onBlur={(e) => {
-                  if (!error) e.target.style.borderColor = 'var(--border2)';
+                  e.target.style.borderColor = 'var(--border2)';
                 }}
               />
             </div>
@@ -256,7 +256,7 @@ export default function LoginPage() {
                 style={{
                   width: '100%',
                   background: 'var(--surface)',
-                  border: `1px solid ${error ? 'var(--red)' : 'var(--border2)'}`,
+                  border: '1px solid var(--border2)',
                   borderRadius: 10,
                   padding: '11px 42px 11px 38px',
                   color: 'var(--text)',

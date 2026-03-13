@@ -25,8 +25,17 @@ export class NewsService {
     this.newsApiKey = this.configService.get<string>('NEWS_API_KEY') ?? '';
   }
 
-  async translateText(text: string, targetLang: 'uz' | 'ru'): Promise<string> {
-    const langName = targetLang === 'uz' ? 'Uzbek' : 'Russian';
+  async translateText(
+    text: string,
+    targetLang: 'uz' | 'ru' | 'ko',
+  ): Promise<string> {
+    const langMap = {
+      uz: 'Uzbek',
+      ru: 'Russian',
+      ko: 'Korean',
+    };
+
+    const langName = langMap[targetLang];
 
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -47,40 +56,53 @@ export class NewsService {
   }
 
   private async saveArticle(article: any, relatedLeague?: number) {
-    const existing = await this.newsModel.findOne({
-      sourceUrl: article.url,
-    });
-
-    if (existing) return;
-
     const titleUz = await this.translateText(article.title, 'uz');
     const titleRu = await this.translateText(article.title, 'ru');
+    const titleKo = await this.translateText(article.title, 'ko');
 
     const contentText = article.description || article.content || '';
     const contentUz = await this.translateText(contentText, 'uz');
     const contentRu = await this.translateText(contentText, 'ru');
+    const contentKo = await this.translateText(contentText, 'ko');
 
-    await this.newsModel.create({
-      title: {
-        en: article.title,
-        uz: titleUz,
-        ru: titleRu,
-      },
-      content: {
-        en: contentText,
-        uz: contentUz,
-        ru: contentRu,
-      },
-      imageUrl: article.urlToImage,
-      source: article.source.name,
-      sourceUrl: article.url,
-      category: 'general',
-      isPublished: true,
-      publishedAt: new Date(article.publishedAt),
-      relatedTeams: relatedLeague ? [relatedLeague] : [],
-    });
-
-    this.logger.log(`뉴스 저장: ${article.title.substring(0, 50)}...`);
+    try {
+      await this.newsModel.findOneAndUpdate(
+        { sourceUrl: article.url }, // 이 URL이 있으면
+        {
+          $setOnInsert: {
+            // 없을 때만 저장
+            title: {
+              en: article.title,
+              uz: titleUz,
+              ru: titleRu,
+              ko: titleKo,
+            },
+            content: {
+              en: contentText,
+              uz: contentUz,
+              ru: contentRu,
+              ko: contentKo,
+            },
+            imageUrl: article.urlToImage,
+            source: article.source.name,
+            sourceUrl: article.url,
+            category: 'general',
+            isPublished: true,
+            publishedAt: new Date(article.publishedAt),
+            relatedTeams: relatedLeague ? [relatedLeague] : [],
+          },
+        },
+        { upsert: true },
+      );
+      this.logger.log(`뉴스 저장: ${article.title.substring(0, 50)}...`);
+    } catch (e: any) {
+      // 유니크 인덱스 중복 에러 무시
+      if (e.code === 11000) {
+        this.logger.log(`중복 뉴스 스킵: ${article.title.substring(0, 50)}...`);
+      } else {
+        throw e;
+      }
+    }
   }
 
   async fetchGeneralNews() {

@@ -12,10 +12,14 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { AdminGuard } from '../auth/guards/admin.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
-@UseGuards(AdminGuard)
+// @Roles('admin')
+// @UseGuards(AdminGuard)
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
@@ -28,6 +32,8 @@ export class AdminController {
   }
 
   // ─── 경기 ────────────────────────────────────────────────────
+  @Roles('admin')
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Get('matches')
   @ApiOperation({ summary: '경기 목록' })
   getMatches(

@@ -72,7 +72,6 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const { accessToken, user } = await this.authService.adminLogin(dto);
-
     // HttpOnly 쿠키로 저장
     res.cookie('access_token', accessToken, {
       httpOnly: true,

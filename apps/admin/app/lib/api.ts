@@ -2,18 +2,23 @@ import axios from 'axios';
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1',
+  withCredentials: true, // ← 쿠키 자동 포함, localStorage 방식 제거
 });
 
-// 어드민 토큰 설정
-export const setAdminToken = (token: string) => {
-  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-};
-
-// 페이지 로드시 토큰 자동 주입
-if (typeof window !== 'undefined') {
-  const token = localStorage.getItem('admin_token');
-  if (token) setAdminToken(token);
-}
+// 401 뜨면 자동으로 로그인 페이지로
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (
+      error.response?.status === 401 &&
+      typeof window !== 'undefined' &&
+      !window.location.pathname.includes('/login')
+    ) {
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  },
+);
 
 export const adminApi = {
   // 대시보드
@@ -45,4 +50,11 @@ export const adminApi = {
   // 하이라이트
   getHighlights: (page = 1) => api.get(`/admin/highlights?page=${page}`),
   deleteHighlight: (id: string) => api.delete(`/admin/highlights/${id}`),
+
+  // 어드민 Auth
+  login: (email: string, password: string) =>
+    api.post('/auth/admin/login', { email, password }),
+
+  logout: () => api.post('/auth/admin/logout'),
+  getMe: () => api.get('/auth/me'),
 };
