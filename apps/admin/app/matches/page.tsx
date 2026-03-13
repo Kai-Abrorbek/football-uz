@@ -45,65 +45,73 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 const FILTERS = ['전체', '어제', '오늘', '이번주', '완료'];
-
 const toDateString = (d: Date) => d.toISOString().split('T')[0];
 
 export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [filter, setFilter] = useState(2);
   const [search, setSearch] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
+  const [currentFilter, setCurrentFilter] = useState<{
+    date?: string;
+    week?: boolean;
+  }>({});
 
-  const fetchMatches = useCallback(async (date?: string) => {
-    setLoading(true);
-    try {
-      const res = await adminApi.getMatches(date);
-      setMatches(res.data.matches);
-      setTotal(res.data.total);
-    } catch (err: any) {
-      alert('경기 불러오기 실패');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    setSelectedDate(toDateString(new Date()));
-  }, []);
-
-  useEffect(() => {
-    fetchMatches(undefined);
-  }, [fetchMatches, selectedDate]);
-
-  const handleFilterClick = (i: number) => {
-    setFilter(i);
+  const getDateForFilter = (i: number): { date?: string; week?: boolean } => {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
-    if (i === 0) {
-      setSelectedDate('');
-      fetchMatches(undefined);
-    } else if (i === 1) {
-      const y = toDateString(yesterday);
-      setSelectedDate(y);
-      fetchMatches(y);
-    } else if (i === 2) {
-      const d = toDateString(today);
-      setSelectedDate(d);
-      fetchMatches(d);
-    } else if (i === 3) {
-      // 이번주 시작일
-      const mon = new Date(today);
-      mon.setDate(today.getDate() - today.getDay() + 1);
-      const d = toDateString(mon);
-      setSelectedDate(d);
-      fetchMatches(d);
-    } else if (i === 4) {
-      setSelectedDate('');
-      fetchMatches(undefined);
-    }
+    if (i === 0) return {};
+    if (i === 1) return { date: toDateString(yesterday) };
+    if (i === 2) return { date: toDateString(today) };
+    if (i === 3) return { week: true };
+    if (i === 4) return {};
+    return {};
+  };
+
+  const fetchMatches = useCallback(
+    async (date?: string, week?: boolean, p = 1) => {
+      if (p === 1) setLoading(true);
+      else setLoadingMore(true);
+      try {
+        const res = await adminApi.getMatches(date, week, p);
+        if (p === 1) {
+          setMatches(res.data.matches);
+        } else {
+          setMatches((prev) => [...prev, ...res.data.matches]);
+        }
+        setTotal(res.data.total);
+        setHasMore(res.data.hasMore);
+        setPage(p);
+      } catch {
+        alert('경기 불러오기 실패');
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const f = getDateForFilter(2);
+    setCurrentFilter(f);
+    fetchMatches(f.date, f.week, 1);
+  }, []);
+
+  const handleFilterClick = (i: number) => {
+    setFilter(i);
+    const f = getDateForFilter(i);
+    setCurrentFilter(f);
+    fetchMatches(f.date, f.week, 1);
+  };
+
+  const handleLoadMore = () => {
+    fetchMatches(currentFilter.date, currentFilter.week, page + 1);
   };
 
   const handleStreamingToggle = async (match: Match, val: boolean) => {
@@ -191,23 +199,6 @@ export default function MatchesPage() {
             {f}
           </button>
         ))}
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={(e) => {
-            setSelectedDate(e.target.value);
-            fetchMatches(e.target.value);
-          }}
-          style={{
-            background: 'var(--card)',
-            border: '1px solid var(--border2)',
-            borderRadius: 6,
-            padding: '6px 10px',
-            color: 'var(--text)',
-            fontSize: 11,
-            outline: 'none',
-          }}
-        />
       </div>
 
       <PageCard>
@@ -235,68 +226,138 @@ export default function MatchesPage() {
             경기가 없습니다.
           </div>
         ) : (
-          <div className="tbl-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>날짜</th>
-                  <th>시간</th>
-                  <th>홈팀</th>
-                  <th>스코어</th>
-                  <th>어웨이팀</th>
-                  <th>리그</th>
-                  <th>상태</th>
-                  <th>스트리밍</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((m) => {
-                  const statusLabel = getStatusLabel(m);
-                  const statusColor = getStatusColor(m);
-                  const isLive = ['1H', '2H', 'ET', 'HT'].includes(
-                    m.status?.short ?? '',
-                  );
-                  return (
-                    <tr key={m._id}>
-                      <td className="mono" style={{ color: 'var(--muted2)' }}>
-                        {formatDate(m.date)}
-                      </td>
-                      <td
-                        className="mono"
-                        style={{
-                          color: isLive ? 'var(--red)' : 'var(--amber)',
-                        }}
-                      >
-                        {formatTime(m.date)}
-                      </td>
-                      <td>
-                        <strong>{m.homeTeam.name ?? '—'}</strong>
-                      </td>
-                      <td
-                        className="mono"
-                        style={{ color: 'var(--text)', fontWeight: 700 }}
-                      >
-                        {m.goals?.home ?? '—'} : {m.goals?.away ?? '—'}
-                      </td>
-                      <td>{m.awayTeam.name ?? '—'}</td>
-                      <td>
-                        <Pill color="#6B7A99">{m.league?.name ?? '—'}</Pill>
-                      </td>
-                      <td>
-                        <Pill color={statusColor}>{statusLabel}</Pill>
-                      </td>
-                      <td>
-                        <Toggle
-                          defaultOn={m.isStreaming}
-                          onChange={(val) => handleStreamingToggle(m, val)}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>날짜</th>
+                    <th>시간</th>
+                    <th>홈팀</th>
+                    <th>스코어</th>
+                    <th>어웨이팀</th>
+                    <th>리그</th>
+                    <th>상태</th>
+                    <th>스트리밍</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((m) => {
+                    const statusLabel = getStatusLabel(m);
+                    const statusColor = getStatusColor(m);
+                    const isLive = ['1H', '2H', 'ET', 'HT'].includes(
+                      m.status?.short ?? '',
+                    );
+                    return (
+                      <tr key={m._id}>
+                        <td className="mono" style={{ color: 'var(--muted2)' }}>
+                          {formatDate(m.date)}
+                        </td>
+                        <td
+                          className="mono"
+                          style={{
+                            color: isLive ? 'var(--red)' : 'var(--amber)',
+                          }}
+                        >
+                          {formatTime(m.date)}
+                        </td>
+                        <td>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 8,
+                            }}
+                          >
+                            {m.homeTeam.logo && (
+                              <img
+                                src={m.homeTeam.logo}
+                                alt={m.homeTeam.name}
+                                width={20}
+                                height={20}
+                                style={{ objectFit: 'contain' }}
+                                onError={(e) =>
+                                  (e.currentTarget.style.display = 'none')
+                                }
+                              />
+                            )}
+                            <strong>{m.homeTeam.name ?? '—'}</strong>
+                          </div>
+                        </td>
+                        <td
+                          className="mono"
+                          style={{ color: 'var(--text)', fontWeight: 700 }}
+                        >
+                          {m.goals?.home ?? '—'} : {m.goals?.away ?? '—'}
+                        </td>
+                        <td>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 8,
+                            }}
+                          >
+                            {m.awayTeam.logo && (
+                              <img
+                                src={m.awayTeam.logo}
+                                alt={m.awayTeam.name}
+                                width={20}
+                                height={20}
+                                style={{ objectFit: 'contain' }}
+                                onError={(e) =>
+                                  (e.currentTarget.style.display = 'none')
+                                }
+                              />
+                            )}
+                            {m.awayTeam.name ?? '—'}
+                          </div>
+                        </td>
+                        <td>
+                          <Pill color="#6B7A99">{m.league?.name ?? '—'}</Pill>
+                        </td>
+                        <td>
+                          <Pill color={statusColor}>{statusLabel}</Pill>
+                        </td>
+                        <td>
+                          <Toggle
+                            defaultOn={m.isStreaming}
+                            onChange={(val) => handleStreamingToggle(m, val)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* 더보기 버튼 */}
+            {hasMore && (
+              <div style={{ textAlign: 'center', padding: '16px 0 4px' }}>
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  style={{
+                    background: 'var(--card2)',
+                    border: '1px solid var(--border2)',
+                    color: loadingMore ? 'var(--muted)' : 'var(--cyan)',
+                    borderRadius: 8,
+                    padding: '8px 28px',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: loadingMore ? 'not-allowed' : 'pointer',
+                    fontFamily: 'inherit',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {loadingMore
+                    ? '불러오는 중...'
+                    : `더보기 (${total - matches.length}개 남음)`}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </PageCard>
     </PageLayout>

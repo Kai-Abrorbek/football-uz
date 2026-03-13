@@ -80,17 +80,24 @@ export class AdminService {
   }
 
   // ─── 경기 ────────────────────────────────────────────────────
-  async getMatches(date?: string, page = 1, limit = 30) {
+  async getMatches(date?: string, week?: boolean, page = 1, limit = 30) {
     const filter: any = {};
 
-    if (date) {
+    if (week) {
+      const today = new Date();
+      const mon = new Date(today);
+      mon.setDate(today.getDate() - today.getDay() + 1);
+      mon.setHours(0, 0, 0, 0);
+      const sun = new Date(mon);
+      sun.setDate(mon.getDate() + 6);
+      sun.setHours(23, 59, 59, 999);
+      filter.date = { $gte: mon, $lte: sun };
+    } else if (date) {
       const start = new Date(date);
+      start.setHours(0, 0, 0, 0);
       const end = new Date(date);
-      end.setDate(end.getDate() + 1);
-      filter.date = { $gte: start, $lt: end };
-    } else {
-      const start = new Date();
-      filter.date = { $gte: start };
+      end.setHours(23, 59, 59, 999);
+      filter.date = { $gte: start, $lte: end };
     }
 
     const [matches, total] = await Promise.all([
@@ -105,7 +112,6 @@ export class AdminService {
 
     return { matches, total, page, limit, hasMore: page * limit < total };
   }
-
   async setStreaming(id: string, isStreaming: boolean, streamKey?: string) {
     const streamUrl =
       isStreaming && streamKey

@@ -33,10 +33,16 @@ export class AdminController {
   @ApiOperation({ summary: '경기 목록' })
   getMatches(
     @Query('date') date?: string,
+    @Query('week') week?: string,
     @Query('page') page = 1,
     @Query('limit') limit = 30,
   ) {
-    return this.adminService.getMatches(date, Number(page), Number(limit));
+    return this.adminService.getMatches(
+      date,
+      week === 'true',
+      Number(page),
+      Number(limit),
+    );
   }
 
   @Get('matches/streaming')

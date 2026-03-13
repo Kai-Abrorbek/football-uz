@@ -18,8 +18,8 @@ interface DashboardData {
   };
   liveMatchList: {
     _id: string;
-    homeTeam: { name?: string };
-    awayTeam: { name?: string };
+    homeTeam: { name?: string; logo?: string };
+    awayTeam: { name?: string; logo?: string };
     goals?: { home: number | null; away: number | null };
     status?: { short?: string; elapsed?: number };
     league?: { name?: string };
@@ -48,6 +48,32 @@ const timeAgo = (dateStr: string) => {
   if (hour > 0) return `${hour}시간 전`;
   return `${min}분 전`;
 };
+
+const TeamCell = ({ name, logo }: { name?: string; logo?: string }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    {logo ? (
+      <img
+        src={logo}
+        alt={name}
+        width={20}
+        height={20}
+        style={{ objectFit: 'contain' }}
+        onError={(e) => (e.currentTarget.style.display = 'none')}
+      />
+    ) : (
+      <div
+        style={{
+          width: 20,
+          height: 20,
+          borderRadius: 10,
+          background: 'var(--border2)',
+          flexShrink: 0,
+        }}
+      />
+    )}
+    <span>{name ?? '—'}</span>
+  </div>
+);
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -88,7 +114,6 @@ export default function DashboardPage() {
 
   return (
     <PageLayout title="대시보드">
-      {/* Stat Cards */}
       <div
         style={{ display: 'flex', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}
       >
@@ -123,7 +148,6 @@ export default function DashboardPage() {
       </div>
 
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-        {/* 라이브 경기 목록 */}
         <PageCard style={{ flex: 2, minWidth: 260 }}>
           <SectionHeader title="라이브 경기" />
           {!data?.liveMatchList?.length ? (
@@ -153,7 +177,10 @@ export default function DashboardPage() {
                   {data.liveMatchList.map((m) => (
                     <tr key={m._id}>
                       <td>
-                        <strong>{m.homeTeam.name ?? '—'}</strong>
+                        <TeamCell
+                          name={m.homeTeam.name}
+                          logo={m.homeTeam.logo}
+                        />
                       </td>
                       <td
                         className="mono"
@@ -172,7 +199,12 @@ export default function DashboardPage() {
                           </span>
                         )}
                       </td>
-                      <td>{m.awayTeam.name ?? '—'}</td>
+                      <td>
+                        <TeamCell
+                          name={m.awayTeam.name}
+                          logo={m.awayTeam.logo}
+                        />
+                      </td>
                       <td>
                         <Pill color="#6B7A99">{m.league?.name ?? '—'}</Pill>
                       </td>
@@ -187,7 +219,6 @@ export default function DashboardPage() {
           )}
         </PageCard>
 
-        {/* 최근 가입 유저 */}
         <PageCard style={{ flex: 1, minWidth: 200 }}>
           <SectionHeader title="최근 가입 유저" />
           {data?.recentUsers?.map((u, i) => (

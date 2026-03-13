@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 export const api = axios.create({
+  // baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1',
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://72.62.75.97:4000/api/v1',
   withCredentials: true, // ← 쿠키 자동 포함, localStorage 방식 제거
 });
@@ -26,8 +27,10 @@ export const adminApi = {
   getDashboard: () => api.get('/admin/dashboard'),
 
   // 경기
-  getMatches: (date?: string, page = 1) =>
-    api.get(`/admin/matches?date=${date ?? ''}&page=${page}`),
+  getMatches: (date?: string, week?: boolean, page = 1) =>
+    api.get(
+      `/admin/matches?date=${date ?? ''}&week=${week ?? false}&page=${page}`,
+    ),
 
   setStreaming: (
     id: string,

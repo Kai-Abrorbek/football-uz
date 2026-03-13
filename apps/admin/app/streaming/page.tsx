@@ -8,8 +8,8 @@ import { adminApi } from '../lib/api';
 
 interface StreamMatch {
   _id: string;
-  homeTeam: { name?: string };
-  awayTeam: { name?: string };
+  homeTeam: { name?: string; logo?: string };
+  awayTeam: { name?: string; logo?: string };
   isStreaming: boolean;
   streamKey?: string;
   streamUrl?: string;
@@ -51,9 +51,6 @@ export default function StreamingPage() {
     }
   };
 
-  const getMatchTitle = (m: StreamMatch) =>
-    `${m.homeTeam.name ?? '?'} vs ${m.awayTeam.name ?? '?'}`;
-
   return (
     <PageLayout title="스트리밍">
       {loading ? (
@@ -69,7 +66,6 @@ export default function StreamingPage() {
         </div>
       ) : (
         <>
-          {/* Stream Cards */}
           <div
             style={{
               display: 'flex',
@@ -94,7 +90,7 @@ export default function StreamingPage() {
                   key={s._id}
                   style={{
                     flex: 1,
-                    minWidth: 180,
+                    minWidth: 200,
                     background: 'var(--card)',
                     border: `1px solid ${s.isStreaming ? 'rgba(255,61,87,0.35)' : 'var(--border)'}`,
                     borderRadius: 12,
@@ -106,7 +102,7 @@ export default function StreamingPage() {
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      marginBottom: 10,
+                      marginBottom: 12,
                     }}
                   >
                     <Pill color={s.isStreaming ? '#FF3D57' : '#6B7A99'}>
@@ -124,11 +120,114 @@ export default function StreamingPage() {
                       </span>
                     )}
                   </div>
+
+                  {/* 팀 로고 + 이름 */}
                   <div
-                    style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 10,
+                      marginBottom: 14,
+                    }}
                   >
-                    {getMatchTitle(s)}
+                    {/* 홈팀 */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 4,
+                        flex: 1,
+                      }}
+                    >
+                      {s.homeTeam.logo ? (
+                        <img
+                          src={s.homeTeam.logo}
+                          alt={s.homeTeam.name}
+                          width={32}
+                          height={32}
+                          style={{ objectFit: 'contain' }}
+                          onError={(e) =>
+                            (e.currentTarget.style.display = 'none')
+                          }
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 16,
+                            background: 'var(--border2)',
+                          }}
+                        />
+                      )}
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          textAlign: 'center',
+                          color: 'var(--text)',
+                        }}
+                      >
+                        {s.homeTeam.name ?? '?'}
+                      </span>
+                    </div>
+
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: 'var(--muted2)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      vs
+                    </span>
+
+                    {/* 어웨이팀 */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 4,
+                        flex: 1,
+                      }}
+                    >
+                      {s.awayTeam.logo ? (
+                        <img
+                          src={s.awayTeam.logo}
+                          alt={s.awayTeam.name}
+                          width={32}
+                          height={32}
+                          style={{ objectFit: 'contain' }}
+                          onError={(e) =>
+                            (e.currentTarget.style.display = 'none')
+                          }
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 16,
+                            background: 'var(--border2)',
+                          }}
+                        />
+                      )}
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          textAlign: 'center',
+                          color: 'var(--text)',
+                        }}
+                      >
+                        {s.awayTeam.name ?? '?'}
+                      </span>
+                    </div>
                   </div>
+
                   {s.streamUrl && (
                     <div
                       style={{
@@ -193,7 +292,6 @@ export default function StreamingPage() {
             )}
           </div>
 
-          {/* 로그 - 실제 데이터 없으니까 빈 상태로 */}
           <PageCard>
             <SectionHeader title="스트리밍 로그" />
             <div

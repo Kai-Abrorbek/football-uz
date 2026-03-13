@@ -14,7 +14,11 @@ async function bootstrap() {
 
   // CORS 설정 (나중에 React Native에서 접근 가능하도록)
   app.enableCors({
-    origin: ['http://72.62.75.97:3005', 'http://localhost:3005'],
+    origin: [
+      'http://72.62.75.97:3005',
+      'http://localhost:3005',
+      'http://localhost:3000',
+    ],
     credentials: true,
   });
 
