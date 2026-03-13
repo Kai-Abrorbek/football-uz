@@ -3,7 +3,7 @@ version: '3.8'
 services:
   api:
     build:
-      context: . # ← 루트
+      context: .
       dockerfile: apps/api/Dockerfile
     container_name: footballuz-api
     restart: always
@@ -11,12 +11,14 @@ services:
       - '4000:4000'
     env_file:
       - .env
+    depends_on:
+      - redis
     networks:
       - footballuz
 
   admin:
     build:
-      context: apps/admin # ← admin 폴더
+      context: apps/admin
       dockerfile: Dockerfile
     container_name: footballuz-admin
     restart: always
@@ -24,6 +26,13 @@ services:
       - '3000:3000'
     env_file:
       - apps/admin/.env.local
+    networks:
+      - footballuz
+
+  redis:
+    image: redis:7-alpine
+    container_name: footballuz-redis
+    restart: always
     networks:
       - footballuz
 
