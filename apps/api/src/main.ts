@@ -18,7 +18,7 @@ async function bootstrap() {
       'http://72.62.75.97:3005',
       'http://localhost:3005',
       'http://localhost:3000',
-      'http://localhost:8081/',
+      'http://localhost:8081',
     ],
     credentials: true,
   });
