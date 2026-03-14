@@ -27,12 +27,12 @@ export class NewsService {
 
   async translateText(
     text: string,
-    targetLang: 'uz' | 'ru' | 'ko',
+    targetLang: 'uz' | 'ru' | 'kr',
   ): Promise<string> {
     const langMap = {
       uz: 'Uzbek',
       ru: 'Russian',
-      ko: 'Korean',
+      kr: 'Korean',
     };
 
     const langName = langMap[targetLang];
@@ -58,30 +58,29 @@ export class NewsService {
   private async saveArticle(article: any, relatedLeague?: number) {
     const titleUz = await this.translateText(article.title, 'uz');
     const titleRu = await this.translateText(article.title, 'ru');
-    const titleKo = await this.translateText(article.title, 'ko');
+    const titleKr = await this.translateText(article.title, 'kr');
 
     const contentText = article.description || article.content || '';
     const contentUz = await this.translateText(contentText, 'uz');
     const contentRu = await this.translateText(contentText, 'ru');
-    const contentKo = await this.translateText(contentText, 'ko');
+    const contentKr = await this.translateText(contentText, 'kr');
 
     try {
       await this.newsModel.findOneAndUpdate(
-        { sourceUrl: article.url }, // 이 URL이 있으면
+        { sourceUrl: article.url },
         {
           $setOnInsert: {
-            // 없을 때만 저장
             title: {
               en: article.title,
               uz: titleUz,
               ru: titleRu,
-              ko: titleKo,
+              kr: titleKr,
             },
             content: {
               en: contentText,
               uz: contentUz,
               ru: contentRu,
-              ko: contentKo,
+              kr: contentKr,
             },
             imageUrl: article.urlToImage,
             source: article.source.name,
@@ -96,7 +95,6 @@ export class NewsService {
       );
       this.logger.log(`뉴스 저장: ${article.title.substring(0, 50)}...`);
     } catch (e: any) {
-      // 유니크 인덱스 중복 에러 무시
       if (e.code === 11000) {
         this.logger.log(`중복 뉴스 스킵: ${article.title.substring(0, 50)}...`);
       } else {
