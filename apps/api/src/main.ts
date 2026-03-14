@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
+import { NextFunction, Request, Response } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,7 +13,7 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix(process.env.API_PREFIX || 'api/v1');
 
-  // CORS 설정 (나중에 React Native에서 접근 가능하도록)
+  // CORS 설정
   app.enableCors({
     origin: [
       'http://72.62.75.97:3005',
@@ -23,12 +24,42 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Validation Pipe (DTO 검증)
+  // Swagger Basic Auth 미들웨어
+  app.use('/api/docs', (req: Request, res: Response, next: NextFunction) => {
+    const authHeader = req.headers['authorization'];
+
+    if (!authHeader || !authHeader.startsWith('Basic ')) {
+      res.setHeader('WWW-Authenticate', 'Basic realm="Swagger Docs"');
+      res.status(401).send('Unauthorized');
+      return;
+    }
+
+    const base64 = authHeader.split(' ')[1];
+    const decoded = Buffer.from(base64, 'base64').toString('utf-8');
+    const [username, password] = decoded.split(':');
+
+    const adminUser = process.env.SWAGGER_USER;
+    const adminPass = process.env.SWAGGER_PASSWORD;
+
+    if (!adminUser || !adminPass) {
+      res.status(403).send('Swagger disabled');
+      return;
+    }
+
+    if (username === adminUser && password === adminPass) {
+      next();
+    } else {
+      res.setHeader('WWW-Authenticate', 'Basic realm="Swagger Docs"');
+      res.status(401).send('Unauthorized');
+    }
+  });
+
+  // Validation Pipe
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // DTO에 없는 속성 자동 제거
-      forbidNonWhitelisted: true, // DTO에 없는 속성 있으면 에러
-      transform: true, // 자동 타입 변환
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
       transformOptions: {
         enableImplicitConversion: true,
       },
@@ -40,7 +71,7 @@ async function bootstrap() {
     .setTitle('FootballUZ API')
     .setDescription('Football Uzbekistan API Documentation')
     .setVersion('1.0')
-    .addBearerAuth() // JWT 인증
+    .addBearerAuth()
     .addTag('Auth', '인증 관련')
     .addTag('Users', '사용자 관련')
     .addTag('Matches', '경기 정보')
