@@ -18,7 +18,7 @@ export class NotificationScheduler {
   @Cron('* * * * *')
   async checkUpcomingMatches() {
     const now = new Date();
-    const in30Min = new Date(now.getTime() + 10 * 60 * 1000);
+    const in30Min = new Date(now.getTime() + 30 * 60 * 1000);
 
     const upcomingMatches = await this.matchModel.find({
       'status.short': 'NS',
@@ -41,9 +41,8 @@ export class NotificationScheduler {
     }
   }
 
-  // 골 알림 - 5분마다 라이브 경기 체크
-  // @Cron('*/5 * * * *')
-  // @Cron('*/5 * * * *')
+  // 골 알림 - 1분마다 라이브 경기 체크
+  @Cron('*/1 * * * *')
   async checkLiveMatchGoals() {
     const liveMatches = await this.matchModel.find({
       'status.short': { $in: ['1H', '2H', 'ET'] },
@@ -58,7 +57,7 @@ export class NotificationScheduler {
         const eventDate = new Date(
           matchStart.getTime() + eventTime * 60 * 1000,
         );
-        return now.getTime() - eventDate.getTime() < 5 * 60 * 1000;
+        return now.getTime() - eventDate.getTime() < 1 * 60 * 1000;
       });
 
       for (const goal of recentGoals) {
@@ -89,10 +88,9 @@ export class NotificationScheduler {
   }
 
   // 경기 종료 알림 - 5분마다 체크
-  // @Cron('*/5 * * * *')
-  // @Cron('*/5 * * * *')
+  @Cron('*/1 * * * *')
   async checkFinishedMatches() {
-    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const fiveMinAgo = new Date(Date.now() - 2 * 60 * 1000);
 
     const recentlyFinished = await this.matchModel.find({
       'status.short': 'FT',

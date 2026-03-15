@@ -1,5 +1,5 @@
 // api-football.controller.ts (새로 생성)
-import { Controller, Logger, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Logger, Param, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { MatchScheduler } from './schedulers/match.scheduler';
 import { StandingScheduler } from './schedulers/standing.scheduler';
@@ -8,6 +8,8 @@ import { PlayerScheduler as PlayersScheduler } from '../players/schedulers/playe
 import { PlayerScheduler } from './schedulers/player.scheduler';
 import { DetailsScheduler } from './schedulers/details.scheduler';
 import { ApiFootballService } from './api-football.service';
+import { SyncSeasonDto } from './dto/syncSeasonDto';
+import { FEATURED_LEAGUES } from '../../constants/leagues.constant';
 
 @ApiTags('API-Football Sync')
 @Controller('sync')
@@ -101,5 +103,76 @@ export class ApiFootballController {
     await this.playersScheduler.syncTopScorers(leagueId, season);
     await this.playersScheduler.syncTopAssists(leagueId, season);
     return { message: '월드컵 동기화 완료' };
+  }
+
+  // 1. 경기 목록 동기화
+  @Post('fixtures')
+  @ApiOperation({ summary: '시즌별 경기 목록 동기화' })
+  async syncFixturesByAdmin(@Body() dto: SyncSeasonDto) {
+    const leagues = dto.leagueId ? [dto.leagueId] : FEATURED_LEAGUES;
+
+    for (const leagueId of leagues) {
+      await this.matchScheduler.syncLeagueFixtures(leagueId, dto.season);
+    }
+
+    return { message: `경기 목록 동기화 완료 (season: ${dto.season})` };
+  }
+
+  // 3. 팀 동기화
+  @Post('teams')
+  @ApiOperation({ summary: '시즌별 팀 동기화' })
+  async syncTeamsByAdmin(@Body() dto: SyncSeasonDto) {
+    await this.teamScheduler.syncTeamsBySeason(dto.season, dto.leagueId);
+    return { message: `팀 동기화 완료 (season: ${dto.season})` };
+  }
+
+  // 4. 선수 동기화 (득점왕/도움왕)
+  @Post('players')
+  @ApiOperation({ summary: '시즌별 선수 동기화' })
+  async syncPlayersByAdmin(@Body() dto: SyncSeasonDto) {
+    await this.playerScheduler.syncTopScorersBySeason(dto.season, dto.leagueId);
+    return { message: `선수 동기화 완료 (season: ${dto.season})` };
+  }
+
+  // 5. 경기 디테일 배치 동기화 (이벤트+통계+라인업)
+  @Post('details')
+  @ApiOperation({
+    summary: '완료된 경기 디테일 배치 동기화 (하루 7500 제한 주의)',
+  })
+  async syncDetails(@Body() dto: SyncSeasonDto) {
+    const result = await this.detailsScheduler.syncDetailsBatch(
+      dto.season,
+      dto.leagueId,
+    );
+    return {
+      message: `디테일 동기화 완료`,
+      processed: result.processed,
+      remaining: result.remaining,
+    };
+  }
+
+  // 6. 전체 한번에 (순서대로)
+  @Post('all')
+  @ApiOperation({ summary: '전체 동기화 (경기목록 → 순위표 → 팀 → 선수)' })
+  async syncAll(@Body() dto: SyncSeasonDto) {
+    const leagues = dto.leagueId ? [dto.leagueId] : FEATURED_LEAGUES;
+
+    // 경기 목록
+    for (const leagueId of leagues) {
+      await this.matchScheduler.syncLeagueFixtures(leagueId, dto.season);
+    }
+
+    // 순위표
+    for (const leagueId of leagues) {
+      await this.standingScheduler.syncLeagueSeason(leagueId, dto.season);
+    }
+
+    // 팀
+    await this.teamScheduler.syncTeamsBySeason(dto.season, dto.leagueId);
+
+    // 선수
+    await this.playerScheduler.syncTopScorersBySeason(dto.season, dto.leagueId);
+
+    return { message: `전체 동기화 완료 (season: ${dto.season})` };
   }
 }

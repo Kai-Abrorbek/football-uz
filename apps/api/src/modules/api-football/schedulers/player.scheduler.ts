@@ -8,7 +8,10 @@ import {
   LeagueRecord,
   LeagueRecordDocument,
 } from '../../../schemas/league-record.schema';
-import { FEATURED_LEAGUES } from 'apps/api/src/constants/leagues.constant';
+import {
+  FEATURED_LEAGUES,
+  SEASON,
+} from 'apps/api/src/constants/leagues.constant';
 
 @Injectable()
 export class PlayerScheduler {
@@ -23,10 +26,10 @@ export class PlayerScheduler {
   ) {}
 
   // 득점왕/도움왕 - 12시간마다
-  // @Cron('0 */12 * * *')
+  @Cron('0 */12 * * *')
   async syncTopScorers() {
     this.logger.log('Syncing top scorers...');
-    const season = 2023;
+    const season = SEASON;
 
     try {
       for (const leagueId of this.FEATURED_LEAGUES) {
@@ -108,5 +111,87 @@ export class PlayerScheduler {
       },
       { upsert: true, returnDocument: 'after' },
     );
+  }
+
+  async syncTopScorersBySeason(season: number, leagueId?: number) {
+    const leagues = leagueId ? [leagueId] : this.FEATURED_LEAGUES;
+
+    for (const id of leagues) {
+      // 득점왕
+      const scorers = await this.apiFootballService.getTopScorers(id, season);
+      await this.saveLeagueRecord(
+        id,
+        season,
+        'goals',
+        scorers.response,
+        'goals.total',
+      );
+
+      // 도움왕
+      const assists = await this.apiFootballService.getTopAssists(id, season);
+      await this.saveLeagueRecord(
+        id,
+        season,
+        'assists',
+        assists.response,
+        'goals.assists',
+      );
+
+      // 옐로카드
+      const yellows = await this.apiFootballService.getTopYellowCards(
+        id,
+        season,
+      );
+      await this.saveLeagueRecord(
+        id,
+        season,
+        'yellowCards',
+        yellows.response,
+        'cards.yellow',
+      );
+
+      await this.sleep(1000);
+    }
+  }
+
+  private async saveLeagueRecord(
+    leagueId: number,
+    season: number,
+    type: string,
+    players: any[],
+    valuePath: string,
+  ) {
+    const rows = players.map((item, index) => ({
+      rank: index + 1,
+      player: {
+        playerId: item.player.id,
+        name: item.player.name,
+        photo: item.player.photo,
+      },
+      team: {
+        teamId: item.statistics[0].team.id,
+        name: item.statistics[0].team.name,
+        logo: item.statistics[0].team.logo,
+      },
+      value:
+        valuePath
+          .split('.')
+          .reduce((obj, key) => obj?.[key], item.statistics[0]) || 0,
+      raw: item,
+    }));
+
+    await this.leagueRecordModel.findOneAndUpdate(
+      { leagueId, season, type },
+      { leagueId, season, type, rows, limit: 20, lastSyncAt: new Date() },
+      { upsert: true },
+    );
+
+    for (const item of players) {
+      await this.savePlayer(item);
+    }
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

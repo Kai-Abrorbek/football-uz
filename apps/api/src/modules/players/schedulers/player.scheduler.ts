@@ -6,7 +6,10 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { Player, Team } from 'apps/api/src/schemas';
-import { FEATURED_LEAGUES } from 'apps/api/src/constants/leagues.constant';
+import {
+  FEATURED_LEAGUES,
+  SEASON,
+} from 'apps/api/src/constants/leagues.constant';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from '@nestjs/cache-manager';
 
@@ -33,7 +36,7 @@ export class PlayerScheduler {
   async syncTopPlayers() {
     this.logger.log('득점왕/어시스트왕 동기화 시작');
 
-    const season = 2024;
+    const season = SEASON;
 
     for (const leagueId of FEATURED_LEAGUES) {
       await this.syncTopScorers(leagueId, season);

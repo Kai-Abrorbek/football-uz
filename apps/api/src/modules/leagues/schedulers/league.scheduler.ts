@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ApiFootballService } from '../../api-football/api-football.service';
 import { League, LeagueDocument } from '../../../schemas/league.schema';
-import { FEATURED_LEAGUES } from '../../../constants/leagues.constant';
+import { FEATURED_LEAGUES, SEASON } from '../../../constants/leagues.constant';
 
 @Injectable()
 export class LeagueScheduler {
@@ -20,7 +20,7 @@ export class LeagueScheduler {
   async syncLeagues() {
     this.logger.log('Syncing leagues...');
     try {
-      const data = await this.apiFootballService.getLeagues(2024);
+      const data = await this.apiFootballService.getLeagues(SEASON);
       const leagues = data.response;
       for (const item of leagues) {
         const league = item.league;

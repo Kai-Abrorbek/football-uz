@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ApiFootballService } from '../api-football.service';
 import { Match, MatchDocument } from '../../../schemas/match.schema';
-import { FEATURED_LEAGUES } from '../../../constants/leagues.constant';
+import { FEATURED_LEAGUES, SEASON } from '../../../constants/leagues.constant';
 import { PredictionsService } from '../../predictions/predictions.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
@@ -46,7 +46,7 @@ export class MatchScheduler {
 
   async initialSync() {
     this.logger.log('Starting initial league season sync...');
-    const season = 2024;
+    const season = SEASON;
 
     try {
       for (const leagueId of FEATURED_LEAGUES) {
@@ -77,7 +77,6 @@ export class MatchScheduler {
 
   // 최근 경기 업데이트 - 6시간마다
   // @Cron('0 */6 * * *')
-  // @Cron('*/1 * * * *')
   async syncRecentFixtures() {
     this.logger.log('Syncing recent fixtures...');
     const dates = this.getLast7Days();
@@ -102,12 +101,21 @@ export class MatchScheduler {
     }
   }
 
-  // 라이브 스코어 - 5분마다
-  // @Cron('*/5 * * * *')
+  @Cron('*/30 * * * * *')
   async syncLiveScores() {
-    this.logger.log('Syncing live scores...');
-
     try {
+      // DB에서 먼저 라이브 경기 있는지 확인
+      const liveCount = await this.matchModel.countDocuments({
+        'status.short': { $in: ['1H', 'HT', '2H', 'ET', 'BT', 'P'] },
+      });
+
+      if (liveCount === 0) {
+        this.logger.log('No live matches in DB - skipping API call');
+        return;
+      }
+
+      this.logger.log(`${liveCount} live matches found - syncing...`);
+
       const data = await this.apiFootballService.getFixtureLive();
       const liveFixtures = data.response;
       const currentLiveIds = new Set(
@@ -133,7 +141,7 @@ export class MatchScheduler {
       this.previousLiveIds = currentLiveIds;
 
       if (liveFixtures.length === 0) {
-        this.logger.log('No live matches');
+        this.logger.log('No live matches from API');
         await this.cacheManager.del('matches:live');
         return;
       }
@@ -145,7 +153,6 @@ export class MatchScheduler {
       }
 
       await this.cacheManager.del('matches:live');
-      this.logger.log(`🗑️ 라이브 캐시 삭제`);
       this.logger.log(`Synced ${liveFixtures.length} live matches`);
     } catch (error) {
       this.logger.error('Failed to sync live scores', error);
@@ -320,9 +327,9 @@ export class MatchScheduler {
 
   private getLast7Days(): string[] {
     const dates: string[] = [];
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 3; i++) {
       const date = new Date();
-      date.setDate(date.getDate() + i);
+      date.setDate(date.getDate() - i);
       dates.push(date.toISOString().split('T')[0]);
     }
     return dates;
@@ -330,5 +337,22 @@ export class MatchScheduler {
 
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async syncLeagueFixtures(leagueId: number, season: number) {
+    const data = await this.apiFootballService.getFixturesByLeague(
+      leagueId,
+      season,
+    );
+    const fixtures = data.response;
+
+    for (const fixture of fixtures) {
+      await this.saveFixture(fixture);
+      await this.sleep(200);
+    }
+
+    this.logger.log(
+      `Synced ${fixtures.length} fixtures for league ${leagueId} season ${season}`,
+    );
   }
 }

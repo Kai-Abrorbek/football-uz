@@ -54,4 +54,4 @@ export const LEAGUES_NEWS: LeagueConfig[] = [
   { id: 31, name: 'Africa Cup', searchQuery: 'Africa Cup of Nations' },
 ];
 
-export const SEASON = 2024;
+export const SEASON = 2025;
