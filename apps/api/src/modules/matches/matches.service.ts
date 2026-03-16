@@ -22,13 +22,16 @@ export class MatchesService {
   ) {}
 
   async findAll(query: MatchQueryDto) {
+    const today = new Date();
     const filter: any = {};
 
-    if (query.date) {
-      const startDate = new Date(query.date);
-      const endDate = new Date(query.date);
-      endDate.setDate(endDate.getDate() + 1);
-      filter.date = { $gte: startDate, $lt: endDate };
+    if (query.startUTC && query.endUTC) {
+      filter.date = {
+        $gte: new Date(query.startUTC),
+        $lte: new Date(query.endUTC),
+      };
+    } else {
+      filter.date = { $gte: today };
     }
 
     if (query.leagueId) {
@@ -324,15 +327,29 @@ export class MatchesService {
     };
   }
 
-  async findByTeam(query: { teamId: number; limit: string; season: string }) {
-    const { teamId, limit, season } = query;
+  async findByTeam(query: {
+    teamId?: number;
+    limit?: string;
+    season?: string;
+    date?: string;
+  }) {
+    const { teamId, limit, season, date } = query;
+    const filter: any = {
+      $or: [{ 'homeTeam.id': teamId }, { 'awayTeam.id': teamId }],
+    };
+
+    if (season) {
+      filter['league.season'] = Number(season);
+    }
+
+    if (date) {
+      filter.date = { $gte: new Date(date) };
+    }
+
     return this.matchModel
-      .find({
-        $or: [{ 'homeTeam.id': teamId }, { 'awayTeam.id': teamId }],
-        'league.season': Number(season),
-      })
+      .find(filter)
       .sort({ date: -1 })
-      .limit(Number(limit))
+      .limit(Number(limit) || 20)
       .exec();
   }
 

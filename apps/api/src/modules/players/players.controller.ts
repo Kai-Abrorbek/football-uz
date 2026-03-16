@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { PlayersService } from './players.service';
 import { PlayerQueryDto } from './dto/player-query.dto';
-import { PlayerScheduler } from './schedulers/player.scheduler';
+import { PlayerStatsScheduler } from './schedulers/player.scheduler';
 import { Player } from '../../schemas';
 
 @ApiTags('Players')
@@ -10,7 +10,7 @@ import { Player } from '../../schemas';
 export class PlayersController {
   constructor(
     private playersService: PlayersService,
-    private readonly playerScheduler: PlayerScheduler,
+    private readonly playerScheduler: PlayerStatsScheduler,
   ) {}
 
   @Get()

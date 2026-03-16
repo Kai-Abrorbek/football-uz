@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { HttpService } from '@nestjs/axios';
@@ -14,8 +14,8 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from '@nestjs/cache-manager';
 
 @Injectable()
-export class PlayerScheduler {
-  private readonly logger = new Logger(PlayerScheduler.name);
+export class PlayerStatsScheduler {
+  private readonly logger = new Logger(PlayerStatsScheduler.name);
   private readonly apiKey: string;
   private readonly baseUrl: string;
 
@@ -31,17 +31,15 @@ export class PlayerScheduler {
       this.configService.get<string>('API_FOOTBALL_BASE_URL') || '';
   }
 
-  // 매일 오전 4시에 득점왕/어시스트왕 업데이트
   @Cron('0 4 * * *')
   async syncTopPlayers() {
     this.logger.log('득점왕/어시스트왕 동기화 시작');
-
     const season = SEASON;
 
     for (const leagueId of FEATURED_LEAGUES) {
       await this.syncTopScorers(leagueId, season);
       await this.syncTopAssists(leagueId, season);
-      await this.delay(1000); // API 호출 간격
+      await this.delay(1000);
     }
 
     this.logger.log('득점왕/어시스트왕 동기화 완료');
@@ -51,13 +49,8 @@ export class PlayerScheduler {
     try {
       const response = await firstValueFrom(
         this.httpService.get(`${this.baseUrl}/players/topscorers`, {
-          headers: {
-            'x-apisports-key': this.apiKey,
-          },
-          params: {
-            league: leagueId,
-            season: season,
-          },
+          headers: { 'x-apisports-key': this.apiKey },
+          params: { league: leagueId, season },
         }),
       );
 
@@ -66,99 +59,18 @@ export class PlayerScheduler {
         const playerData = item.player;
         const stat0 = item.statistics?.[0];
 
-        // 팀 찾기
         const team = await this.teamModel.findOne({
           apiFootballId: stat0.team.id,
         });
-
         if (!team) continue;
 
-        const nextStat = {
-          team: {
-            id: stat0?.team?.id,
-            name: stat0?.team?.name,
-            logo: stat0?.team?.logo,
-          },
-          league: {
-            id: stat0?.league?.id,
-            name: stat0?.league?.name,
-            season: stat0?.league?.season,
-          },
-
-          games: {
-            appearences:
-              stat0?.games?.appearences ?? stat0?.games?.appearances ?? 0,
-            minutes: stat0?.games?.minutes ?? 0,
-            rating: stat0?.games?.rating ?? null,
-            position: stat0?.games?.position ?? null,
-            number: stat0?.games?.number ?? null,
-          },
-
-          goals: {
-            total: stat0?.goals?.total ?? 0,
-            assists: stat0?.goals?.assists ?? 0,
-          },
-
-          shots: {
-            total: stat0?.shots?.total ?? null,
-            on: stat0?.shots?.on ?? null,
-          },
-
-          passes: {
-            total: stat0?.passes?.total ?? null,
-            key: stat0?.passes?.key ?? null,
-            accuracy: stat0?.passes?.accuracy ?? null,
-          },
-
-          tackles: {
-            total: stat0?.tackles?.total ?? null,
-            blocks: stat0?.tackles?.blocks ?? null,
-            interceptions: stat0?.tackles?.interceptions ?? null,
-          },
-
-          duels: {
-            total: stat0?.duels?.total ?? null,
-            won: stat0?.duels?.won ?? null,
-          },
-
-          dribbles: {
-            attempts: stat0?.dribbles?.attempts ?? null,
-            success: stat0?.dribbles?.success ?? null,
-            past: stat0?.dribbles?.past ?? null,
-          },
-
-          fouls: {
-            drawn: stat0?.fouls?.drawn ?? null,
-            committed: stat0?.fouls?.committed ?? null,
-          },
-
-          cards: {
-            yellow: stat0?.cards?.yellow ?? 0,
-            red: stat0?.cards?.red ?? 0,
-          },
-
-          penalty: {
-            scored: stat0?.penalty?.scored ?? 0,
-            missed: stat0?.penalty?.missed ?? 0,
-          },
-
-          raw: stat0, // ✅ 원본 보관(선택)
-        };
-
-        // 선수 업데이트 또는 생성
-        await this.playerModel.findOneAndUpdate(
-          { apiFootballId: playerData.id },
-
-          {
-            statistics: [nextStat],
-            lastSyncAt: new Date(),
-          },
-          {
-            upsert: true,
-            returnDocument: 'after',
-          },
+        await this.savePlayerBase(playerData, stat0);
+        await this.upsertStatistic(
+          playerData.id,
+          stat0.league.id,
+          stat0.league.season,
+          this.buildStat(stat0),
         );
-
         await this.cacheManager.del(`player:detail:${playerData.id}`);
       }
 
@@ -172,18 +84,12 @@ export class PlayerScheduler {
     try {
       const response = await firstValueFrom(
         this.httpService.get(`${this.baseUrl}/players/topassists`, {
-          headers: {
-            'x-apisports-key': this.apiKey,
-          },
-          params: {
-            league: leagueId,
-            season: season,
-          },
+          headers: { 'x-apisports-key': this.apiKey },
+          params: { league: leagueId, season },
         }),
       );
 
       const players = response.data.response;
-
       for (const item of players) {
         const playerData = item.player;
         const stat0 = item.statistics?.[0];
@@ -191,95 +97,18 @@ export class PlayerScheduler {
         const team = await this.teamModel.findOne({
           apiFootballId: stat0.team.id,
         });
-
         if (!team) continue;
 
-        const nextStat = {
-          team: {
-            id: stat0?.team?.id,
-            name: stat0?.team?.name,
-            logo: stat0?.team?.logo,
-          },
-          league: {
-            id: stat0?.league?.id,
-            name: stat0?.league?.name,
-            season: stat0?.league?.season,
-          },
-
-          games: {
-            appearences:
-              stat0?.games?.appearences ?? stat0?.games?.appearances ?? 0,
-            minutes: stat0?.games?.minutes ?? 0,
-            rating: stat0?.games?.rating ?? null,
-            position: stat0?.games?.position ?? null,
-            number: stat0?.games?.number ?? null,
-          },
-
-          goals: {
-            total: stat0?.goals?.total ?? 0,
-            assists: stat0?.goals?.assists ?? 0,
-          },
-
-          shots: {
-            total: stat0?.shots?.total ?? null,
-            on: stat0?.shots?.on ?? null,
-          },
-
-          passes: {
-            total: stat0?.passes?.total ?? null,
-            key: stat0?.passes?.key ?? null,
-            accuracy: stat0?.passes?.accuracy ?? null,
-          },
-
-          tackles: {
-            total: stat0?.tackles?.total ?? null,
-            blocks: stat0?.tackles?.blocks ?? null,
-            interceptions: stat0?.tackles?.interceptions ?? null,
-          },
-
-          duels: {
-            total: stat0?.duels?.total ?? null,
-            won: stat0?.duels?.won ?? null,
-          },
-
-          dribbles: {
-            attempts: stat0?.dribbles?.attempts ?? null,
-            success: stat0?.dribbles?.success ?? null,
-            past: stat0?.dribbles?.past ?? null,
-          },
-
-          fouls: {
-            drawn: stat0?.fouls?.drawn ?? null,
-            committed: stat0?.fouls?.committed ?? null,
-          },
-
-          cards: {
-            yellow: stat0?.cards?.yellow ?? 0,
-            red: stat0?.cards?.red ?? 0,
-          },
-
-          penalty: {
-            scored: stat0?.penalty?.scored ?? 0,
-            missed: stat0?.penalty?.missed ?? 0,
-          },
-
-          raw: stat0, // ✅ 원본 보관(선택)
-        };
-
-        await this.playerModel.findOneAndUpdate(
-          { apiFootballId: playerData.id },
-          {
-            statistics: [nextStat],
-            lastSyncAt: new Date(),
-          },
-          {
-            upsert: true,
-            returnDocument: 'after',
-          },
+        await this.savePlayerBase(playerData, stat0);
+        await this.upsertStatistic(
+          playerData.id,
+          stat0.league.id,
+          stat0.league.season,
+          this.buildStat(stat0),
         );
-
         await this.cacheManager.del(`player:detail:${playerData.id}`);
       }
+
       this.logger.log(`리그 ${leagueId} 어시스트왕 동기화 완료`);
     } catch (error) {
       this.logger.error(
@@ -287,10 +116,6 @@ export class PlayerScheduler {
         error.message,
       );
     }
-  }
-
-  private delay(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   public async syncPlayers(
@@ -302,22 +127,138 @@ export class PlayerScheduler {
     try {
       const response = await firstValueFrom(
         this.httpService.get(`${this.baseUrl}/players`, {
-          headers: {
-            'x-apisports-key': this.apiKey,
-          },
-          params: {
-            league: leagueId,
-            season: season,
-            page: 1,
-          },
+          headers: { 'x-apisports-key': this.apiKey },
+          params: { league: leagueId, season, page },
         }),
       );
-
       return response.data;
     } catch (err) {
       console.log(err);
     }
-
     this.logger.log('전부 선수 동기화 완료');
+  }
+
+  private async savePlayerBase(playerData: any, stat0: any) {
+    await this.playerModel.findOneAndUpdate(
+      { apiFootballId: playerData.id },
+      {
+        $set: {
+          apiFootballId: playerData.id,
+          name: playerData.name,
+          firstname: playerData.firstname,
+          lastname: playerData.lastname,
+          nationality: playerData.nationality,
+          photo: playerData.photo,
+          age: playerData.age,
+          birth: {
+            date: playerData.birth?.date,
+            place: playerData.birth?.place,
+            country: playerData.birth?.country,
+          },
+          height: playerData.height,
+          weight: playerData.weight,
+          position: stat0.games?.position,
+          currentTeam: {
+            id: stat0.team?.id,
+            name: stat0.team?.name,
+            logo: stat0.team?.logo,
+          },
+          lastSyncAt: new Date(),
+        },
+      },
+      { upsert: true },
+    );
+  }
+
+  private buildStat(stat0: any) {
+    return {
+      team: {
+        id: stat0?.team?.id,
+        name: stat0?.team?.name,
+        logo: stat0?.team?.logo,
+      },
+      league: {
+        id: stat0?.league?.id,
+        name: stat0?.league?.name,
+        season: stat0?.league?.season,
+      },
+      games: {
+        appearences:
+          stat0?.games?.appearences ?? stat0?.games?.appearances ?? 0,
+        minutes: stat0?.games?.minutes ?? 0,
+        rating: stat0?.games?.rating ?? null,
+        position: stat0?.games?.position ?? null,
+        number: stat0?.games?.number ?? null,
+      },
+      goals: {
+        total: stat0?.goals?.total ?? 0,
+        assists: stat0?.goals?.assists ?? 0,
+      },
+      shots: {
+        total: stat0?.shots?.total ?? null,
+        on: stat0?.shots?.on ?? null,
+      },
+      passes: {
+        total: stat0?.passes?.total ?? null,
+        key: stat0?.passes?.key ?? null,
+        accuracy: stat0?.passes?.accuracy ?? null,
+      },
+      tackles: {
+        total: stat0?.tackles?.total ?? null,
+        blocks: stat0?.tackles?.blocks ?? null,
+        interceptions: stat0?.tackles?.interceptions ?? null,
+      },
+      duels: {
+        total: stat0?.duels?.total ?? null,
+        won: stat0?.duels?.won ?? null,
+      },
+      dribbles: {
+        attempts: stat0?.dribbles?.attempts ?? null,
+        success: stat0?.dribbles?.success ?? null,
+        past: stat0?.dribbles?.past ?? null,
+      },
+      fouls: {
+        drawn: stat0?.fouls?.drawn ?? null,
+        committed: stat0?.fouls?.committed ?? null,
+      },
+      cards: {
+        yellow: stat0?.cards?.yellow ?? 0,
+        red: stat0?.cards?.red ?? 0,
+      },
+      penalty: {
+        scored: stat0?.penalty?.scored ?? 0,
+        missed: stat0?.penalty?.missed ?? 0,
+      },
+      raw: stat0,
+    };
+  }
+
+  private async upsertStatistic(
+    apiFootballId: number,
+    leagueId: number,
+    season: number,
+    nextStat: any,
+  ) {
+    // 해당 리그+시즌 통계 있으면 교체
+    const updated = await this.playerModel.findOneAndUpdate(
+      {
+        apiFootballId,
+        'statistics.league.id': leagueId,
+        'statistics.league.season': season,
+      },
+      { $set: { 'statistics.$': nextStat } },
+    );
+
+    // 없으면 추가
+    if (!updated) {
+      await this.playerModel.findOneAndUpdate(
+        { apiFootballId },
+        { $push: { statistics: nextStat } },
+      );
+    }
+  }
+
+  private delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

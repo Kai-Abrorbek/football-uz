@@ -4,12 +4,12 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { MatchScheduler } from './schedulers/match.scheduler';
 import { StandingScheduler } from './schedulers/standing.scheduler';
 import { TeamScheduler } from './schedulers/team.scheduler';
-import { PlayerScheduler as PlayersScheduler } from '../players/schedulers/player.scheduler';
 import { PlayerScheduler } from './schedulers/player.scheduler';
 import { DetailsScheduler } from './schedulers/details.scheduler';
 import { ApiFootballService } from './api-football.service';
 import { SyncSeasonDto } from './dto/syncSeasonDto';
 import { FEATURED_LEAGUES } from '../../constants/leagues.constant';
+import { PlayerStatsScheduler } from '../players/schedulers/player.scheduler';
 
 @ApiTags('API-Football Sync')
 @Controller('sync')
@@ -21,17 +21,10 @@ export class ApiFootballController {
     private standingScheduler: StandingScheduler,
     private teamScheduler: TeamScheduler,
     private playerScheduler: PlayerScheduler,
-    private playersScheduler: PlayersScheduler,
+    private playersScheduler: PlayerStatsScheduler,
     private detailsScheduler: DetailsScheduler,
     private apiFootballService: ApiFootballService,
   ) {}
-
-  @Post('fixtures')
-  @ApiOperation({ summary: '경기 정보 수동 동기화' })
-  async syncFixtures() {
-    await this.matchScheduler.initialSync();
-    return { message: '경기 동기화 완료' };
-  }
 
   @Post('live')
   @ApiOperation({ summary: '라이브 스코어 수동 동기화' })
@@ -54,21 +47,6 @@ export class ApiFootballController {
     return { message: '순위표 동기화 완료' };
   }
 
-  @Post('teams')
-  @ApiOperation({ summary: '팀 정보 수동 동기화' })
-  async syncTeams() {
-    await this.teamScheduler.syncTeams();
-    return { message: '팀 동기화 완료' };
-  }
-
-  @Post('players')
-  @ApiOperation({ summary: '선수 정보 수동 동기화' })
-  async syncPlayers() {
-    await this.playerScheduler.syncTopScorers();
-    return { message: '선수 동기화 완료' };
-  }
-
-  // api-football.controller.ts
   @Post('standings/:leagueId/:season')
   @ApiOperation({ summary: '특정 시즌 순위표 수동 동기화' })
   async syncStandingsBySeason(
@@ -90,16 +68,16 @@ export class ApiFootballController {
   @Post('sync-worldcup')
   @ApiOperation({ summary: '월드컵 동기화' })
   async syncWorldCup() {
-    const season = 2022;
+    const season = 2026;
     const leagueId = 1;
 
     this.logger.log('월드컵 동기화 시작...');
 
-    const fixtures = await this.apiFootballService.getFixturesByLeague(1, 2022);
+    const fixtures = await this.apiFootballService.getFixturesByLeague(1, 2026);
     for (const fixture of fixtures.response) {
       await this.matchScheduler.saveFixture(fixture);
     }
-    await this.standingScheduler.syncLeagueSeason(1, 2022);
+    await this.standingScheduler.syncLeagueSeason(1, 2026);
     await this.playersScheduler.syncTopScorers(leagueId, season);
     await this.playersScheduler.syncTopAssists(leagueId, season);
     return { message: '월드컵 동기화 완료' };
@@ -174,5 +152,14 @@ export class ApiFootballController {
     await this.playerScheduler.syncTopScorersBySeason(dto.season, dto.leagueId);
 
     return { message: `전체 동기화 완료 (season: ${dto.season})` };
+  }
+
+  @Post('players/all')
+  @ApiOperation({
+    summary: '시즌별 전체 선수 동기화 (페이지네이션, API 많이 소모)',
+  })
+  async syncAllPlayers(@Body() dto: SyncSeasonDto) {
+    await this.playerScheduler.syncAllPlayersBySeason(dto.season, dto.leagueId);
+    return { message: `전체 선수 동기화 완료 (season: ${dto.season})` };
   }
 }

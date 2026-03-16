@@ -54,6 +54,14 @@ export class MatchQueryDto {
   @Type(() => Number)
   @IsNumber()
   page?: number;
+
+  @IsOptional()
+  @IsString()
+  startUTC?: string;
+
+  @IsOptional()
+  @IsString()
+  endUTC?: string;
 }
 
 export class LeagueMatchQueryDto {

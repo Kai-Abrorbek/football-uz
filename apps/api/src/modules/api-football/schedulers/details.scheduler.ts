@@ -39,7 +39,7 @@ export class DetailsScheduler {
           'status.short': 'NS',
           date: { $gte: in59Min, $lte: in61Min },
           lineups: { $exists: false },
-          lineupFetchAttempts: { $exists: false },
+          // lineupFetchAttempts: { $exists: false },
         })
         .exec();
 
@@ -49,7 +49,7 @@ export class DetailsScheduler {
           'status.short': 'NS',
           date: { $gte: in29Min, $lte: in31Min },
           lineups: { $exists: false },
-          lineupFetchAttempts: 1,
+          // lineupFetchAttempts: 1,
         })
         .exec();
 
@@ -59,7 +59,7 @@ export class DetailsScheduler {
           'status.short': 'NS',
           date: { $gte: in14Min, $lte: in16Min },
           lineups: { $exists: false },
-          lineupFetchAttempts: 2,
+          // lineupFetchAttempts: 2,
         })
         .exec();
 

@@ -4,13 +4,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ApiFootballService } from '../api-football.service';
 import { Standing, StandingDocument } from '../../../schemas/standing.schema';
-import { League, LeagueDocument } from '../../../schemas/league.schema';
 import {
   FEATURED_LEAGUES,
   SEASON,
 } from 'apps/api/src/constants/leagues.constant';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import { Match, MatchDocument } from 'apps/api/src/schemas';
 
 @Injectable()
 export class StandingScheduler {
@@ -20,10 +20,11 @@ export class StandingScheduler {
   constructor(
     private apiFootballService: ApiFootballService,
     @InjectModel(Standing.name) private standingModel: Model<StandingDocument>,
+    @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  // @Cron('0 */3 * * *')
+  @Cron('0 */3 * * *')
   async syncStandings() {
     this.logger.log('Syncing standings...');
     const season = SEASON;
@@ -87,6 +88,40 @@ export class StandingScheduler {
     } catch (error) {
       this.logger.error('Failed to sync standings', error);
     }
+  }
+
+  // 1분마다 체크 - 경기 종료 후 5분 된 경기 있으면 해당 리그 순위표 업데이트
+  @Cron('*/1 * * * *')
+  async syncStandingsAfterMatch() {
+    try {
+      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+      const sixMinAgo = new Date(Date.now() - 6 * 60 * 1000);
+
+      // 종료된 지 5~6분 된 경기 찾기
+      const recentlyFinished = await this.matchModel
+        .find({
+          'status.short': 'FT',
+          updatedAt: { $gte: sixMinAgo, $lte: fiveMinAgo },
+        })
+        .distinct('league.id');
+
+      if (recentlyFinished.length === 0) return;
+
+      this.logger.log(
+        `Update the leaderboard for ${recentlyFinished.length} league matches that have ended`,
+      );
+
+      for (const leagueId of recentlyFinished) {
+        await this.syncLeagueSeason(leagueId, SEASON);
+        await this.sleep(500);
+      }
+    } catch (error) {
+      this.logger.error('Failed to sync standings after match', error);
+    }
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   async syncLeagueSeason(leagueId: number, season: number) {

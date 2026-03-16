@@ -142,6 +142,10 @@ export class ApiFootballService {
   }
 
   // === Players ===
+  async getPlayersByLeague(leagueId: number, season: number, page: number = 1) {
+    return this.request('/players', { league: leagueId, season, page });
+  }
+
   async getPlayerById(playerId: number, season: number) {
     return this.request('/players', { id: playerId, season });
   }

@@ -3,9 +3,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PlayersController } from './players.controller';
 import { PlayersService } from './players.service';
 import { Player, PlayerSchema } from '../../schemas/player.schema';
-import { PlayerScheduler } from './schedulers/player.scheduler';
 import { Match, MatchSchema, Team, TeamSchema } from '../../schemas';
 import { HttpModule } from '@nestjs/axios';
+import { PlayerStatsScheduler } from './schedulers/player.scheduler';
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import { HttpModule } from '@nestjs/axios';
     ]),
   ],
   controllers: [PlayersController],
-  providers: [PlayersService, PlayerScheduler],
-  exports: [PlayersService, PlayerScheduler],
+  providers: [PlayersService, PlayerStatsScheduler],
+  exports: [PlayersService, PlayerStatsScheduler],
 })
 export class PlayersModule {}
