@@ -233,4 +233,70 @@ export class UsersService {
   async findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email }).exec();
   }
+
+  async toggleFollow(
+    userId: string,
+    type: 'teams' | 'players' | 'leagues',
+    id: number,
+  ): Promise<{ following: boolean }> {
+    const fieldMap = {
+      teams: 'favoriteTeams',
+      players: 'favoritePlayers',
+      leagues: 'favoriteLeagues',
+    };
+
+    const field = fieldMap[type];
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new NotFoundException('유저를 찾을 수 없습니다');
+
+    const list = user[field] as number[];
+    const isFollowing = list.includes(id);
+
+    if (isFollowing) {
+      await this.userModel.findByIdAndUpdate(userId, {
+        $pull: { [field]: id },
+      });
+    } else {
+      await this.userModel.findByIdAndUpdate(userId, {
+        $addToSet: { [field]: id },
+      });
+    }
+
+    return { following: !isFollowing };
+  }
+
+  async getFollowing(userId: string) {
+    const user = await this.userModel
+      .findById(userId)
+      .select('favoriteTeams favoritePlayers favoriteLeagues');
+    if (!user) throw new NotFoundException('유저를 찾을 수 없습니다');
+
+    return {
+      teams: user.favoriteTeams,
+      players: user.favoritePlayers,
+      leagues: user.favoriteLeagues,
+    };
+  }
+
+  async getFollowingTeams(userId: string) {
+    const user = await this.userModel.findById(userId).select('favoriteTeams');
+    if (!user) throw new NotFoundException('유저를 찾을 수 없습니다');
+    return user.favoriteTeams;
+  }
+
+  async getFollowingPlayers(userId: string) {
+    const user = await this.userModel
+      .findById(userId)
+      .select('favoritePlayers');
+    if (!user) throw new NotFoundException('유저를 찾을 수 없습니다');
+    return user.favoritePlayers;
+  }
+
+  async getFollowingLeagues(userId: string) {
+    const user = await this.userModel
+      .findById(userId)
+      .select('favoriteLeagues');
+    if (!user) throw new NotFoundException('유저를 찾을 수 없습니다');
+    return user.favoriteLeagues;
+  }
 }

@@ -105,16 +105,16 @@ export class MatchScheduler {
   async syncLiveScores() {
     try {
       // DB에서 먼저 라이브 경기 있는지 확인
-      const liveCount = await this.matchModel.countDocuments({
-        'status.short': { $in: ['1H', 'HT', '2H', 'ET', 'BT', 'P'] },
-      });
+      // const liveCount = await this.matchModel.countDocuments({
+      //   'status.short': { $in: ['1H', 'HT', '2H', 'ET', 'BT', 'P'] },
+      // });
 
-      if (liveCount === 0) {
-        this.logger.log('No live matches in DB - skipping API call');
-        return;
-      }
+      // if (liveCount === 0) {
+      //   this.logger.log('No live matches in DB - skipping API call');
+      //   return;
+      // }
 
-      this.logger.log(`${liveCount} live matches found - syncing...`);
+      // this.logger.log(`${liveCount} live matches found - syncing...`);
 
       const data = await this.apiFootballService.getFixtureLive();
       const liveFixtures = data.response;

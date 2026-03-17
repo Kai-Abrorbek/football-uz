@@ -16,13 +16,21 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateFavoritesDto } from './dto/update-favorites.dto';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
 import { UpdateNotificationSettingsDto } from '../notifications/dto/update-notification-settings.dto';
+import { TeamsService } from '../teams/teams.service';
+import { PlayersService } from '../players/players.service';
+import { LeaguesService } from '../leagues/leagues.service';
 
 @ApiTags('Users')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private teamsService: TeamsService,
+    private playersService: PlayersService,
+    private leaguesService: LeaguesService,
+  ) {}
 
   @Get('me')
   @ApiOperation({ summary: '내 프로필 조회' })
@@ -117,5 +125,70 @@ export class UsersController {
   @ApiOperation({ summary: 'FCM 토큰 등록' })
   async registerFcmToken(@Req() req, @Body() body: { token: string }) {
     return this.usersService.registerFcmToken(req.user._id, body.token);
+  }
+
+  @Post('follow/:type/:id')
+  @ApiOperation({ summary: '팔로우/언팔로우 토글' })
+  async toggleFollow(
+    @Req() req,
+    @Param('type') type: 'teams' | 'players' | 'leagues',
+    @Param('id') id: number,
+  ) {
+    return this.usersService.toggleFollow(req.user._id, type, id);
+  }
+
+  @Get('following')
+  @ApiOperation({ summary: '팔로잉 목록 조회' })
+  async getFollowing(@Req() req) {
+    return this.usersService.getFollowing(req.user._id);
+  }
+
+  @Get('following/teams')
+  @ApiOperation({ summary: '팔로잉 팀 목록 + 다음 경기' })
+  async getFollowingTeams(@Req() req) {
+    const teamIds = await this.usersService.getFollowingTeams(req.user._id);
+    return this.teamsService.getFollowingTeamsWithNextMatch(teamIds);
+  }
+
+  @Get('following/players')
+  @ApiOperation({ summary: '팔로잉 선수 목록' })
+  async getFollowingPlayers(@Req() req) {
+    const playerIds = await this.usersService.getFollowingPlayers(req.user._id);
+    return this.playersService.getFollowingPlayers(playerIds);
+  }
+
+  @Get('following/leagues')
+  @ApiOperation({ summary: '팔로잉 리그 목록' })
+  async getFollowingLeagues(@Req() req) {
+    const leagueIds = await this.usersService.getFollowingLeagues(req.user._id);
+    return this.leaguesService.getFollowingLeagues(leagueIds);
+  }
+
+  @Get('suggested/teams')
+  async getSuggestedTeams(@Req() req) {
+    const following = await this.usersService.getFollowing(req.user._id);
+    return this.teamsService.getSuggestedTeams(
+      following.teams,
+      following.teams,
+    );
+  }
+
+  @Get('suggested/players')
+  async getSuggestedPlayers(@Req() req) {
+    const following = await this.usersService.getFollowing(req.user._id);
+    return this.playersService.getSuggestedPlayers(
+      following.players,
+      following.teams,
+      following.leagues,
+    );
+  }
+
+  @Get('suggested/leagues')
+  async getSuggestedLeagues(@Req() req) {
+    const following = await this.usersService.getFollowing(req.user._id);
+    return this.leaguesService.getSuggestedLeagues(
+      following.leagues,
+      following.teams,
+    );
   }
 }

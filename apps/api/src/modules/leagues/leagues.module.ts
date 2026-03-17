@@ -5,10 +5,14 @@ import { LeaguesService } from './leagues.service';
 import { League, LeagueSchema } from '../../schemas/league.schema';
 import { ApiFootballModule } from '../api-football/api-football.module';
 import { LeagueScheduler } from './schedulers/league.scheduler';
+import { Team, TeamSchema } from '../../schemas';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: League.name, schema: LeagueSchema }]),
+    MongooseModule.forFeature([
+      { name: League.name, schema: LeagueSchema },
+      { name: Team.name, schema: TeamSchema },
+    ]),
     ApiFootballModule,
   ],
   controllers: [LeaguesController],

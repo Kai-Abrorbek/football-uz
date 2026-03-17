@@ -6,6 +6,7 @@ import { PlayerQueryDto } from './dto/player-query.dto';
 import { Match, MatchDocument, Team, TeamDocument } from '../../schemas';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from '@nestjs/cache-manager';
+import { FEATURED_LEAGUES } from '../../constants/leagues.constant';
 
 @Injectable()
 export class PlayersService {
@@ -209,5 +210,65 @@ export class PlayersService {
       .find({ apiFootballId: { $in: ids } })
       .select('apiFootballId nationality age photo statistics')
       .lean();
+  }
+
+  async getFollowingPlayers(playerIds: number[]) {
+    return this.playerModel.find({ apiFootballId: { $in: playerIds } }).lean();
+  }
+
+  private shuffle = <T>(arr: T[]): T[] => {
+    const result = [...arr];
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  };
+
+  async getSuggestedPlayers(
+    excludeIds: number[] = [],
+    followingTeamIds: number[] = [],
+    followingLeagueIds: number[] = [],
+  ) {
+    let teamIds: number[] = [...followingTeamIds];
+
+    if (followingLeagueIds.length > 0) {
+      const leagueTeams = await this.teamModel
+        .find({ 'leagues.id': { $in: followingLeagueIds } })
+        .select('apiFootballId')
+        .lean();
+      teamIds = [
+        ...new Set([...teamIds, ...leagueTeams.map((t) => t.apiFootballId)]),
+      ];
+    }
+
+    if (teamIds.length === 0) {
+      const featuredTeams = await this.teamModel
+        .find({ 'leagues.id': { $in: FEATURED_LEAGUES } })
+        .select('apiFootballId')
+        .lean();
+      teamIds = featuredTeams.map((t) => t.apiFootballId);
+    }
+
+    // 팀당 5명씩 가져오기
+    const results: any[] = [];
+    const shuffledTeams = teamIds.sort(() => Math.random() - 0.5);
+
+    for (const teamId of shuffledTeams) {
+      if (results.length >= 50) break;
+
+      const players = await this.playerModel
+        .find({
+          apiFootballId: { $nin: excludeIds },
+          'currentTeam.id': teamId,
+          photo: { $exists: true, $ne: null },
+        })
+        .limit(5)
+        .lean();
+
+      results.push(...players);
+    }
+
+    return this.shuffle(results).slice(0, 50);
   }
 }

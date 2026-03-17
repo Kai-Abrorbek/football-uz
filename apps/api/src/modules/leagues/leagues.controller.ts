@@ -1,5 +1,5 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { LeaguesService } from './leagues.service';
 import { LeagueScheduler } from './schedulers/league.scheduler';
 
@@ -34,5 +34,12 @@ export class LeaguesController {
   async syncFixtures() {
     await this.leagueScheduler.syncLeagues();
     return { message: '리그 정보 동기화 완료' };
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: '리그 검색' })
+  @ApiQuery({ name: 'q', required: true })
+  async search(@Query('q') query: string) {
+    return this.leaguesService.search(query);
   }
 }
