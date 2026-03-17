@@ -14,6 +14,7 @@ import { DetailsScheduler } from './details.scheduler';
 export class MatchScheduler {
   private readonly logger = new Logger(MatchScheduler.name);
   private previousLiveIds: Set<number> = new Set();
+  private statsLastSyncMap = new Map<number, Date>();
 
   constructor(
     private apiFootballService: ApiFootballService,
@@ -100,21 +101,31 @@ export class MatchScheduler {
       this.logger.error('Failed to sync recent fixtures', error.message);
     }
   }
-
   @Cron('*/30 * * * * *')
   async syncLiveScores() {
     try {
-      // DB에서 먼저 라이브 경기 있는지 확인
-      // const liveCount = await this.matchModel.countDocuments({
-      //   'status.short': { $in: ['1H', 'HT', '2H', 'ET', 'BT', 'P'] },
-      // });
+      const now = new Date();
+      const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
 
-      // if (liveCount === 0) {
-      //   this.logger.log('No live matches in DB - skipping API call');
-      //   return;
-      // }
+      // 현재 라이브 상태이거나 최근 2시간 내 시작한 경기 체크
+      const liveCount = await this.matchModel.countDocuments({
+        $or: [
+          { 'status.short': { $in: ['1H', 'HT', '2H', 'ET', 'BT', 'P'] } },
+          {
+            'status.short': 'NS',
+            date: { $gte: twoHoursAgo, $lte: now },
+          },
+        ],
+      });
 
-      // this.logger.log(`${liveCount} live matches found - syncing...`);
+      if (liveCount === 0) {
+        this.logger.log(
+          'No live or recently started matches - skipping API call',
+        );
+        return;
+      }
+
+      this.logger.log(`${liveCount} potential live matches found - syncing...`);
 
       const data = await this.apiFootballService.getFixtureLive();
       const liveFixtures = data.response;
@@ -158,7 +169,6 @@ export class MatchScheduler {
       this.logger.error('Failed to sync live scores', error);
     }
   }
-
   public async syncMatch(apiFootballId: number) {
     try {
       const data = await this.apiFootballService.getFixtureById(apiFootballId);
@@ -175,11 +185,27 @@ export class MatchScheduler {
   }
 
   public async saveFixture(fixture: any) {
-    const statistics = await this.syncMatchDetails(fixture.fixture.id);
+    const fixtureId = fixture.fixture.id;
+    const status = fixture.fixture.status.short;
+
+    // 통계 가져올지 결정
+    const isFinished = ['FT', 'AET', 'PEN'].includes(status);
+    const lastStatsSync = this.statsLastSyncMap.get(fixtureId);
+    const twentyMinAgo = new Date(Date.now() - 20 * 60 * 1000);
+    const shouldSyncStats =
+      isFinished || !lastStatsSync || lastStatsSync < twentyMinAgo;
+
+    const statistics = shouldSyncStats
+      ? await this.syncMatchDetails(fixtureId)
+      : undefined;
+
+    if (shouldSyncStats) {
+      this.statsLastSyncMap.set(fixtureId, new Date());
+    }
 
     const fixtureData: any = {
       $set: {
-        apiFootballId: fixture.fixture.id,
+        apiFootballId: fixtureId,
         referee: fixture.fixture.referee,
         league: {
           id: fixture.league.id,
@@ -248,10 +274,14 @@ export class MatchScheduler {
           city: fixture.fixture.venue?.city,
         },
         round: fixture.league.round,
-        statistics,
         lastSyncAt: new Date(),
       },
     };
+
+    // 통계 있을 때만 업데이트
+    if (statistics !== undefined) {
+      fixtureData.$set.statistics = statistics;
+    }
 
     // events 있을 때만 업데이트
     if (fixture.events?.length > 0) {
@@ -287,23 +317,16 @@ export class MatchScheduler {
     }
 
     await this.matchModel.findOneAndUpdate(
-      { apiFootballId: fixture.fixture.id },
+      { apiFootballId: fixtureId },
       fixtureData,
       { upsert: true, returnDocument: 'after' },
     );
 
-    // ✅ NS 상태이고 예측 없을 때만 백그라운드에서 예측 생성
-    if (
-      fixture.fixture.status.short === 'NS' ||
-      fixture.fixture.status.short === '1H'
-    ) {
-      this.predictionService
-        .createPrediction(fixture.fixture.id)
-        .catch((err) => {
-          this.logger.warn(
-            `예측 생성 실패 (${fixture.fixture.id}): ${err.message}`,
-          );
-        });
+    // NS 또는 1H 상태일 때 예측 생성
+    if (status === 'NS' || status === '1H') {
+      this.predictionService.createPrediction(fixtureId).catch((err) => {
+        this.logger.warn(`예측 생성 실패 (${fixtureId}): ${err.message}`);
+      });
     }
   }
 
