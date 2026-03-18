@@ -92,7 +92,7 @@ export class DetailsScheduler {
   }
 
   // 종료 직후 - 1분마다 체크
-  @Cron('*/1 * * * *')
+  // @Cron('*/1 * * * *')
   async syncFinishedMatchDetails() {
     this.logger.log('Checking recently finished matches...');
 

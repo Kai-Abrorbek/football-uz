@@ -163,6 +163,8 @@ export class MatchScheduler {
         }
       }
 
+      console.log(justFinished);
+      console.log(this.previousLiveIds);
       await this.cacheManager.del('matches:live');
       this.logger.log(`Synced ${liveFixtures.length} live matches`);
     } catch (error) {
@@ -196,13 +198,12 @@ export class MatchScheduler {
     const shouldSyncStats =
       isFinished || !lastStatsSync || lastStatsSync < twentyMinAgo;
 
-    console.log(
-      `[saveFixture] id: ${fixtureId}, status: ${status}, isFinished: ${isFinished}, lastStatsSync: ${lastStatsSync}, shouldSyncStats: ${shouldSyncStats}`,
-    );
-
-    const statistics = shouldSyncStats
+    const result = shouldSyncStats
       ? await this.syncMatchDetails(fixtureId)
       : undefined;
+
+    const statistics = result ? result.statistics : undefined;
+    const statsData = result ? result.statsData : undefined;
 
     if (shouldSyncStats) {
       this.statsLastSyncMap.set(fixtureId, new Date());
@@ -289,6 +290,11 @@ export class MatchScheduler {
       fixtureData.$set.statistics = statistics;
     }
 
+    if (statistics !== undefined) {
+      fixtureData.$set.statistics = statistics;
+      fixtureData.$set.statisticsRaw = statsData?.response;
+    }
+
     // events 있을 때만 업데이트
     if (fixture.events?.length > 0) {
       fixtureData.$set.events =
@@ -344,7 +350,7 @@ export class MatchScheduler {
         statsData.response,
       );
 
-      return statistics;
+      return { statistics, statsData };
     } catch (error: any) {
       this.logger.error(
         `Failed to sync details for fixture ${fixtureId}`,

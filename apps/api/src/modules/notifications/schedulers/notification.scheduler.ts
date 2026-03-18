@@ -34,7 +34,7 @@ export class NotificationScheduler {
       );
 
       await this.notificationsService.sendMatchStartNotification(
-        match.apiFootballId,
+        match._id.toString(),
         match.homeTeam.name!,
         match.awayTeam.name!,
       );

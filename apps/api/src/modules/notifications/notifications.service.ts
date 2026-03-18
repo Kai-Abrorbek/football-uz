@@ -125,7 +125,7 @@ export class NotificationsService {
   }
 
   async sendMatchStartNotification(
-    matchId: number,
+    matchId: string,
     homeTeam: string,
     awayTeam: string,
   ) {
@@ -141,7 +141,7 @@ export class NotificationsService {
         {
           matchAlerts: {
             $elemMatch: {
-              matchId: matchId.toString(),
+              matchId: matchId,
               matchStart: true,
             },
           },
