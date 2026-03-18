@@ -18,7 +18,7 @@ export class LeaguesService {
 
   async findFeatured() {
     return this.leagueModel
-      .find({ isFeatured: true, isActive: true })
+      .find({ apiFootballId: { $in: FEATURED_LEAGUES }, isActive: true })
       .sort({ priority: 1 });
   }
 

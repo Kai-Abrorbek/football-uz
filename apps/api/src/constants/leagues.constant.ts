@@ -1,18 +1,26 @@
 export const FEATURED_LEAGUES = [
-  39, // Premier League
-  140, // La Liga
-  61, // Ligue 1
-  78, // Bundesliga
-  135, // Serie A
-  2, // Champions League
-  3, // UEFA Europa League
-  203, // Süper Lig (터키)
-  1, //  World Cup
-  4, //  Euro Championship
-  9, //Copa America
-  31, // AFC Asian Cup
-  369, // Uzbekistan Super League
-  802, // Uzbekistan Cup
+  39, // Premier League  => O
+  140, // La Lig => O
+  61, // Ligue 1 => O
+  78, // Bundesliga => X 선수 가져옴,
+  135, // Serie A => O
+  2, // UEFA Champions League => O
+  3, // UEFA Europa League => O
+  848, // UEFA Conference League => X 선수만 가져옴
+  203, // Süper Lig
+  94, // Primeira Liga => X 선수만 가져옴
+  88, // Eredivisie => X 선수만 가져옴
+  307, // Saudi Pro League => X 선수만 가져옴
+  253, // MLS => X 선수만 가져옴
+  17, // AFC Champions League => X
+  32, // AFC Asian Qualifiers => X
+  1, // World Cup => O
+  4, // Euro Championship => O
+  9, // Copa America => O
+  31, // AFC Asian Cup => O
+  5, // UEFA Nations League => O
+  369, // Uzbekistan Super League  => O
+  802, // Uzbekistan Cup => O
 ];
 
 export const FEATURED_LEAGUES_Object = [
@@ -22,14 +30,22 @@ export const FEATURED_LEAGUES_Object = [
   { id: 78, name: 'Bundesliga', totalRounds: 34 },
   { id: 135, name: 'Serie A', totalRounds: 38 },
   { id: 369, name: 'Uzbekistan Super League', totalRounds: 26 },
-  { id: 802, name: 'Uzbekistan Cup', totalRounds: null }, // 토너먼트
-  { id: 2, name: 'UEFA Champions League', totalRounds: 8 }, // 리그 페이즈
-  { id: 3, name: 'UEFA Europa League', totalRounds: 8 }, // 리그 페이즈
+  { id: 802, name: 'Uzbekistan Cup', totalRounds: null },
+  { id: 2, name: 'UEFA Champions League', totalRounds: 8 },
+  { id: 3, name: 'UEFA Europa League', totalRounds: 8 },
+  { id: 848, name: 'UEFA Conference League', totalRounds: 8 },
   { id: 203, name: 'Süper Lig', totalRounds: 38 },
-  { id: 1, name: 'World Cup', totalRounds: null }, // 토너먼트
-  { id: 4, name: 'Euro Championship', totalRounds: null }, // 토너먼트
-  { id: 9, name: 'Copa America', totalRounds: null }, // 토너먼트
-  { id: 31, name: 'AFC Asian Cup', totalRounds: null }, // 토너먼트
+  { id: 94, name: 'Primeira Liga', totalRounds: 34 },
+  { id: 88, name: 'Eredivisie', totalRounds: 34 },
+  { id: 307, name: 'Saudi Pro League', totalRounds: 30 },
+  { id: 253, name: 'MLS', totalRounds: 34 },
+  { id: 17, name: 'AFC Champions League', totalRounds: null },
+  { id: 32, name: 'AFC Asian Qualifiers', totalRounds: null },
+  { id: 1, name: 'World Cup', totalRounds: null },
+  { id: 4, name: 'Euro Championship', totalRounds: null },
+  { id: 9, name: 'Copa America', totalRounds: null },
+  { id: 31, name: 'AFC Asian Cup', totalRounds: null },
+  { id: 5, name: 'UEFA Nations League', totalRounds: null },
 ];
 
 interface LeagueConfig {

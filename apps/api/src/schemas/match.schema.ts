@@ -340,6 +340,9 @@ export class Match {
 
   @Prop({ type: String, default: undefined })
   streamKey?: string; // RTMP 스트림 키 (예: match123)
+
+  @Prop({ type: Boolean, default: false })
+  detailsSyncedAfterFT: boolean;
 }
 
 export const MatchSchema = SchemaFactory.createForClass(Match);

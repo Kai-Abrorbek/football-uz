@@ -247,6 +247,36 @@ export class MatchesService {
       }
     }
 
+    if (matchObj.events) {
+      matchObj.events = await Promise.all(
+        matchObj.events.map(async (event) => {
+          const [player, assist] = await Promise.all([
+            event.player?.id
+              ? this.playerModel
+                  .findOne({ apiFootballId: event.player.id })
+                  .select('photo name')
+                  .lean()
+              : null,
+            event.assist?.id
+              ? this.playerModel
+                  .findOne({ apiFootballId: event.assist.id })
+                  .select('photo name')
+                  .lean()
+              : null,
+          ]);
+
+          return {
+            ...event,
+            player: event.player
+              ? { ...event.player, photo: player?.photo || null }
+              : event.player,
+            assist: event.assist
+              ? { ...event.assist, photo: assist?.photo || null }
+              : event.assist,
+          };
+        }),
+      );
+    }
     const [homeTeam, awayTeam] = await Promise.all([
       this.teamModel
         .findOne({ apiFootballId: matchObj.homeTeam.id })

@@ -103,16 +103,19 @@ export class DetailsScheduler {
         .find({
           'status.short': 'FT',
           updatedAt: { $gte: fiveMinAgo },
-          $or: [
-            { lineups: { $exists: false } },
-            { 'statistics.0': { $exists: false } },
-          ],
+          detailsSyncedAfterFT: { $ne: true },
         })
         .exec();
 
       for (const match of matches) {
-        await this.syncMatchDetails(match.apiFootballId);
-        await this.syncMatchPlayerRatings(match);
+        const success = await this.syncMatchDetails(match.apiFootballId);
+
+        if (success) {
+          await this.syncMatchPlayerRatings(match);
+          await this.matchModel.findByIdAndUpdate(match._id, {
+            $set: { detailsSyncedAfterFT: true },
+          });
+        }
         await this.sleep(2000);
       }
 

@@ -169,6 +169,7 @@ export class MatchScheduler {
       this.logger.error('Failed to sync live scores', error);
     }
   }
+
   public async syncMatch(apiFootballId: number) {
     try {
       const data = await this.apiFootballService.getFixtureById(apiFootballId);
@@ -194,6 +195,10 @@ export class MatchScheduler {
     const twentyMinAgo = new Date(Date.now() - 20 * 60 * 1000);
     const shouldSyncStats =
       isFinished || !lastStatsSync || lastStatsSync < twentyMinAgo;
+
+    console.log(
+      `[saveFixture] id: ${fixtureId}, status: ${status}, isFinished: ${isFinished}, lastStatsSync: ${lastStatsSync}, shouldSyncStats: ${shouldSyncStats}`,
+    );
 
     const statistics = shouldSyncStats
       ? await this.syncMatchDetails(fixtureId)
@@ -275,6 +280,7 @@ export class MatchScheduler {
         },
         round: fixture.league.round,
         lastSyncAt: new Date(),
+        updatedAt: new Date(),
       },
     };
 
@@ -350,7 +356,7 @@ export class MatchScheduler {
 
   private getLast7Days(): string[] {
     const dates: string[] = [];
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 1; i++) {
       const date = new Date();
       date.setDate(date.getDate() - i);
       dates.push(date.toISOString().split('T')[0]);

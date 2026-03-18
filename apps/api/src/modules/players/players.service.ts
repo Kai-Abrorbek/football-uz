@@ -121,19 +121,40 @@ export class PlayersService {
   }
 
   async getTopScorers(leagueId: number) {
-    // leagues 배열에서 해당 리그 ID를 가진 팀들 찾기
     const teams = await this.teamModel.find({
       'leagues.id': leagueId,
     });
 
     const teamIds = teams.map((t) => t.apiFootballId);
-    return this.playerModel
+
+    const players = await this.playerModel
       .find({
         'currentTeam.id': { $in: teamIds },
-        'statistics.goals.total': { $exists: true, $gt: 0 },
+        statistics: {
+          $elemMatch: {
+            'league.id': leagueId,
+            'goals.total': { $gt: 0 },
+          },
+        },
       })
-      .sort({ 'statistics.goals.total': -1 })
       .lean();
+
+    // 해당 리그 통계 기준으로 정렬
+    return players
+      .map((player) => {
+        const stat = player.statistics.find(
+          (s: any) => s.league?.id === leagueId,
+        );
+        return {
+          ...player,
+          statistics: stat ? [stat] : [],
+        };
+      })
+      .sort(
+        (a, b) =>
+          (b.statistics[0]?.goals?.total ?? 0) -
+          (a.statistics[0]?.goals?.total ?? 0),
+      );
   }
 
   async getTopAssists(leagueId: number) {
@@ -150,59 +171,109 @@ export class PlayersService {
     }
 
     const teamIds = teams.map((t) => t.apiFootballId);
-    return this.playerModel
+    const players = await this.playerModel
       .find({
         'currentTeam.id': { $in: teamIds },
-        'statistics.goals.assists': { $exists: true, $gt: 0 },
+        statistics: {
+          $elemMatch: {
+            'league.id': leagueId,
+            'goals.assists': { $gt: 0 },
+          },
+        },
       })
-      .sort({ 'statistics.goals.assists': -1 })
       .lean();
+
+    return players
+      .map((player) => {
+        const stat = player.statistics.find(
+          (s: any) => s.league?.id === leagueId,
+        );
+        return {
+          ...player,
+          statistics: stat ? [stat] : [],
+        };
+      })
+      .sort(
+        (a, b) =>
+          (b.statistics[0]?.goals?.assists ?? 0) -
+          (a.statistics[0]?.goals?.assists ?? 0),
+      );
   }
 
   async getYellowCards(leagueId: number) {
     const teams = await this.teamModel
+      .find({ leagues: { $elemMatch: { id: leagueId } } })
+      .lean();
+
+    if (!teams || teams.length === 0) return [];
+
+    const teamIds = teams.map((t) => t.apiFootballId);
+
+    const players = await this.playerModel
       .find({
-        leagues: {
-          $elemMatch: { id: leagueId },
+        'currentTeam.id': { $in: teamIds },
+        statistics: {
+          $elemMatch: {
+            'league.id': leagueId,
+            'cards.yellow': { $gt: 0 },
+          },
         },
       })
       .lean();
 
-    if (!teams || teams.length === 0) {
-      return [];
-    }
-
-    const teamIds = teams.map((t) => t.apiFootballId);
-    return this.playerModel
-      .find({
-        'currentTeam.id': { $in: teamIds },
-        'statistics.cards.yellow': { $exists: true, $gt: 0 },
+    return players
+      .map((player) => {
+        const stat = player.statistics.find(
+          (s: any) => s.league?.id === leagueId,
+        );
+        return {
+          ...player,
+          statistics: stat ? [stat] : [],
+        };
       })
-      .sort({ 'statistics.cards.yellow': -1 })
-      .lean();
+      .sort(
+        (a, b) =>
+          (b.statistics[0]?.cards?.yellow ?? 0) -
+          (a.statistics[0]?.cards?.yellow ?? 0),
+      );
   }
 
   async getRedCards(leagueId: number) {
     const teams = await this.teamModel
+      .find({ leagues: { $elemMatch: { id: leagueId } } })
+      .lean();
+
+    if (!teams || teams.length === 0) return [];
+
+    const teamIds = teams.map((t) => t.apiFootballId);
+
+    const players = await this.playerModel
       .find({
-        leagues: {
-          $elemMatch: { id: leagueId },
+        'currentTeam.id': { $in: teamIds },
+        statistics: {
+          $elemMatch: {
+            'league.id': leagueId,
+            'cards.red': { $gt: 0 },
+          },
         },
       })
       .lean();
 
-    if (!teams || teams.length === 0) {
-      return [];
-    }
-
-    const teamIds = teams.map((t) => t.apiFootballId);
-    return this.playerModel
-      .find({
-        'currentTeam.id': { $in: teamIds },
-        'statistics.cards.red': { $exists: true, $gt: 0 },
+    return players
+      .map((player) => {
+        const stat = player.statistics.find(
+          (s: any) => s.league?.id === leagueId,
+        );
+        return {
+          ...player,
+          statistics: stat ? [stat] : [],
+        };
       })
-      .sort({ 'statistics.cards.red': -1 })
-      .lean();
+      .sort(
+        (a, b) =>
+          (b.statistics[0]?.cards?.red ?? 0) -
+          (a.statistics[0]?.cards?.red ?? 0),
+      );
   }
 
   async getPlayersByIds(ids: number[]) {
