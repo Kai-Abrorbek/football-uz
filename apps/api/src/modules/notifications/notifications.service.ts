@@ -24,7 +24,7 @@ export class NotificationsService {
       throw new NotFoundException('유저 FCM 토큰이 없습니다');
     }
 
-    // FCM 전송
+    // FCM 전송 (data 안에 로고 URL 포함 가능)
     await this.fcmService.sendToMultipleDevices(
       user.fcmTokens,
       dto.title,
@@ -32,20 +32,11 @@ export class NotificationsService {
       dto.data,
     );
 
-    // DB 저장
     await this.notificationModel.create({
       userId: user._id,
       type: dto.data?.type || 'general',
-      title: {
-        uz: dto.title,
-        ru: dto.title,
-        en: dto.title,
-      },
-      body: {
-        uz: dto.body,
-        ru: dto.body,
-        en: dto.body,
-      },
+      title: { uz: dto.title, ru: dto.title, en: dto.title },
+      body: { uz: dto.body, ru: dto.body, en: dto.body },
       data: dto.data,
       isRead: false,
       sentAt: new Date(),
@@ -69,20 +60,11 @@ export class NotificationsService {
       dto.data,
     );
 
-    // 각 유저별 알림 저장
     const notifications = users.map((user) => ({
       userId: user._id,
       type: dto.data?.type || 'general',
-      title: {
-        uz: dto.title,
-        ru: dto.title,
-        en: dto.title,
-      },
-      body: {
-        uz: dto.body,
-        ru: dto.body,
-        en: dto.body,
-      },
+      title: { uz: dto.title, ru: dto.title, en: dto.title },
+      body: { uz: dto.body, ru: dto.body, en: dto.body },
       data: dto.data,
       isRead: false,
       sentAt: new Date(),
@@ -94,7 +76,6 @@ export class NotificationsService {
   }
 
   async sendToAll(dto: SendNotificationDto) {
-    // 토픽 사용 (모든 유저)
     await this.fcmService.sendToTopic(
       'all_users',
       dto.title,
@@ -102,20 +83,11 @@ export class NotificationsService {
       dto.data,
     );
 
-    // 전체 유저에게 알림 저장
     await this.notificationModel.create({
-      userId: null, // 전체 알림
+      userId: null,
       type: dto.data?.type || 'general',
-      title: {
-        uz: dto.title,
-        ru: dto.title,
-        en: dto.title,
-      },
-      body: {
-        uz: dto.body,
-        ru: dto.body,
-        en: dto.body,
-      },
+      title: { uz: dto.title, ru: dto.title, en: dto.title },
+      body: { uz: dto.body, ru: dto.body, en: dto.body },
       data: dto.data,
       isRead: false,
       sentAt: new Date(),
@@ -129,21 +101,15 @@ export class NotificationsService {
     homeTeam: string,
     awayTeam: string,
   ) {
-    // 해당 팀을 즐겨찾기한 유저 찾기
     const users = await this.userModel.find({
       $or: [
-        // 전체 알람 ON + 경기별 알람 없음
         {
           'notificationSettings.matchStart': true,
           'matchAlerts.matchId': { $exists: false },
         },
-        // 경기별 알람 ON
         {
           matchAlerts: {
-            $elemMatch: {
-              matchId: matchId,
-              matchStart: true,
-            },
+            $elemMatch: { matchId: matchId, matchStart: true },
           },
         },
       ],
@@ -151,36 +117,52 @@ export class NotificationsService {
 
     if (users.length === 0) return;
 
-    const tokens = users.flatMap((u) => u.fcmTokens);
-
-    await this.fcmService.sendToMultipleDevices(
-      tokens,
-      `${homeTeam} vs ${awayTeam}`,
-      '경기가 곧 시작됩니다!',
-      {
-        type: 'matchStart',
-        screen: 'Match',
-        referenceId: matchId.toString(),
-      },
+    const filteredUsers = await Promise.all(
+      users.map(async (user) => {
+        const alreadySent = await this.notificationModel.findOne({
+          userId: user._id,
+          'data.referenceId': matchId,
+          type: 'matchStart',
+        });
+        return alreadySent ? null : user;
+      }),
     );
 
-    const notifications = users.map((user) => ({
-      userId: user._id,
+    const validUsers = filteredUsers.filter(Boolean);
+    if (validUsers.length === 0) return;
+
+    const tokens = validUsers.flatMap((u) => u!.fcmTokens);
+
+    if (tokens.length > 0) {
+      await this.fcmService.sendToMultipleDevices(
+        tokens,
+        `${homeTeam} vs ${awayTeam}`,
+        '경기가 곧 시작됩니다!',
+        {
+          type: 'matchStart',
+          screen: 'Match',
+          referenceId: matchId,
+          logoUrl: 'https://cdn-icons-png.flaticon.com/512/1165/1165183.png',
+        },
+      );
+    }
+
+    const notifications = validUsers.map((user) => ({
+      userId: user!._id,
       type: 'matchStart',
       title: {
         uz: `${homeTeam} vs ${awayTeam}`,
         ru: `${homeTeam} vs ${awayTeam}`,
         en: `${homeTeam} vs ${awayTeam}`,
+        kr: `${homeTeam} vs ${awayTeam}`,
       },
       body: {
         uz: "O'yin tez orada boshlanadi!",
         ru: 'Матч скоро начнется!',
         en: 'Match starting soon!',
+        kr: '경기가 곧 시작됩니다!',
       },
-      data: {
-        screen: 'Match',
-        referenceId: matchId.toString(),
-      },
+      data: { screen: 'Match', referenceId: matchId },
       isRead: false,
       sentAt: new Date(),
     }));
@@ -188,33 +170,8 @@ export class NotificationsService {
     await this.notificationModel.insertMany(notifications);
   }
 
-  async getUserNotifications(userId: string, limit: number = 20) {
-    return this.notificationModel
-      .find({
-        $or: [{ userId }, { userId: null }], // 개인 + 전체 알림
-      })
-      .sort({ sentAt: -1 })
-      .limit(limit)
-      .exec();
-  }
-
-  async markAsRead(notificationId: string) {
-    await this.notificationModel.findByIdAndUpdate(notificationId, {
-      isRead: true,
-    });
-    return { message: '읽음 처리되었습니다' };
-  }
-
-  async markAllAsRead(userId: string) {
-    await this.notificationModel.updateMany(
-      { userId, isRead: false },
-      { isRead: true },
-    );
-    return { message: '모든 알림이 읽음 처리되었습니다' };
-  }
-
   async sendGoalNotification(
-    matchId: number,
+    matchId: string,
     homeTeam: string,
     awayTeam: string,
     scorerName: string,
@@ -237,6 +194,8 @@ export class NotificationsService {
         type: 'goal',
         screen: 'Match',
         referenceId: matchId.toString(),
+        // 🚨 득점팀 로고 변수로 교체해!
+        logoUrl: 'https://cdn-icons-png.flaticon.com/512/1165/1165183.png',
       },
     );
 
@@ -255,10 +214,7 @@ export class NotificationsService {
         en: `${scorerName} scored!`,
         kr: `${scorerName} 골!`,
       },
-      data: {
-        screen: 'Match',
-        referenceId: matchId.toString(),
-      },
+      data: { screen: 'Match', referenceId: matchId.toString() },
       isRead: false,
       sentAt: new Date(),
     }));
@@ -267,7 +223,7 @@ export class NotificationsService {
   }
 
   async sendMatchEndNotification(
-    matchId: number,
+    matchId: string,
     homeTeam: string,
     awayTeam: string,
     homeScore: number,
@@ -284,11 +240,12 @@ export class NotificationsService {
     await this.fcmService.sendToMultipleDevices(
       tokens,
       `🏁 ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
-      '경기 종료!',
+      'Match Finish!',
       {
         type: 'matchEnd',
         screen: 'Match',
         referenceId: matchId.toString(),
+        logoUrl: 'https://cdn-icons-png.flaticon.com/512/1165/1165183.png',
       },
     );
 
@@ -307,15 +264,37 @@ export class NotificationsService {
         en: `Match finished!`,
         kr: `경기 종료!`,
       },
-      data: {
-        screen: 'Match',
-        referenceId: matchId.toString(),
-      },
+      data: { screen: 'Match', referenceId: matchId.toString() },
       isRead: false,
       sentAt: new Date(),
     }));
 
     await this.notificationModel.insertMany(notifications);
+  }
+
+  async getUserNotifications(userId: string, limit: number = 20) {
+    return this.notificationModel
+      .find({
+        $or: [{ userId }, { userId: null }],
+      })
+      .sort({ sentAt: -1 })
+      .limit(limit)
+      .exec();
+  }
+
+  async markAsRead(notificationId: string) {
+    await this.notificationModel.findByIdAndUpdate(notificationId, {
+      isRead: true,
+    });
+    return { message: '읽음 처리되었습니다' };
+  }
+
+  async markAllAsRead(userId: string) {
+    await this.notificationModel.updateMany(
+      { userId, isRead: false },
+      { isRead: true },
+    );
+    return { message: '모든 알림이 읽음 처리되었습니다' };
   }
 
   async getMatchAlert(userId: string, matchId: string) {
@@ -354,7 +333,7 @@ export class NotificationsService {
 
   async saveFcmToken(userId: string, token: string) {
     await this.userModel.findByIdAndUpdate(userId, {
-      $addToSet: { fcmTokens: token }, // 중복 방지
+      $addToSet: { fcmTokens: token },
     });
     return { message: 'FCM 토큰 저장 완료' };
   }

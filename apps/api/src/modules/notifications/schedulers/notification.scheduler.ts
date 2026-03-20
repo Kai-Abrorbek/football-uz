@@ -26,6 +26,7 @@ export class NotificationScheduler {
         $gte: now,
         $lte: in30Min,
       },
+      notifiedEvents: { $not: { $elemMatch: { $eq: 'matchStart' } } }, // ← 추가
     });
 
     for (const match of upcomingMatches) {
@@ -38,6 +39,11 @@ export class NotificationScheduler {
         match.homeTeam.name!,
         match.awayTeam.name!,
       );
+
+      // 알림 보낸 경기 기록 ← 추가
+      await this.matchModel.findByIdAndUpdate(match._id, {
+        $addToSet: { notifiedEvents: 'matchStart' },
+      });
     }
   }
 
@@ -71,7 +77,7 @@ export class NotificationScheduler {
         );
 
         await this.notificationsService.sendGoalNotification(
-          match.apiFootballId,
+          match._id.toString(),
           match.homeTeam.name!,
           match.awayTeam.name!,
           goal.player?.name ?? 'Unknown',
@@ -104,7 +110,7 @@ export class NotificationScheduler {
       );
 
       await this.notificationsService.sendMatchEndNotification(
-        match.apiFootballId,
+        match._id.toString(),
         match.homeTeam.name!,
         match.awayTeam.name!,
         match.goals?.home ?? 0,

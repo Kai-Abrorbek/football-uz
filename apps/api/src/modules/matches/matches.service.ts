@@ -339,7 +339,6 @@ export class MatchesService {
     const result = await this.matchModel
       .find(filter)
       .sort({ date: 1 })
-      .limit(limit)
       .lean()
       .exec();
 

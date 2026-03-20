@@ -108,14 +108,13 @@ export class DetailsScheduler {
         .exec();
 
       for (const match of matches) {
-        const success = await this.syncMatchDetails(match.apiFootballId);
+        await this.syncMatchDetails(match.apiFootballId);
 
-        if (success) {
-          await this.syncMatchPlayerRatings(match);
-          await this.matchModel.findByIdAndUpdate(match._id, {
-            $set: { detailsSyncedAfterFT: true },
-          });
-        }
+        await this.syncMatchPlayerRatings(match);
+        await this.matchModel.findByIdAndUpdate(match._id, {
+          $set: { detailsSyncedAfterFT: true },
+        });
+
         await this.sleep(2000);
       }
 

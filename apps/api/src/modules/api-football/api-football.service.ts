@@ -174,6 +174,13 @@ export class ApiFootballService {
   }
 
   // === Leagues ===
+  async getLeaguesRounds(leagueId: number, season: number) {
+    return this.request('/fixtures/rounds', {
+      league: leagueId,
+      season: season,
+    });
+  }
+
   async getLeagues(season?: number) {
     return this.request('/leagues', season ? { season } : {});
   }

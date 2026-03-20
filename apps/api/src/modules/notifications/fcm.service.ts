@@ -40,14 +40,15 @@ export class FcmService implements OnModuleInit {
     }
   }
 
+  // 1. 단일 기기 전송
   async sendToDevice(token: string, title: string, body: string, data?: any) {
     try {
       const message = {
-        notification: {
-          title,
-          body,
+        data: {
+          title: String(title),
+          body: String(body),
+          ...(data || {}),
         },
-        data: data || {},
         token,
       };
 
@@ -60,6 +61,7 @@ export class FcmService implements OnModuleInit {
     }
   }
 
+  // 2. 다중 기기 전송
   async sendToMultipleDevices(
     tokens: string[],
     title: string,
@@ -67,45 +69,33 @@ export class FcmService implements OnModuleInit {
     data?: any,
   ) {
     try {
-      // 빈 배열 체크
       if (!tokens || tokens.length === 0) {
         this.logger.warn('No FCM tokens provided, skipping notification');
-        return {
-          successCount: 0,
-          failureCount: 0,
-          responses: [],
-        };
+        return { successCount: 0, failureCount: 0, responses: [] };
       }
 
-      // 유효하지 않은 토큰 필터링
       const validTokens = tokens.filter(
-        (token) => token && token.trim().length > 0,
+        (token) =>
+          token &&
+          token.trim().length > 0 &&
+          !token.startsWith('ExponentPushToken'),
       );
 
       if (validTokens.length === 0) {
         this.logger.warn('No valid FCM tokens after filtering');
-        return {
-          successCount: 0,
-          failureCount: 0,
-          responses: [],
-        };
+        return { successCount: 0, failureCount: 0, responses: [] };
       }
 
-      console.log('FCM 전송 시도:', { tokens: validTokens.length, title });
-
       const message = {
-        notification: {
-          title,
-          body,
+        data: {
+          title: String(title),
+          body: String(body),
+          ...(data || {}),
         },
-        data: data || {},
         tokens: validTokens,
       };
 
       const response = await admin.messaging().sendEachForMulticast(message);
-
-      console.log('성공:', response.successCount);
-      console.log('실패:', response.failureCount);
 
       if (response.failureCount > 0) {
         const invalidTokens: string[] = [];
@@ -114,17 +104,17 @@ export class FcmService implements OnModuleInit {
           if (!resp.success) {
             this.logger.error(`토큰 ${idx} 실패:`, resp.error);
 
-            // 유효하지 않은 토큰이면 삭제 목록에 추가
             if (
               resp.error?.code === 'messaging/invalid-argument' ||
-              resp.error?.code === 'messaging/registration-token-not-registered'
+              resp.error?.code ===
+                'messaging/registration-token-not-registered' ||
+              resp.error?.code === 'messaging/invalid-registration-token'
             ) {
               invalidTokens.push(validTokens[idx]);
             }
           }
         });
 
-        // 유효하지 않은 토큰 DB에서 삭제
         if (invalidTokens.length > 0) {
           await this.userModel.updateMany(
             { fcmTokens: { $in: invalidTokens } },
@@ -146,14 +136,15 @@ export class FcmService implements OnModuleInit {
     }
   }
 
+  // 🚨 3. 토픽 전송 (notification 삭제)
   async sendToTopic(topic: string, title: string, body: string, data?: any) {
     try {
       const message = {
-        notification: {
-          title,
-          body,
+        data: {
+          title: String(title),
+          body: String(body),
+          ...(data || {}),
         },
-        data: data || {},
         topic,
       };
 

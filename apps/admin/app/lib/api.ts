@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  // baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1',
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://72.62.75.97:4000/api/v1',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1',
+  // baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://72.62.75.97:4000/api/v1',
   withCredentials: true, // ← 쿠키 자동 포함, localStorage 방식 제거
 });
 

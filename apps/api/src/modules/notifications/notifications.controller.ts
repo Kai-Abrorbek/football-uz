@@ -14,11 +14,15 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
 import { SendNotificationDto } from './dto/send-notification.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { FcmService } from './fcm.service';
 
 @ApiTags('Notifications')
 @Controller('notifications')
 export class NotificationsController {
-  constructor(private notificationsService: NotificationsService) {}
+  constructor(
+    private notificationsService: NotificationsService,
+    private readonly fcmService: FcmService,
+  ) {}
 
   @Post('send')
   @ApiOperation({ summary: '알림 전송 (관리자용)' })
@@ -91,5 +95,23 @@ export class NotificationsController {
   @ApiOperation({ summary: '경기 알람 삭제' })
   async deleteMatchAlert(@Param('matchId') matchId: string, @Req() req) {
     return this.notificationsService.deleteMatchAlert(req.user._id, matchId);
+  }
+
+  @Post('send-multiple')
+  async sendToMultiple(
+    @Body()
+    requestBody: {
+      tokens: string[];
+      title: string;
+      body: string;
+      data?: any;
+    },
+  ) {
+    return await this.fcmService.sendToMultipleDevices(
+      requestBody.tokens,
+      requestBody.title,
+      requestBody.body,
+      requestBody.data,
+    );
   }
 }

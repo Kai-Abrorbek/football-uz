@@ -163,8 +163,6 @@ export class MatchScheduler {
         }
       }
 
-      console.log(justFinished);
-      console.log(this.previousLiveIds);
       await this.cacheManager.del('matches:live');
       this.logger.log(`Synced ${liveFixtures.length} live matches`);
     } catch (error) {

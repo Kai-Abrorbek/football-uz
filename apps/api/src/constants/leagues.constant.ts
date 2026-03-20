@@ -10,7 +10,7 @@ export const FEATURED_LEAGUES = [
   203, // Süper Lig
   94, // Primeira Liga => X 선수만 가져옴
   88, // Eredivisie => X 선수만 가져옴
-  307, // Saudi Pro League => X 선수만 가져옴  2025
+  307, // Saudi Pro League =>
   253, // MLS => X 선수만 가져옴   2026
   17, // AFC Champions League => X 경기가 없어
   32, // AFC Asian Qualifiers => X 경기가 없어
@@ -19,7 +19,7 @@ export const FEATURED_LEAGUES = [
   9, // Copa America => O
   31, // AFC Asian Cup => O 경기가 없어
   5, // UEFA Nations League => O
-  369, // Uzbekistan Super League  => O
+  369, // Uzbekistan Super League  => O 2026
   802, // Uzbekistan Cup => O
 ];
 
