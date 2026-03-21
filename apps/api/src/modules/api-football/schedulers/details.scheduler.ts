@@ -92,7 +92,7 @@ export class DetailsScheduler {
   }
 
   // 종료 직후 - 1분마다 체크
-  // @Cron('*/1 * * * *')
+  @Cron('*/1 * * * *')
   async syncFinishedMatchDetails() {
     this.logger.log('Checking recently finished matches...');
 
@@ -109,7 +109,6 @@ export class DetailsScheduler {
 
       for (const match of matches) {
         await this.syncMatchDetails(match.apiFootballId);
-
         await this.syncMatchPlayerRatings(match);
         await this.matchModel.findByIdAndUpdate(match._id, {
           $set: { detailsSyncedAfterFT: true },
@@ -293,43 +292,38 @@ export class DetailsScheduler {
     }));
   }
 
-  private async syncMatchPlayerRatings(match: MatchDocument) {
+  public async syncMatchPlayerRatings(match: MatchDocument) {
     try {
       const data = await this.apiFootballService.getFixturePlayers(
         match.apiFootballId,
       );
       const teams = data.response;
-
       for (const team of teams) {
         const side = team.team.id === match.homeTeam.id ? 'home' : 'away';
-        for (const player of team.players) {
-          const rating = player.statistics[0]?.games?.rating;
-          if (!rating) continue;
 
-          // startXI 에서 찾기
-          await this.matchModel.findByIdAndUpdate(
-            match._id,
-            {
-              $set: {
-                [`lineups.${side}.startXI.$[elem].rating`]: parseFloat(rating),
-              },
-            },
-            {
-              arrayFilters: [{ 'elem.playerId': player.player.id }],
-            },
+        // startXI 선수들 루프
+        const startXI = match.lineups?.[side]?.startXI ?? [];
+
+        for (const lineupPlayer of startXI) {
+          // fixtures/players 에서 해당 선수 찾기
+          const playerData = team.players.find(
+            (p) => p.player.id === lineupPlayer.playerId,
           );
 
-          // substitutes 에서도 찾기
-          await this.matchModel.findByIdAndUpdate(
-            match._id,
+          if (!playerData) continue;
+
+          const rating = playerData.statistics[0]?.games?.rating;
+          if (!rating) continue;
+
+          await this.matchModel.updateOne(
             {
-              $set: {
-                [`lineups.${side}.substitutes.$[elem].rating`]:
-                  parseFloat(rating),
-              },
+              apiFootballId: match.apiFootballId,
+              [`lineups.${side}.startXI.playerId`]: lineupPlayer.playerId,
             },
             {
-              arrayFilters: [{ 'elem.playerId': player.player.id }],
+              $set: {
+                [`lineups.${side}.startXI.$.rating`]: parseFloat(rating),
+              },
             },
           );
         }

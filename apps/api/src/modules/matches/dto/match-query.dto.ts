@@ -5,6 +5,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsIn,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -62,6 +63,10 @@ export class MatchQueryDto {
   @IsOptional()
   @IsString()
   endUTC?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  allDates?: boolean;
 }
 
 export class LeagueMatchQueryDto {

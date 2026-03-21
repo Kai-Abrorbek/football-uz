@@ -25,14 +25,28 @@ export class MatchesService {
     const today = new Date();
     const filter: any = {};
 
-    if (query.startUTC && query.endUTC) {
+    if (query.allDates) {
+    } else if (query.startUTC && query.endUTC) {
       filter.date = {
         $gte: new Date(query.startUTC),
         $lte: new Date(query.endUTC),
       };
+    } else if (query.date) {
+      const startDate = new Date(`${query.date}T00:00:00`);
+      const endDate = new Date(`${query.date}T23:59:59`);
+      filter.date = { $gte: startDate, $lte: endDate };
     } else {
       filter.date = { $gte: today };
     }
+
+    // if (query.startUTC && query.endUTC) {
+    //   filter.date = {
+    //     $gte: new Date(query.startUTC),
+    //     $lte: new Date(query.endUTC),
+    //   };
+    // } else {
+    //   filter.date = { $gte: today };
+    // }
 
     if (query.leagueId) {
       filter['league.id'] = query.leagueId;

@@ -21,10 +21,12 @@ export const FEATURED_LEAGUES = [
   5, // UEFA Nations League => O
   369, // Uzbekistan Super League  => O 2026
   802, // Uzbekistan Cup => O
+  48, // 리그컵
 ];
 
 export const FEATURED_LEAGUES_Object = [
   { id: 39, name: 'Premier League', totalRounds: 38 },
+  { id: 48, name: 'League Cup', totalRounds: 38 },
   { id: 140, name: 'La Liga', totalRounds: 38 },
   { id: 61, name: 'Ligue 1', totalRounds: 34 },
   { id: 78, name: 'Bundesliga', totalRounds: 34 },
