@@ -12,6 +12,12 @@ import {
   NotificationHistory,
   NotificationHistorySchema,
 } from '../../schemas/notification-history.schema';
+import { BracketSlotService } from './bracket-slot.service';
+import { BracketSlotController } from './bracket-slot.controller';
+import {
+  BracketSlot,
+  BracketSlotSchema,
+} from '../../schemas/bracket-slot.schema';
 
 @Module({
   imports: [
@@ -21,11 +27,12 @@ import {
       { name: Team.name, schema: TeamSchema },
       { name: Highlight.name, schema: HighlightSchema },
       { name: NotificationHistory.name, schema: NotificationHistorySchema },
+      { name: BracketSlot.name, schema: BracketSlotSchema },
     ]),
     AuthModule,
     NotificationsModule,
   ],
-  controllers: [AdminController],
-  providers: [AdminService],
+  controllers: [AdminController, BracketSlotController],
+  providers: [AdminService, BracketSlotService],
 })
 export class AdminModule {}

@@ -42,6 +42,13 @@ const NAV = [
     icon: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2 M12 11a4 4 0 100-8 4 4 0 000 8z',
   },
   {
+    href: '/bracket',
+    label: '브라켓 순서',
+    badge: null,
+    live: false,
+    icon: 'M3 6h18M3 12h18M3 18h18',
+  },
+  {
     href: '/notifications',
     label: '푸시 알림',
     badge: null,

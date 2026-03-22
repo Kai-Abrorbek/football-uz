@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  // baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1',
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://72.62.75.97:4000/api/v1',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1',
+  // baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://72.62.75.97:4000/api/v1',
   withCredentials: true, // ← 쿠키 자동 포함, localStorage 방식 제거
 });
 
@@ -68,4 +68,11 @@ export const adminApi = {
     api.post('/admin/notifications/send', { title, body, target }),
   getNotificationHistory: (page = 1) =>
     api.get(`/admin/notifications/history?page=${page}`),
+
+  // 브라켓 순서
+  getBracketSlots: (leagueId: number, season: number, round: string) =>
+    api.get(
+      `/bracket/slots?leagueId=${leagueId}&season=${season}&round=${encodeURIComponent(round)}`,
+    ),
+  updateBracketSlots: (data: any) => api.post('/bracket/slots', data),
 };
