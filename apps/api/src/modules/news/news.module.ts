@@ -4,6 +4,7 @@ import { NewsController } from './news.controller';
 import { NewsService } from './news.service';
 import { News, NewsSchema } from '../../schemas/news.schema';
 import { HttpModule } from '@nestjs/axios';
+import { NewsScheduler } from './scheduler/news.scheduler';
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { HttpModule } from '@nestjs/axios';
     MongooseModule.forFeature([{ name: News.name, schema: NewsSchema }]),
   ],
   controllers: [NewsController],
-  providers: [NewsService],
+  providers: [NewsService, NewsScheduler],
   exports: [NewsService],
 })
 export class NewsModule {}
