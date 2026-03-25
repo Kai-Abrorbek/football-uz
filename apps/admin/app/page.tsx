@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { PageLayout } from './components/Layout';
-import { StatCard } from './components/ui/StatCard';
-import { PageCard, SectionHeader } from './components/ui/PageCard';
-import { Toggle } from './components/ui/Toggle';
-import { Pill } from './components/ui/Pill';
 import { adminApi } from './lib/api';
+import { PageLayout } from './admin/components/Layout';
+import { StatCard } from './admin/components/ui/StatCard';
+import { PageCard, SectionHeader } from './admin/components/ui/PageCard';
+import { Pill } from 'lucide-react';
+import { Toggle } from './admin/components/ui/Toggle';
 
 interface DashboardData {
   stats: {

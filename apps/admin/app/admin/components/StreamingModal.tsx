@@ -1,8 +1,8 @@
 'use client';
 
-import { api } from '../lib/api';
 import { useState } from 'react';
 import { Radio, X, Copy, Check } from 'lucide-react';
+import { api } from '@/app/lib/api';
 
 export default function StreamingModal({ match, onClose, onSuccess }: any) {
   const [streamKey, setStreamKey] = useState(match.streamKey || '');
