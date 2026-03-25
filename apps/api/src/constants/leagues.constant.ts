@@ -22,6 +22,7 @@ export const FEATURED_LEAGUES = [
   369, // Uzbekistan Super League  => O 2026
   802, // Uzbekistan Cup => O
   48, // 리그컵
+  10,
 ];
 
 export const FEATURED_LEAGUES_Object = [
@@ -72,4 +73,4 @@ export const LEAGUES_NEWS: LeagueConfig[] = [
   { id: 31, name: 'Africa Cup', searchQuery: 'Africa Cup of Nations' },
 ];
 
-export const SEASON = 2025;
+export const SEASON = 2026;

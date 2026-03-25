@@ -1,6 +1,10 @@
-import { PageLayout } from '../components/Layout';
-import { PageCard, SectionHeader, SearchBar } from '../components/ui/PageCard';
-import { Pill } from '../components/ui/Pill';
+import { PageLayout } from '../../components/Layout';
+import {
+  PageCard,
+  SectionHeader,
+  SearchBar,
+} from '../../components/ui/PageCard';
+import { Pill } from '../../components/ui/Pill';
 
 const TEAMS = [
   {

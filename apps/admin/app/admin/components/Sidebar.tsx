@@ -3,60 +3,60 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { adminApi } from '../lib/api';
+import { adminApi } from '../../lib/api';
 
 const NAV = [
   {
-    href: '/',
+    href: '/admin',
     label: '대시보드',
     badge: null,
     live: false,
     icon: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10',
   },
   {
-    href: '/matches',
+    href: '/admin/matches',
     label: '경기 관리',
     badge: null,
     live: false,
     icon: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
   },
   {
-    href: '/streaming',
+    href: '/admin/streaming',
     label: '스트리밍',
     badge: null,
     live: true,
     icon: 'M23 7l-7 5 7 5V7z M1 5h15a2 2 0 012 2v10a2 2 0 01-2 2H1z',
   },
   {
-    href: '/highlights',
+    href: '/admin/highlights',
     label: '하이라이트',
     badge: null,
     live: false,
     icon: 'M10 8l6 4-6 4V8z M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
   },
   {
-    href: '/users',
+    href: '/admin/users',
     label: '유저 관리',
     badge: null,
     live: false,
     icon: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2 M12 11a4 4 0 100-8 4 4 0 000 8z',
   },
   {
-    href: '/bracket',
+    href: '/admin/bracket',
     label: '브라켓 순서',
     badge: null,
     live: false,
     icon: 'M3 6h18M3 12h18M3 18h18',
   },
   {
-    href: '/notifications',
+    href: '/admin/notifications',
     label: '푸시 알림',
     badge: null,
     live: false,
     icon: 'M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 01-3.46 0',
   },
   {
-    href: '/swagger',
+    href: '/admin/swagger',
     label: 'Swagger API',
     badge: null,
     live: false,
@@ -82,9 +82,9 @@ export function Sidebar() {
     setLoggingOut(true);
     try {
       await adminApi.logout();
-      router.push('/login');
+      router.push('/admin/login');
     } catch {
-      router.push('/login');
+      router.push('/admin/login');
     } finally {
       setLoggingOut(false);
       setShowConfirm(false);

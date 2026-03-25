@@ -20,7 +20,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useDroppable } from '@dnd-kit/core';
-import { adminApi, api } from '../lib/api';
+import { adminApi, api } from '../../lib/api';
 
 const LEAGUES = [
   { id: 2, name: 'UCL', fullName: 'UEFA Champions League', season: 2025 },

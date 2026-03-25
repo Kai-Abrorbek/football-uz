@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { PageLayout } from '../components/Layout';
-import { SearchBar } from '../components/ui/PageCard';
-import { Pill } from '../components/ui/Pill';
-import { adminApi } from '../lib/api';
+import { PageLayout } from '../../components/Layout';
+import { SearchBar } from '../../components/ui/PageCard';
+import { Pill } from '../../components/ui/Pill';
+import { adminApi } from '../../lib/api';
 
 interface Highlight {
   _id: string;
