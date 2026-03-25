@@ -1,8 +1,63 @@
 {
-  "Hero": {
-    "title": "The Football Heartbeat of Uzbekistan, In Your Pocket.",
-    "subtitle": "Get real-time scores and news.",
-    "download": "Download for Free",
-    "features": "Features →"
+  "home": {
+    "heroHeading1": "Follow every match.\nNever miss a goal.",
+    "heroSub1": "Live scores, fixtures, and stats for Uzbekistan football — all in one place.",
+    "heroHeading2": "Uzbekistan football.\nAt your fingertips.",
+    "heroSub2": "Track the national team, Super League, and World Cup 2026 qualifiers in real time.",
+    "heroHeading3": "Your team.\nYour stats. Live.",
+    "heroSub3": "Follow players, predict results, and get instant push notifications.",
+
+    "ctaDownload": "Download the app",
+    "ctaExplore": "Explore now",
+
+    "tab_matches": "Matches",
+    "tab_teams": "Teams",
+    "tab_players": "Players",
+
+    "searchPlaceholder": "Search matches, teams, players...",
+
+    "colLeagues": "Leagues",
+    "colScreens": "Views",
+    "colFeatures": "Features",
+    "colMore": "More",
+
+    "statsLabel": "A growing library of",
+    "statsTeams": "teams tracked",
+    "statsMatches": "matches indexed",
+    "statsPlayers": "players profiled",
+
+    "sliderTitle": "Find match data\nin seconds.",
+    "sliderTab_screens": "Screens",
+    "sliderTab_highlights": "Highlights",
+    "sliderTab_flows": "Flows",
+    "sliderTab_live": "Live",
+
+    "footerTagline": "The home of Uzbekistan football. Built for fans, by fans.",
+    "footerApp": "App",
+    "footerCompany": "Company",
+    "footerSupport": "Support",
+    "footerRights": "All rights reserved.",
+    "footerPrivacy": "Privacy Policy",
+    "footerTerms": "Terms",
+    "heroTitle": "Discover {appName} design patterns.",
+    "heroSubtitle": "Featuring all leagues, teams, and live match data.",
+    "catTournaments": "Tournaments",
+    "catMatches": "Matches",
+    "catPlayers": "Players",
+    "catStats": "Stats",
+    "filterBtn": "Filter",
+    "platformIos": "iOS",
+    "platformWeb": "Web",
+    "sortLatest": "Latest",
+    "sortPopular": "Most popular",
+    "sortTopRated": "Top rated",
+    "heroCycle_scores": "Find live scores",
+    "heroCycle_stats": "Discover team stats",
+    "heroCycle_ratings": "Explore player ratings",
+    "badgeNew": "New",
+    "badgeUpdated": "Updated",
+    "card_uzKorea": "UZB 2 - 1 KOR",
+    "card_pakhtakorBunyodkor": "Pakhtakor vs Bunyodkor",
+    "card_nasafSogdiana": "Nasaf vs Sogdiana"
   }
 }

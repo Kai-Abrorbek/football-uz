@@ -7,7 +7,7 @@ import { NextFunction, Request, Response } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  console.log('API KEY:', process.env.OPENAI_API_KEY);
   app.use(cookieParser());
 
   // Global prefix

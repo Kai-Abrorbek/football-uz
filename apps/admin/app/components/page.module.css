@@ -1,0 +1,565 @@
+/* ─────────────────────────────────────────────
+   Football UZ · Home Page Styles
+   ───────────────────────────────────────────── */
+
+/* ── Reset / Base ── */
+.main {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background: #f5f5f0;
+  color: #111;
+  overflow-x: hidden;
+}
+
+/* ══════════════════════════════════════════════
+   HERO
+══════════════════════════════════════════════ */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 80px 24px 72px;
+  background: #f5f5f0;
+}
+
+.heroAppIcon {
+  width: 80px;
+  height: 80px;
+  background: #111;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+
+.heroText {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.fadeIn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fadeOut {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.heroHeading {
+  font-size: clamp(36px, 6vw, 72px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0 0 16px;
+  max-width: 760px;
+  color: #111;
+}
+
+.heroSub {
+  font-size: clamp(14px, 2vw, 17px);
+  color: #666;
+  margin: 0 auto 32px;
+  max-width: 480px;
+  line-height: 1.6;
+}
+
+.heroCta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ctaPrimary {
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 100px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.ctaPrimary:hover {
+  background: #333;
+  transform: translateY(-1px);
+}
+
+.ctaSecondary {
+  background: transparent;
+  color: #111;
+  border: 1.5px solid #ccc;
+  border-radius: 100px;
+  padding: 13px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.ctaSecondary:hover {
+  border-color: #888;
+  transform: translateY(-1px);
+}
+
+/* ══════════════════════════════════════════════
+   BROWSE SECTION
+══════════════════════════════════════════════ */
+.browseSection {
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  padding: 32px 40px 40px;
+  margin: 0 12px;
+  box-shadow: 0 -2px 40px rgba(0,0,0,0.06);
+}
+
+.browseHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.browseNav {
+  display: flex;
+  gap: 4px;
+}
+
+.browseTab {
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #888;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+.browseTab:hover { background: #f5f5f5; color: #111; }
+
+.browseTabActive {
+  background: #111;
+  color: #fff !important;
+}
+
+.browseSearch {
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 10px 16px;
+  gap: 10px;
+  min-width: 260px;
+  max-width: 400px;
+  flex: 1;
+}
+
+.searchIcon { font-size: 14px; }
+
+.searchInput {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: #111;
+  outline: none;
+  flex: 1;
+}
+.searchInput::placeholder { color: #aaa; }
+
+.browseGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+}
+
+@media (max-width: 768px) {
+  .browseGrid { grid-template-columns: repeat(2, 1fr); }
+  .browseSection { padding: 24px 20px; margin: 0 8px; }
+}
+
+.colLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #aaa;
+  margin: 0 0 12px;
+}
+
+.colItem {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111;
+  margin: 0 0 10px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.colItem:hover { color: #555; }
+
+/* ══════════════════════════════════════════════
+   STATS + FLOATING ICONS
+══════════════════════════════════════════════ */
+.statsSection {
+  position: relative;
+  height: 520px;
+  background: #f5f5f0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.floatingCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.statsOverlay {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  pointer-events: none;
+}
+
+.statsLabel {
+  font-size: 15px;
+  color: #888;
+  margin: 0 0 12px;
+  font-weight: 500;
+}
+
+.statLine {
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0;
+  color: #111;
+}
+
+.statValue { color: #111; }
+.statKey   { color: #111; }
+
+/* ══════════════════════════════════════════════
+   MATCH SLIDER SECTION
+══════════════════════════════════════════════ */
+.sliderSection {
+  background: #fff;
+  padding: 56px 0 64px;
+}
+
+.sliderTitle {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-align: center;
+  margin: 0 0 20px;
+  padding: 0 24px;
+}
+
+.sliderTabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+  padding: 0 24px;
+}
+
+.sliderTabBtn {
+  background: #f0f0ec;
+  border: none;
+  border-radius: 100px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sliderTabBtn:first-child {
+  background: #111;
+  color: #fff;
+}
+.sliderTabBtn:hover { background: #222; color: #fff; }
+
+/* ── Infinite slider ── */
+.sliderWrapper {
+  overflow: hidden;
+  width: 100%;
+}
+
+.sliderTrack {
+  display: flex;
+  gap: 16px;
+  width: max-content;
+  animation: slideLeft 32s linear infinite;
+  padding: 12px 8px;
+}
+.sliderTrack:hover { animation-play-state: paused; }
+
+@keyframes slideLeft {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── Match card (phone-style) ── */
+.matchCard {
+  width: 220px;
+  min-height: 340px;
+  border-radius: 24px;
+  padding: 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.matchCard:hover { transform: translateY(-4px); }
+
+/* phone notch decoration */
+.cardPhone {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 10px;
+}
+.phoneNotch {
+  width: 40px;
+  height: 5px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 10px;
+  margin: 0 auto;
+}
+.phoneScreen { display: none; }
+
+.cardLeague {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  margin-top: 12px;
+}
+
+.cardTeams {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 1;
+}
+
+.teamBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.teamLogo {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.teamName {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  text-align: center;
+  line-height: 1.3;
+}
+
+.scoreBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.score {
+  font-size: 24px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.live {
+  color: #4ade80;
+}
+
+.liveDot {
+  width: 6px;
+  height: 6px;
+  background: #4ade80;
+  border-radius: 50%;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.7); }
+}
+
+.miniScore {
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+  text-align: center;
+  padding-top: 8px;
+}
+
+/* ══════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════ */
+.footer {
+  background: #111;
+  color: #fff;
+  padding: 64px 40px 32px;
+  border-radius: 24px 24px 0 0;
+  margin-top: -8px;
+}
+
+.footerInner {
+  display: flex;
+  gap: 64px;
+  max-width: 1100px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  padding-bottom: 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.footerBrand {
+  flex: 1;
+  min-width: 200px;
+}
+
+.footerLogo {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+.footerTagline {
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.6;
+  margin: 0 0 20px;
+  max-width: 220px;
+}
+
+.footerSocials {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.socialBtn {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.08);
+  border-radius: 100px;
+  padding: 6px 14px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.socialBtn:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+
+.footerCol {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 120px;
+}
+
+.footerColTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.35);
+  margin: 0 0 12px;
+}
+
+.footerLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color 0.15s;
+}
+.footerLink:hover { color: #fff; }
+
+.footerBottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1100px;
+  margin: 32px auto 0;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.35);
+}
+
+.footerBottomLinks {
+  display: flex;
+  gap: 20px;
+}
+
+.footerBottomLinks a {
+  color: rgba(255,255,255,0.35);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.footerBottomLinks a:hover { color: rgba(255,255,255,0.7); }
+
+@media (max-width: 768px) {
+  .footer { padding: 48px 20px 28px; }
+  .footerInner { gap: 40px; }
+  .footerLinks { gap: 28px; }
+  .browseGrid { grid-template-columns: 1fr 1fr; }
+}

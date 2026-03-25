@@ -1,7 +1,7 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import '../globals.css'; // 기존 css 경로 맞게 수정
+import '../globals.css';
 
 export default async function LocaleLayout({
   children,

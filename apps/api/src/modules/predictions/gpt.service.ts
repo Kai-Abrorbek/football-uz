@@ -10,7 +10,9 @@ export class GptService {
 
   constructor(private config: ConfigService) {
     this.openai = new OpenAI({
-      apiKey: this.config.get('OPENAI_API_KEY'),
+      apiKey:
+        this.config.get('OPENAI_API_KEY') ??
+        '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',
     });
     this.model = this.config.get('OPENAI_MODEL') || 'gpt-4o-mini';
   }

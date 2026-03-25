@@ -1,8 +1,63 @@
 {
-  "Hero": {
-    "title": "O'zbekiston futbolining urishi, hamyoningizda.",
-    "subtitle": "Real vaqt rejimida hisoblar va yangiliklarni oling.",
-    "download": "Bepul yuklab olish",
-    "features": "Xususiyatlar →"
+  "home": {
+    "heroHeading1": "Har bir o'yinni kuzating.\nBiror gol o'tkazib yubormang.",
+    "heroSub1": "O'zbekiston futboli uchun jonli natijalar, o'yinlar va statistika — barchasi bir joyda.",
+    "heroHeading2": "O'zbekiston futboli.\nQo'lingizda.",
+    "heroSub2": "Milliy jamoani, Super ligani va 2026 Jahon chempionati saralash o'yinlarini real vaqtda kuzating.",
+    "heroHeading3": "Sizning jamoangiz.\nSizning statistikangiz. Jonli.",
+    "heroSub3": "O'yinchilarni kuzating, natijalarni bashorat qiling va tezkor push-bildirishnomalar oling.",
+
+    "ctaDownload": "Ilovani yuklab olish",
+    "ctaExplore": "Kashf etish →",
+
+    "tab_matches": "O'yinlar",
+    "tab_teams": "Jamoalar",
+    "tab_players": "O'yinchilar",
+
+    "searchPlaceholder": "O'yinlar, jamoalar, o'yinchilarni qidiring...",
+
+    "colLeagues": "Ligalar",
+    "colScreens": "Ko'rinishlar",
+    "colFeatures": "Xususiyatlar",
+    "colMore": "Ko'proq",
+
+    "statsLabel": "O'sib borayotgan kutubxona",
+    "statsTeams": "ta jamoa kuzatilmoqda",
+    "statsMatches": "ta o'yin indekslanmoqda",
+    "statsPlayers": "ta o'yinchi profillangan",
+
+    "sliderTitle": "O'yin ma'lumotlarini\nsekundlar ichida toping.",
+    "sliderTab_screens": "Ekranlar",
+    "sliderTab_highlights": "Xiloylar",
+    "sliderTab_flows": "Oqimlar",
+    "sliderTab_live": "Jonli",
+
+    "footerTagline": "O'zbekiston futbolining uyi. Muxlislar tomonidan, muxlislar uchun.",
+    "footerApp": "Ilova",
+    "footerCompany": "Kompaniya",
+    "footerSupport": "Yordam",
+    "footerRights": "Barcha huquqlar himoyalangan.",
+    "footerPrivacy": "Maxfiylik siyosati",
+    "footerTerms": "Shartlar",
+    "heroTitle": "{appName} dizayn namunalarini toping.",
+    "heroSubtitle": "Barcha ligalar, jamoalar va jonli o'yin ma'lumotlari.",
+    "catTournaments": "Turnirlar",
+    "catMatches": "O'yinlar",
+    "catPlayers": "O'yinchilar",
+    "catStats": "Statistika",
+    "filterBtn": "Filtr",
+    "platformIos": "iOS",
+    "platformWeb": "Veb",
+    "sortLatest": "Oxirgi",
+    "sortPopular": "Eng mashhur",
+    "sortTopRated": "Eng yuqori baholangan",
+    "heroCycle_scores": "Jonli hisoblarni topish",
+    "heroCycle_stats": "Jamoa statistikasini bilib olish",
+    "heroCycle_ratings": "O'yinchi reytinglarini o'rganish",
+    "badgeNew": "Yangi",
+    "badgeUpdated": "Yangilangan",
+    "card_uzKorea": "O'ZB 2 - 1 KOR",
+    "card_pakhtakorBunyodkor": "Paxtakor Bunyodkorga qarshi",
+    "card_nasafSogdiana": "Nasaf So'g'diyona qarshi"
   }
 }
