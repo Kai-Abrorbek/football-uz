@@ -1,5 +1,5 @@
-import { PageLayout } from '../../components/Layout';
-import { Pill } from '../../components/ui/Pill';
+import { PageLayout } from '../components/Layout';
+import { Pill } from '../components/ui/Pill';
 
 export default function SwaggerPage() {
   const swaggerUrl =
