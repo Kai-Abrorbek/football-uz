@@ -13,10 +13,10 @@ api.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       typeof window !== 'undefined' &&
-      !window.location.pathname.includes('/login') &&
+      !window.location.pathname.includes('/admin/login') &&
       !error.config?.url?.includes('/auth/me') // ← 이거 추가
     ) {
-      window.location.href = '/login';
+      window.location.href = '/admin/login';
     }
     return Promise.reject(error);
   },
