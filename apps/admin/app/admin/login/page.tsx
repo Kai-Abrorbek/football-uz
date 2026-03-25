@@ -19,7 +19,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await adminApi.login(email, password);
-      router.push('/');
+      router.push('/admin');
     } catch (err: any) {
       const message = err.response?.data?.message;
       if (message) {
