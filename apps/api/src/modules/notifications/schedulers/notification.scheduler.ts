@@ -26,7 +26,7 @@ export class NotificationScheduler {
         $gte: now,
         $lte: in30Min,
       },
-      notifiedEvents: { $not: { $elemMatch: { $eq: 'matchStart' } } }, // ← 추가
+      notifiedEvents: { $not: { $elemMatch: { $eq: 'matchStart' } } },
     });
 
     for (const match of upcomingMatches) {

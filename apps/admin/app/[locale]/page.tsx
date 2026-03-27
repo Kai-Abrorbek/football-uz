@@ -30,6 +30,45 @@ interface MatchCard {
   bg: string;
 }
 
+interface AppCard {
+  id: number;
+  badge?: 'New' | 'Updated';
+  screens: { bg: string; title: string; sub: string }[];
+}
+
+const MOCK_APP_CARDS: AppCard[] = [
+  {
+    id: 1,
+    badge: 'New',
+    screens: [
+      { bg: '#0d1b2a', title: 'Live Score', sub: 'Uzbekistan vs Korea · 2–1' },
+      { bg: '#1a0a2e', title: 'Standings', sub: 'Super League UZ · Round 12' },
+      {
+        bg: '#0a1628',
+        title: 'Player Stats',
+        sub: 'Eldor Shomurodov · 8 goals',
+      },
+    ],
+  },
+  {
+    id: 2,
+    badge: 'Updated',
+    screens: [
+      { bg: '#1b2838', title: 'Fixtures', sub: 'Pakhtakor vs Nasaf · Mar 28' },
+      { bg: '#162032', title: 'Team Form', sub: 'Pakhtakor · W W D W L' },
+      { bg: '#0f1923', title: 'Top Scorers', sub: 'Super League UZ 2026' },
+    ],
+  },
+  {
+    id: 3,
+    screens: [
+      { bg: '#1c1c2e', title: 'World Cup', sub: 'Uzbekistan · Group B' },
+      { bg: '#0e1a10', title: 'Predictions', sub: 'Tonight · 3 matches' },
+      { bg: '#1a0a2e', title: 'Notifications', sub: "Goal alert · 67'" },
+    ],
+  },
+];
+
 // ── Mock data (will be replaced with server data) ──────────────────────────
 const MOCK_FLOATING_ICONS: Omit<
   FloatingIcon,
@@ -283,15 +322,61 @@ function MatchSlider() {
   );
 }
 
+function AppPreviewCard({ card }: { card: AppCard }) {
+  const [idx, setIdx] = useState(0);
+  const [fade, setFade] = useState(true);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setIdx((p) => (p + 1) % card.screens.length);
+        setFade(true);
+      }, 350);
+    }, 2800);
+    return () => clearInterval(t);
+  }, [card.screens.length]);
+
+  const screen = card.screens[idx];
+
+  return (
+    <div className={styles.appCard}>
+      {card.badge && <span className={styles.appCardBadge}>{card.badge}</span>}
+      <div className={styles.phoneFrame}>
+        <div className={styles.phoneNotchBar} />
+        <div
+          className={`${styles.phoneContent} ${fade ? styles.fadeIn : styles.fadeOut}`}
+          style={{ background: screen.bg }}
+        >
+          <div className={styles.phoneStatusBar}>
+            <span>9:41</span>
+            <span>▲ ▼ ■</span>
+          </div>
+          <div className={styles.phoneBody}>
+            <p className={styles.phoneTitle}>{screen.title}</p>
+            <p className={styles.phoneSub}>{screen.sub}</p>
+            <div className={styles.phonePlaceholder} />
+            <div className={styles.phonePlaceholder2} />
+          </div>
+        </div>
+      </div>
+      <div
+        className={`${styles.appCardText} ${fade ? styles.fadeIn : styles.fadeOut}`}
+      >
+        <p className={styles.appCardTitle}>{screen.title}</p>
+        <p className={styles.appCardSub}>{screen.sub}</p>
+      </div>
+    </div>
+  );
+}
+
 // ── Page ───────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const t = useTranslations('home');
 
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroFade, setHeroFade] = useState(true);
-  const [browseTab, setBrowseTab] = useState<'matches' | 'teams' | 'players'>(
-    'matches',
-  );
+  const [browseTab, setBrowseTab] = useState<'matches' | 'teams' | ''>('');
 
   // Hero text rotation
   useEffect(() => {
@@ -326,85 +411,131 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── BROWSE / EXPLORE (2nd screenshot) ── */}
       <section className={styles.browseSection}>
-        <div className={styles.browseHeader}>
-          <div className={styles.browseNav}>
-            {(['matches', 'teams', 'players'] as const).map((tab) => (
+        <div className={styles.browseContainer}>
+          {/* Navbar */}
+          <div className={styles.browseNavbar}>
+            <div className={styles.browseLeft}>
+              <span className={styles.browseLogo}>⚽</span>
               <button
-                key={tab}
-                className={`${styles.browseTab} ${browseTab === tab ? styles.browseTabActive : ''}`}
-                onClick={() => setBrowseTab(tab)}
+                className={`${styles.browseTab} ${browseTab === 'matches' ? styles.browseTabActive : ''}`}
+                onClick={() =>
+                  setBrowseTab(
+                    browseTab === 'matches' ? ('' as any) : 'matches',
+                  )
+                }
               >
-                {t(`tab_${tab}`)}
+                {t('tab_matches')}
               </button>
-            ))}
+              <button
+                className={`${styles.browseTab} ${browseTab === 'teams' ? styles.browseTabActive : ''}`}
+                onClick={() =>
+                  setBrowseTab(browseTab === 'teams' ? ('' as any) : 'teams')
+                }
+              >
+                {t('tab_teams')}
+              </button>
+            </div>
+            <div className={styles.browseRight}>
+              <button className={styles.browseIconBtn}>🔖</button>
+              <button className={styles.browseIconBtn}>🌐</button>
+              <button className={styles.browseInviteBtn}>
+                {t('inviteBtn')}
+              </button>
+              <div className={styles.browseAvatar}>⚽</div>
+            </div>
           </div>
-          <div className={styles.browseSearch}>
-            <span className={styles.searchIcon}>🔍</span>
-            <input
-              type="text"
-              placeholder={t('searchPlaceholder')}
-              className={styles.searchInput}
-            />
-          </div>
-        </div>
 
-        <div className={styles.browseGrid}>
-          <div className={styles.browseCol}>
-            <p className={styles.colLabel}>{t('colLeagues')}</p>
-            {[
-              'Super League UZ',
-              'World Cup 2026',
-              'AFC Asian Cup',
-              'UEFA Champions',
-              'Premier League',
-            ].map((l) => (
-              <p key={l} className={styles.colItem}>
-                {l}
-              </p>
-            ))}
+          {/* Dropdown menu */}
+          {browseTab !== '' && (
+            <div className={styles.browseDropdown}>
+              <div className={styles.browseGrid}>
+                <div className={styles.browseCol}>
+                  <p className={styles.colLabel}>{t('colLeagues')}</p>
+                  {[
+                    'Super League UZ',
+                    'World Cup 2026',
+                    'AFC Asian Cup',
+                    'UEFA Champions',
+                    'Premier League',
+                  ].map((l) => (
+                    <p key={l} className={styles.colItem}>
+                      {l}
+                    </p>
+                  ))}
+                </div>
+                <div className={styles.browseCol}>
+                  <p className={styles.colLabel}>{t('colScreens')}</p>
+                  {[
+                    'Live Scores',
+                    'Standings',
+                    'Fixtures',
+                    'Team Stats',
+                    'Player Ratings',
+                  ].map((s) => (
+                    <p key={s} className={styles.colItem}>
+                      {s}
+                    </p>
+                  ))}
+                </div>
+                <div className={styles.browseCol}>
+                  <p className={styles.colLabel}>{t('colFeatures')}</p>
+                  {[
+                    'Match Predictions',
+                    'Push Alerts',
+                    'Follow Teams',
+                    'Uzbek Players',
+                    'World Cup Tracker',
+                  ].map((f) => (
+                    <p key={f} className={styles.colItem}>
+                      {f}
+                    </p>
+                  ))}
+                </div>
+                <div className={styles.browseCol}>
+                  <p className={styles.colLabel}>{t('colMore')}</p>
+                  {[
+                    'Commentary',
+                    'Video Highlights',
+                    'Fan Polls',
+                    'Transfer News',
+                    'Stadium Guide',
+                  ].map((m) => (
+                    <p key={m} className={styles.colItem}>
+                      {m}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Filter bar */}
+          <div className={styles.filterBar}>
+            <div className={styles.filterLeft}>
+              <button className={styles.filterPlatformBtn}>
+                {t('filterAll')}
+              </button>
+              <button className={styles.filterPlatformBtn}>
+                {t('filterLive')}
+              </button>
+              <div className={styles.filterDivider} />
+              {['latest', 'popular', 'topRated'].map((f) => (
+                <button
+                  key={f}
+                  className={`${styles.filterSortBtn} ${f === 'latest' ? styles.filterSortActive : ''}`}
+                >
+                  {t(`filter_${f}`)}
+                </button>
+              ))}
+            </div>
+            <button className={styles.filterBtn}>⚙ {t('filterLabel')}</button>
           </div>
-          <div className={styles.browseCol}>
-            <p className={styles.colLabel}>{t('colScreens')}</p>
-            {[
-              'Live Scores',
-              'Standings',
-              'Fixtures',
-              'Team Stats',
-              'Player Ratings',
-            ].map((s) => (
-              <p key={s} className={styles.colItem}>
-                {s}
-              </p>
-            ))}
-          </div>
-          <div className={styles.browseCol}>
-            <p className={styles.colLabel}>{t('colFeatures')}</p>
-            {[
-              'Match Predictions',
-              'Push Alerts',
-              'Follow Teams',
-              'Uzbek Players',
-              'World Cup Tracker',
-            ].map((f) => (
-              <p key={f} className={styles.colItem}>
-                {f}
-              </p>
-            ))}
-          </div>
-          <div className={styles.browseCol}>
-            <p className={styles.colLabel}>{t('colMore')}</p>
-            {[
-              'Commentary',
-              'Video Highlights',
-              'Fan Polls',
-              'Transfer News',
-              'Stadium Guide',
-            ].map((m) => (
-              <p key={m} className={styles.colItem}>
-                {m}
-              </p>
+
+          {/* App preview cards */}
+          <div className={styles.appCardsGrid}>
+            {MOCK_APP_CARDS.map((card) => (
+              <AppPreviewCard key={card.id} card={card} />
             ))}
           </div>
         </div>

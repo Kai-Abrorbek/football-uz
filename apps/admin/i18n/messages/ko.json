@@ -58,6 +58,14 @@
     "badgeUpdated": "업데이트됨",
     "card_uzKorea": "우즈벡 2 - 1 한국",
     "card_pakhtakorBunyodkor": "파흐타코르 vs 부뇨드코르",
-    "card_nasafSogdiana": "나사프 vs 소그디아나"
+    "card_nasafSogdiana": "나사프 vs 소그디아나",
+    "inviteBtn": "친구 초대",
+    "filterAll": "전체",
+    "filterLive": "라이브",
+    "filter_latest": "최신",
+    "filter_popular": "인기",
+    "filter_topRated": "탑 평점",
+    "filterLabel": "필터"
+
   }
 }

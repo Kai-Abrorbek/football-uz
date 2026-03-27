@@ -150,8 +150,6 @@ export class MatchScheduler {
       }
 
       this.previousLiveIds = currentLiveIds;
-      console.log(this.previousLiveIds);
-      console.log(justFinished);
       if (liveFixtures.length === 0) {
         this.logger.log('No live matches from API');
         await this.cacheManager.del('matches:live');

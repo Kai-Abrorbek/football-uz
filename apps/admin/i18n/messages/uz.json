@@ -58,6 +58,14 @@
     "badgeUpdated": "Yangilangan",
     "card_uzKorea": "O'ZB 2 - 1 KOR",
     "card_pakhtakorBunyodkor": "Paxtakor Bunyodkorga qarshi",
-    "card_nasafSogdiana": "Nasaf So'g'diyona qarshi"
+    "card_nasafSogdiana": "Nasaf So'g'diyona qarshi",
+    "inviteBtn": "Do'st taklif qilish",
+    "filterAll": "Barchasi",
+    "filterLive": "Jonli",
+    "filter_latest": "Yangi",
+    "filter_popular": "Mashhur",
+    "filter_topRated": "Top baholangan",
+    "filterLabel": "Filtr"
+
   }
 }

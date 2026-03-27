@@ -110,79 +110,113 @@
 /* ══════════════════════════════════════════════
    BROWSE SECTION
 ══════════════════════════════════════════════ */
+
 .browseSection {
-  background: #fff;
-  border-radius: 24px 24px 0 0;
-  padding: 32px 40px 40px;
-  margin: 0 12px;
-  box-shadow: 0 -2px 40px rgba(0,0,0,0.06);
+  background: #f0f0eb;
+  padding: 40px 24px 56px;
 }
 
-.browseHeader {
+.browseContainer {
+  max-width: 1040px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 20px;
+  overflow: visible;
+  box-shadow: 0 2px 24px rgba(0,0,0,0.07);
+}
+
+/* ── Navbar ── */
+.browseNavbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 28px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.browseNav {
+.browseLeft {
   display: flex;
+  align-items: center;
   gap: 4px;
+}
+
+.browseLogo {
+  font-size: 22px;
+  margin-right: 8px;
 }
 
 .browseTab {
   background: transparent;
   border: none;
-  padding: 8px 16px;
+  padding: 6px 14px;
   font-size: 14px;
   font-weight: 500;
-  color: #888;
+  color: #555;
   cursor: pointer;
   border-radius: 8px;
   transition: all 0.15s;
 }
 .browseTab:hover { background: #f5f5f5; color: #111; }
+.browseTabActive { background: #111 !important; color: #fff !important; }
 
-.browseTabActive {
-  background: #111;
-  color: #fff !important;
-}
-
-.browseSearch {
+.browseRight {
   display: flex;
   align-items: center;
-  background: #f5f5f5;
-  border-radius: 12px;
-  padding: 10px 16px;
-  gap: 10px;
-  min-width: 260px;
-  max-width: 400px;
-  flex: 1;
+  gap: 8px;
 }
 
-.searchIcon { font-size: 14px; }
-
-.searchInput {
-  border: none;
+.browseIconBtn {
   background: transparent;
-  font-size: 14px;
-  color: #111;
-  outline: none;
-  flex: 1;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background 0.15s;
 }
-.searchInput::placeholder { color: #aaa; }
+.browseIconBtn:hover { background: #f5f5f5; }
+
+.browseInviteBtn {
+  background: transparent;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.browseInviteBtn:hover { background: #f5f5f5; }
+
+.browseAvatar {
+  width: 32px;
+  height: 32px;
+  background: #111;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* ── Dropdown ── */
+.browseDropdown {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  animation: dropDown 0.18s ease;
+}
+
+@keyframes dropDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
 .browseGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 32px;
-}
-
-@media (max-width: 768px) {
-  .browseGrid { grid-template-columns: repeat(2, 1fr); }
-  .browseSection { padding: 24px 20px; margin: 0 8px; }
+  gap: 24px;
 }
 
 .colLabel {
@@ -203,6 +237,215 @@
   transition: color 0.15s;
 }
 .colItem:hover { color: #555; }
+
+/* ── Filter bar ── */
+.filterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.filterLeft {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filterPlatformBtn {
+  background: #f0f0ec;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filterPlatformBtn:hover { background: #e5e5e0; }
+
+.filterDivider {
+  width: 1px;
+  height: 18px;
+  background: #e0e0e0;
+  margin: 0 8px;
+}
+
+.filterSortBtn {
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #888;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+.filterSortBtn:hover { color: #111; }
+
+.filterSortActive {
+  color: #111 !important;
+  font-weight: 700;
+  border-bottom: 2px solid #111;
+  border-radius: 0;
+}
+
+.filterBtn {
+  background: transparent;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.filterBtn:hover { background: #f5f5f5; }
+
+/* ── App preview cards grid ── */
+.appCardsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .appCardsGrid { grid-template-columns: 1fr; }
+  .browseGrid   { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Single app card ── */
+.appCard {
+  background: #f5f5f2;
+  border-radius: 16px;
+  padding: 20px 16px 16px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s;
+  overflow: hidden;
+}
+.appCard:hover { transform: translateY(-3px); }
+
+.appCardBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #fff;
+  border-radius: 100px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #333;
+  z-index: 2;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+}
+
+/* ── Phone frame ── */
+.phoneFrame {
+  background: #1a1a1a;
+  border-radius: 24px;
+  overflow: hidden;
+  aspect-ratio: 9/16;
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+}
+
+.phoneNotchBar {
+  height: 28px;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.phoneNotchBar::after {
+  content: '';
+  width: 48px;
+  height: 5px;
+  background: #333;
+  border-radius: 10px;
+}
+
+.phoneContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.phoneStatusBar {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 10px;
+}
+
+.phoneBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phoneTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.phoneSub {
+  font-size: 10px;
+  color: rgba(255,255,255,0.55);
+  margin: 0;
+}
+
+.phonePlaceholder {
+  height: 56px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 10px;
+  margin-top: 8px;
+}
+
+.phonePlaceholder2 {
+  height: 36px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+}
+
+/* ── Card text below phone ── */
+.appCardText {
+  margin-top: 14px;
+  transition: opacity 0.35s ease;
+}
+
+.appCardTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 3px;
+}
+
+.appCardSub {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+}
+
+/* fadeIn/fadeOut — 기존에 있으면 중복 제거 */
+.fadeIn  { opacity: 1; transform: translateY(0); }
+.fadeOut { opacity: 0; transform: translateY(6px); }
 
 /* ══════════════════════════════════════════════
    STATS + FLOATING ICONS

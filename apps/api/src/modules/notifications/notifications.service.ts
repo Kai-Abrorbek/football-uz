@@ -105,7 +105,7 @@ export class NotificationsService {
       $or: [
         {
           'notificationSettings.matchStart': true,
-          'matchAlerts.matchId': { $exists: false },
+          // 'matchAlerts.matchId': { $exists: false },
         },
         {
           matchAlerts: {

@@ -58,6 +58,14 @@
     "badgeUpdated": "Updated",
     "card_uzKorea": "UZB 2 - 1 KOR",
     "card_pakhtakorBunyodkor": "Pakhtakor vs Bunyodkor",
-    "card_nasafSogdiana": "Nasaf vs Sogdiana"
+    "card_nasafSogdiana": "Nasaf vs Sogdiana",
+    "inviteBtn": "Invite & earn",
+    "filterAll": "All",
+    "filterLive": "Live",
+    "filter_latest": "Latest",
+    "filter_popular": "Most popular",
+    "filter_topRated": "Top rated",
+    "filterLabel": "Filter"
+
   }
 }
