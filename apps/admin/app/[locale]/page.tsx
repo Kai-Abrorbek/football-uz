@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import styles from '../components/page.module.css';
+import { Router } from 'express';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface FloatingIcon {
@@ -373,7 +374,6 @@ function AppPreviewCard({ card }: { card: AppCard }) {
 // ── Page ───────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const t = useTranslations('home');
-
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroFade, setHeroFade] = useState(true);
   const [browseTab, setBrowseTab] = useState<'matches' | 'teams' | ''>('');
@@ -397,7 +397,11 @@ export default function HomePage() {
       {/* ── HERO ── */}
       <section className={styles.hero}>
         <div className={styles.heroAppIcon}>
-          <span>⚽</span>
+          <img
+            src="/images/app-logo.png"
+            alt=""
+            style={{ width: 110, height: 100, borderRadius: 50 }}
+          />
         </div>
         <div
           className={`${styles.heroText} ${heroFade ? styles.fadeIn : styles.fadeOut}`}
@@ -406,7 +410,12 @@ export default function HomePage() {
           <p className={styles.heroSub}>{t(currentHero.sub)}</p>
         </div>
         <div className={styles.heroCta}>
-          <button className={styles.ctaPrimary}>{t('ctaDownload')}</button>
+          <a
+            className={styles.ctaPrimary}
+            href="https://footballuz.online/downloads/football-uz.apk"
+          >
+            {t('ctaDownload')}
+          </a>
           <button className={styles.ctaSecondary}>{t('ctaExplore')} →</button>
         </div>
       </section>

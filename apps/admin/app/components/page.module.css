@@ -23,10 +23,10 @@
 }
 
 .heroAppIcon {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   background: #111;
-  border-radius: 20px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -85,6 +85,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s, transform 0.15s;
+  text-decoration: none;
 }
 .ctaPrimary:hover {
   background: #333;
