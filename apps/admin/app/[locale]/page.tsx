@@ -3,7 +3,6 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import styles from '../components/page.module.css';
-import { Router } from 'express';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface FloatingIcon {
