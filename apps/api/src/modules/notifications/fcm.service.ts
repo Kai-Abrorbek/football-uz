@@ -93,27 +93,57 @@ export class FcmService implements OnModuleInit {
       );
       if (validTokens.length === 0) return;
 
-      const message = {
-        notification: { title: String(title), body: String(body) }, // ⚽️ OS 알림용
+      // ⚽️ 핵심: MulticastMessage 타입에 맞춰 설정 추가
+      const message: admin.messaging.MulticastMessage = {
+        tokens: validTokens,
+        notification: {
+          title: String(title),
+          body: String(body),
+        },
         data: {
           title: String(title),
           body: String(body),
           ...this.stringifyData(data),
         },
-        tokens: validTokens,
+        // 🚀 안드로이드: 앱이 꺼져있을 때(Killed state) 즉시 깨우기 위한 설정
+        android: {
+          priority: 'high', // 'high'여야만 꺼진 앱을 깨움
+          notification: {
+            sound: 'default',
+            channelId: 'default', // 프론트 채널ID와 맞춰야 함
+            clickAction: 'FLUTTER_NOTIFICATION_CLICK', // 혹은 RN 기본 설정
+          },
+        },
+        // 🍏 iOS: 백그라운드 데이터 수신 허용
+        apns: {
+          payload: {
+            aps: {
+              contentAvailable: true,
+              sound: 'default',
+            },
+          },
+        },
       };
 
       const response = await admin.messaging().sendEachForMulticast(message);
+
       // 실패한 토큰 삭제 로직 (기존 유지)
       if (response.failureCount > 0) {
         const invalidTokens = validTokens.filter(
           (_, i) => !response.responses[i].success,
         );
+
+        this.logger.warn(`Cleaning up ${invalidTokens.length} invalid tokens`);
+
         await this.userModel.updateMany(
           { fcmTokens: { $in: invalidTokens } },
           { $pull: { fcmTokens: { $in: invalidTokens } } },
         );
       }
+
+      this.logger.log(
+        `Successfully sent ${response.successCount} notifications`,
+      );
       return response;
     } catch (error) {
       this.logger.error('Failed to send notifications', error);
@@ -123,12 +153,31 @@ export class FcmService implements OnModuleInit {
   // 🚨 3. 토픽 전송 (notification 삭제)
   async sendToTopic(topic: string, title: string, body: string, data?: any) {
     try {
-      const message = {
-        notification: { title: String(title), body: String(body) }, // ⚽️ OS 알림용
-        data: {
+      const message: admin.messaging.Message = {
+        // ⚽️ 1. OS가 직접 읽는 알림 영역 (이게 있어야 앱 꺼져도 옴)
+        notification: {
           title: String(title),
           body: String(body),
-          ...this.stringifyData(data),
+        },
+        // ⚽️ 2. 앱 내부 로직용 데이터
+        data: this.stringifyData(data),
+
+        // ⚽️ 3. 안드로이드 전용 설정 (중요!)
+        android: {
+          priority: 'high', // 'high'로 해야 꺼져 있을 때도 즉시 전송됨
+          notification: {
+            sound: 'default',
+            channelId: 'default', // 프론트에서 만든 채널ID와 일치해야 함
+          },
+        },
+        // ⚽️ 4. iOS 전용 설정 (혹시 모르니)
+        apns: {
+          payload: {
+            aps: {
+              contentAvailable: true,
+              sound: 'default',
+            },
+          },
         },
         topic,
       };
