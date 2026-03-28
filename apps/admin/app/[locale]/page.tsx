@@ -30,10 +30,16 @@ interface MatchCard {
   bg: string;
 }
 
+interface AppScreen {
+  imageUrl: string;
+  title: string;
+  sub: string;
+}
+
 interface AppCard {
   id: number;
   badge?: 'New' | 'Updated';
-  screens: { bg: string; title: string; sub: string }[];
+  screens: AppScreen[];
 }
 
 const MOCK_APP_CARDS: AppCard[] = [
@@ -41,10 +47,18 @@ const MOCK_APP_CARDS: AppCard[] = [
     id: 1,
     badge: 'New',
     screens: [
-      { bg: '#0d1b2a', title: 'Live Score', sub: 'Uzbekistan vs Korea · 2–1' },
-      { bg: '#1a0a2e', title: 'Standings', sub: 'Super League UZ · Round 12' },
       {
-        bg: '#0a1628',
+        imageUrl: '/images/predictions.jpg',
+        title: 'Live Score',
+        sub: 'Uzbekistan vs Korea · 2–1',
+      },
+      {
+        imageUrl: '/images/standdings.jpg',
+        title: 'Standings',
+        sub: 'Super League UZ · Round 12',
+      },
+      {
+        imageUrl: '/images/predictions.jpg',
         title: 'Player Stats',
         sub: 'Eldor Shomurodov · 8 goals',
       },
@@ -54,17 +68,41 @@ const MOCK_APP_CARDS: AppCard[] = [
     id: 2,
     badge: 'Updated',
     screens: [
-      { bg: '#1b2838', title: 'Fixtures', sub: 'Pakhtakor vs Nasaf · Mar 28' },
-      { bg: '#162032', title: 'Team Form', sub: 'Pakhtakor · W W D W L' },
-      { bg: '#0f1923', title: 'Top Scorers', sub: 'Super League UZ 2026' },
+      {
+        imageUrl: '/images/screens/fixtures.png',
+        title: 'Fixtures',
+        sub: 'Pakhtakor vs Nasaf · Mar 28',
+      },
+      {
+        imageUrl: '/images/screens/team-form.png',
+        title: 'Team Form',
+        sub: 'Pakhtakor · W W D W L',
+      },
+      {
+        imageUrl: '/images/screens/top-scorers.png',
+        title: 'Top Scorers',
+        sub: 'Super League UZ 2026',
+      },
     ],
   },
   {
     id: 3,
     screens: [
-      { bg: '#1c1c2e', title: 'World Cup', sub: 'Uzbekistan · Group B' },
-      { bg: '#0e1a10', title: 'Predictions', sub: 'Tonight · 3 matches' },
-      { bg: '#1a0a2e', title: 'Notifications', sub: "Goal alert · 67'" },
+      {
+        imageUrl: '/images/screens/world-cup.png',
+        title: 'World Cup',
+        sub: 'Uzbekistan · Group B',
+      },
+      {
+        imageUrl: '/images/screens/predictions.png',
+        title: 'Predictions',
+        sub: 'Tonight · 3 matches',
+      },
+      {
+        imageUrl: '/images/screens/notifications.png',
+        title: 'Notifications',
+        sub: "Goal alert · 67'",
+      },
     ],
   },
 ];
@@ -74,16 +112,16 @@ const MOCK_FLOATING_ICONS: Omit<
   FloatingIcon,
   'x' | 'y' | 'speedX' | 'speedY'
 >[] = [
-  { id: 1, src: '⚽', label: 'Football', size: 56, color: '#1a1a1a' },
-  { id: 2, src: '🏆', label: 'Trophy', size: 48, color: '#f5a623' },
-  { id: 3, src: '🇺🇿', label: 'Uzbekistan', size: 52, color: '#1eb53a' },
-  { id: 4, src: '📊', label: 'Stats', size: 44, color: '#0057b7' },
-  { id: 5, src: '🎯', label: 'Goals', size: 50, color: '#e63946' },
-  { id: 6, src: '🧤', label: 'Goalkeeper', size: 46, color: '#6a4c93' },
-  { id: 7, src: '📱', label: 'Mobile', size: 48, color: '#2ec4b6' },
-  { id: 8, src: '🔥', label: 'Hot', size: 44, color: '#ff6b35' },
-  { id: 9, src: '⚡', label: 'Live', size: 42, color: '#f7c948' },
-  { id: 10, src: '🌍', label: 'World Cup', size: 50, color: '#457b9d' },
+  { id: 1, src: '⚛️', label: 'React Native', size: 72, color: '#61dafb' },
+  { id: 2, src: '🟦', label: 'TypeScript', size: 64, color: '#3178c6' },
+  { id: 3, src: '▲', label: 'Next.js', size: 68, color: '#000000' },
+  { id: 4, src: '🐦', label: 'NestJS', size: 60, color: '#e0234e' },
+  { id: 5, src: '🍃', label: 'MongoDB', size: 66, color: '#47a248' },
+  { id: 6, src: '🔴', label: 'Redis', size: 62, color: '#dc382d' },
+  { id: 7, src: '🐳', label: 'Docker', size: 64, color: '#2496ed' },
+  { id: 8, src: '🔥', label: 'Firebase', size: 60, color: '#ffca28' },
+  { id: 9, src: '⚡', label: 'Socket.io', size: 58, color: '#010101' },
+  { id: 10, src: '🌐', label: 'i18next', size: 66, color: '#26a69a' },
 ];
 
 const MOCK_MATCH_CARDS: MatchCard[] = [
@@ -192,79 +230,134 @@ const HERO_TEXTS = [
 ];
 
 const STATS = [
-  { key: 'statsTeams', value: '240+' },
-  { key: 'statsMatches', value: '12,500+' },
-  { key: 'statsPlayers', value: '3,800+' },
+  { key: 'statsPowered', value: 'Powered by NestJS & MongoDB' },
+  { key: 'statsLive', value: 'Live scores via Socket.io' },
+  { key: 'statsDeployed', value: 'Deployed on Docker · VPS' },
 ];
 
 // ── Floating Icons Canvas ──────────────────────────────────────────────────
 function FloatingIconsSection() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const iconsRef = useRef<FloatingIcon[]>([]);
   const rafRef = useRef<number>(0);
 
   useEffect(() => {
+    const container = containerRef.current;
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !container) return;
     const ctx = canvas.getContext('2d')!;
 
     const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      canvas.width = container.offsetWidth;
+      canvas.height = container.offsetHeight;
     };
     resize();
-    window.addEventListener('resize', resize);
+    const ro = new ResizeObserver(resize);
+    ro.observe(container);
 
-    // init icons
     iconsRef.current = MOCK_FLOATING_ICONS.map((icon) => ({
       ...icon,
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      speedX: (Math.random() - 0.5) * 0.6,
-      speedY: (Math.random() - 0.5) * 0.6,
+      speedX: (Math.random() - 0.5) * 0.5,
+      speedY: (Math.random() - 0.5) * 0.5,
     }));
 
     const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
       iconsRef.current.forEach((icon) => {
         icon.x += icon.speedX;
         icon.y += icon.speedY;
-        if (icon.x < -icon.size) icon.x = canvas.width + icon.size;
-        if (icon.x > canvas.width + icon.size) icon.x = -icon.size;
-        if (icon.y < -icon.size) icon.y = canvas.height + icon.size;
-        if (icon.y > canvas.height + icon.size) icon.y = -icon.size;
 
-        // shadow glow
-        ctx.shadowColor = icon.color + '55';
-        ctx.shadowBlur = 20;
+        // 벽 반사 (컨테이너 안에서만)
+        if (icon.x < icon.size / 2) {
+          icon.x = icon.size / 2;
+          icon.speedX *= -1;
+        }
+        if (icon.x > w - icon.size / 2) {
+          icon.x = w - icon.size / 2;
+          icon.speedX *= -1;
+        }
+        if (icon.y < icon.size / 2) {
+          icon.y = icon.size / 2;
+          icon.speedY *= -1;
+        }
+        if (icon.y > h - icon.size / 2) {
+          icon.y = h - icon.size / 2;
+          icon.speedY *= -1;
+        }
 
-        // rounded rect bg
-        const r = icon.size * 0.22;
+        ctx.shadowColor = icon.color + '44';
+        ctx.shadowBlur = 16;
         const s = icon.size;
+        const r = s * 0.22;
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.roundRect(icon.x - s / 2, icon.y - s / 2, s, s, r);
         ctx.fill();
-
         ctx.shadowBlur = 0;
 
-        // emoji
-        ctx.font = `${icon.size * 0.55}px serif`;
+        ctx.font = `${s * 0.55}px serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(icon.src, icon.x, icon.y);
       });
+
       rafRef.current = requestAnimationFrame(draw);
     };
     draw();
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      window.removeEventListener('resize', resize);
+      ro.disconnect();
     };
   }, []);
 
-  return <canvas ref={canvasRef} className={styles.floatingCanvas} />;
+  return (
+    <div ref={containerRef} className={styles.floatingContainer}>
+      <canvas ref={canvasRef} className={styles.floatingCanvas} />
+    </div>
+  );
+}
+
+function ScrollRevealText({ value, label }: { value: string; label: string }) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const onScroll = () => {
+      const rect = el.getBoundingClientRect();
+      const winH = window.innerHeight;
+      // 요소가 화면 하단에서 나타나기 시작 → 중앙 올 때까지 0~1
+      const start = winH;
+      const end = winH * 0.3;
+      const curr = rect.top;
+      const p = Math.min(1, Math.max(0, (start - curr) / (start - end)));
+      setProgress(p);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // 0 → gray(#d0d0d0), 1 → black(#111)
+  const lightness = Math.round(208 - progress * 190); // 208 → 18
+  const color = `rgb(${lightness}, ${lightness}, ${lightness})`;
+
+  return (
+    <p ref={ref} className={styles.statLine} style={{ color }}>
+      <span className={styles.statValue}>{value}</span>
+      <span className={styles.statKey}> {label}</span>
+    </p>
+  );
 }
 
 // ── Infinite Slider ────────────────────────────────────────────────────────
@@ -327,14 +420,14 @@ function AppPreviewCard({ card }: { card: AppCard }) {
   const [fade, setFade] = useState(true);
 
   useEffect(() => {
-    const t = setInterval(() => {
+    const timer = setInterval(() => {
       setFade(false);
       setTimeout(() => {
         setIdx((p) => (p + 1) % card.screens.length);
         setFade(true);
       }, 350);
     }, 2800);
-    return () => clearInterval(t);
+    return () => clearInterval(timer);
   }, [card.screens.length]);
 
   const screen = card.screens[idx];
@@ -346,18 +439,12 @@ function AppPreviewCard({ card }: { card: AppCard }) {
         <div className={styles.phoneNotchBar} />
         <div
           className={`${styles.phoneContent} ${fade ? styles.fadeIn : styles.fadeOut}`}
-          style={{ background: screen.bg }}
         >
-          <div className={styles.phoneStatusBar}>
-            <span>9:41</span>
-            <span>▲ ▼ ■</span>
-          </div>
-          <div className={styles.phoneBody}>
-            <p className={styles.phoneTitle}>{screen.title}</p>
-            <p className={styles.phoneSub}>{screen.sub}</p>
-            <div className={styles.phonePlaceholder} />
-            <div className={styles.phonePlaceholder2} />
-          </div>
+          <img
+            src={screen.imageUrl}
+            alt={screen.title}
+            className={styles.phoneImage}
+          />
         </div>
       </div>
       <div
@@ -376,6 +463,31 @@ export default function HomePage() {
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroFade, setHeroFade] = useState(true);
   const [browseTab, setBrowseTab] = useState<'matches' | 'teams' | ''>('');
+
+  const statsSectionRef = useRef<HTMLElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const el = statsSectionRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const total = el.offsetHeight - window.innerHeight;
+      const p = Math.min(1, Math.max(0, -rect.top / total));
+      setScrollProgress(p);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // 텍스트 3개 각각 0~0.33, 0.33~0.66, 0.66~1 구간에서 나타남
+  function getStatColor(progress: number, index: number): string {
+    const start = index / 3;
+    const end = (index + 1) / 3;
+    const p = Math.min(1, Math.max(0, (progress - start) / (end - start)));
+    const l = Math.round(208 - p * 190);
+    return `rgb(${l}, ${l}, ${l})`;
+  }
 
   // Hero text rotation
   useEffect(() => {
@@ -549,17 +661,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── FLOATING ICONS + STATS (3rd screenshot) ── */}
-      <section className={styles.statsSection}>
-        <FloatingIconsSection />
-        <div className={styles.statsOverlay}>
-          <p className={styles.statsLabel}>{t('statsLabel')}</p>
-          {STATS.map(({ key, value }) => (
-            <p key={key} className={styles.statLine}>
-              <span className={styles.statValue}>{value}</span>
-              <span className={styles.statKey}> {t(key)}</span>
-            </p>
-          ))}
+      <section className={styles.statsSection} ref={statsSectionRef}>
+        <div className={styles.statsSticky}>
+          <FloatingIconsSection />
+          <div className={styles.statsOverlay}>
+            <p className={styles.statsLabel}>{t('statsLabel')}</p>
+            {STATS.map(({ key, value }, i) => (
+              <p
+                key={key}
+                className={styles.statLine}
+                style={{ color: getStatColor(scrollProgress, i) }}
+              >
+                <span>{value}</span>
+                <span> {t(key)}</span>
+              </p>
+            ))}
+          </div>
         </div>
       </section>
 

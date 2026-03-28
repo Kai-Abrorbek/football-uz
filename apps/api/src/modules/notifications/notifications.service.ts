@@ -312,15 +312,18 @@ export class NotificationsService {
   }
 
   async saveFcmToken(userId: string, token: string) {
-    // ⚽️ Expo 토큰은 Firebase에서 못 쓰니까 저장 안 함!
+    // ⚽️ 1. Expo 토큰인지 확인해서 차단하기
     if (!token || token.startsWith('ExponentPushToken')) {
-      this.logger.warn(`Invalid token skipped: ${token}`);
-      return { message: '유효하지 않은 토큰입니다' };
+      this.logger.warn(`Expo token detected and skipped: ${token}`);
+      // 에러를 던지지 않고 그냥 정상 응답을 줘서 프론트 에러를 막음
+      return { message: 'Expo token is not supported for FCM' };
     }
 
+    // ⚽️ 2. 진짜 FCM 토큰일 때만 DB에 저장 (중복 방지 포함)
     await this.userModel.findByIdAndUpdate(userId, {
       $addToSet: { fcmTokens: token },
     });
+
     return { message: 'FCM 토큰 저장 완료' };
   }
 }

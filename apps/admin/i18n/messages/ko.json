@@ -65,7 +65,10 @@
     "filter_latest": "최신",
     "filter_popular": "인기",
     "filter_topRated": "탑 평점",
-    "filterLabel": "필터"
+    "filterLabel": "필터",
+    "statsPowered":  "NestJS & MongoDB 기반",
+    "statsLive":     "Socket.io 실시간 스코어",
+    "statsDeployed": "Docker · VPS 배포"
 
   }
 }

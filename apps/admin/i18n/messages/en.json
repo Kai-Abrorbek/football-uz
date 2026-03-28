@@ -65,7 +65,10 @@
     "filter_latest": "Latest",
     "filter_popular": "Most popular",
     "filter_topRated": "Top rated",
-    "filterLabel": "Filter"
+    "filterLabel": "Filter",
+    "statsPowered":  "Powered by NestJS & MongoDB",
+    "statsLive":     "Live scores via Socket.io",
+    "statsDeployed": "Deployed on Docker · VPS"
 
   }
 }
