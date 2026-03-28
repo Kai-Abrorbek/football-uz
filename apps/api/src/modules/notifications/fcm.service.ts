@@ -43,16 +43,38 @@ export class FcmService implements OnModuleInit {
   // 1. 단일 기기 전송
   async sendToDevice(token: string, title: string, body: string, data?: any) {
     try {
-      const message = {
-        notification: { title: String(title), body: String(body) }, // ⚽️ OS 알림용
-        data: {
+      const message: admin.messaging.Message = {
+        // ⚽️ 1. OS가 직접 읽는 알림 영역 (이게 있어야 앱 꺼져도 옴)
+        notification: {
           title: String(title),
           body: String(body),
-          ...this.stringifyData(data),
-        }, // 앱 내부 로직용
+        },
+        // ⚽️ 2. 앱 내부 로직용 데이터
+        data: this.stringifyData(data),
+
+        // ⚽️ 3. 안드로이드 전용 설정 (중요!)
+        android: {
+          priority: 'high', // 'high'로 해야 꺼져 있을 때도 즉시 전송됨
+          notification: {
+            sound: 'default',
+            channelId: 'default', // 프론트에서 만든 채널ID와 일치해야 함
+          },
+        },
+        // ⚽️ 4. iOS 전용 설정 (혹시 모르니)
+        apns: {
+          payload: {
+            aps: {
+              contentAvailable: true,
+              sound: 'default',
+            },
+          },
+        },
         token,
       };
-      return await admin.messaging().send(message);
+
+      const response = await admin.messaging().send(message);
+      this.logger.log(`Notification sent successfully: ${response}`);
+      return response;
     } catch (error) {
       this.logger.error('Failed to send notification', error);
     }
