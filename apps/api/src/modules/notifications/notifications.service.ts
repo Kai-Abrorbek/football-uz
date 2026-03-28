@@ -96,71 +96,55 @@ export class NotificationsService {
     return { message: '전체 알림이 전송되었습니다' };
   }
 
+  // 경기 시작 알림 (로고 파라미터 추가)
   async sendMatchStartNotification(
     matchId: string,
     homeTeam: string,
     awayTeam: string,
+    logoUrl?: string,
   ) {
     const users = await this.userModel.find({
       $or: [
-        {
-          'notificationSettings.matchStart': true,
-          // 'matchAlerts.matchId': { $exists: false },
-        },
-        {
-          matchAlerts: {
-            $elemMatch: { matchId: matchId, matchStart: true },
-          },
-        },
+        { 'notificationSettings.matchStart': true },
+        { matchAlerts: { $elemMatch: { matchId, matchStart: true } } },
       ],
     });
 
-    if (users.length === 0) return;
+    const validUsers = (
+      await Promise.all(
+        users.map(async (u) => {
+          const sent = await this.notificationModel.findOne({
+            userId: u._id,
+            'data.referenceId': matchId,
+            type: 'matchStart',
+          });
+          return sent ? null : u;
+        }),
+      )
+    ).filter(Boolean);
 
-    const filteredUsers = await Promise.all(
-      users.map(async (user) => {
-        const alreadySent = await this.notificationModel.findOne({
-          userId: user._id,
-          'data.referenceId': matchId,
-          type: 'matchStart',
-        });
-        return alreadySent ? null : user;
-      }),
-    );
-
-    const validUsers = filteredUsers.filter(Boolean);
     if (validUsers.length === 0) return;
 
     const tokens = validUsers.flatMap((u) => u!.fcmTokens);
+    const titleText = `${homeTeam} vs ${awayTeam}`;
+    const bodyText = '경기가 곧 시작됩니다!';
 
-    if (tokens.length > 0) {
-      await this.fcmService.sendToMultipleDevices(
-        tokens,
-        `${homeTeam} vs ${awayTeam}`,
-        '경기가 곧 시작됩니다!',
-        {
-          type: 'matchStart',
-          screen: 'Match',
-          referenceId: matchId,
-          logoUrl: 'https://cdn-icons-png.flaticon.com/512/1165/1165183.png',
-        },
-      );
-    }
-
-    const notifications = validUsers.map((user) => ({
-      userId: user!._id,
+    await this.fcmService.sendToMultipleDevices(tokens, titleText, bodyText, {
       type: 'matchStart',
-      title: {
-        uz: `${homeTeam} vs ${awayTeam}`,
-        ru: `${homeTeam} vs ${awayTeam}`,
-        en: `${homeTeam} vs ${awayTeam}`,
-        kr: `${homeTeam} vs ${awayTeam}`,
-      },
+      screen: 'Match',
+      referenceId: matchId,
+      logoUrl: logoUrl || '',
+    });
+
+    const notifications = validUsers.map((u) => ({
+      userId: u!._id,
+      type: 'matchStart',
+      title: { uz: titleText, ru: titleText, en: titleText, kr: titleText },
       body: {
-        uz: "O'yin tez orada boshlanadi!",
-        ru: 'Матч скоро начнется!',
-        en: 'Match starting soon!',
-        kr: '경기가 곧 시작됩니다!',
+        uz: "O'yin boshlanadi!",
+        ru: 'Матч начинается!',
+        en: 'Match starts!',
+        kr: bodyText,
       },
       data: { screen: 'Match', referenceId: matchId },
       isRead: false,
@@ -170,6 +154,7 @@ export class NotificationsService {
     await this.notificationModel.insertMany(notifications);
   }
 
+  // 골 알림 (득점팀 로고 추가)
   async sendGoalNotification(
     matchId: string,
     homeTeam: string,
@@ -177,48 +162,42 @@ export class NotificationsService {
     scorerName: string,
     homeScore: number,
     awayScore: number,
+    scoringTeamLogo: string,
   ) {
     const users = await this.userModel.find({
       'notificationSettings.goal': true,
     });
-
     if (users.length === 0) return;
 
-    const tokens = users.flatMap((u) => u.fcmTokens);
+    const titleText = `⚽ ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`;
+    const bodyText = `${scorerName} 골!`;
 
     await this.fcmService.sendToMultipleDevices(
-      tokens,
-      `⚽ ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
-      `${scorerName} 골!`,
+      users.flatMap((u) => u.fcmTokens),
+      titleText,
+      bodyText,
       {
         type: 'goal',
         screen: 'Match',
-        referenceId: matchId.toString(),
-        // 🚨 득점팀 로고 변수로 교체해!
-        logoUrl: 'https://cdn-icons-png.flaticon.com/512/1165/1165183.png',
+        referenceId: matchId,
+        logoUrl: scoringTeamLogo,
       },
     );
 
-    const notifications = users.map((user) => ({
-      userId: user._id,
+    const notifications = users.map((u) => ({
+      userId: u._id,
       type: 'goal',
-      title: {
-        uz: `⚽ ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
-        ru: `⚽ ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
-        en: `⚽ ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
-        kr: `⚽ ${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}`,
-      },
+      title: { uz: titleText, ru: titleText, en: titleText, kr: titleText },
       body: {
         uz: `${scorerName} gol urdi!`,
-        ru: `${scorerName} забил гол!`,
+        ru: `${scorerName} забил!`,
         en: `${scorerName} scored!`,
-        kr: `${scorerName} 골!`,
+        kr: bodyText,
       },
-      data: { screen: 'Match', referenceId: matchId.toString() },
+      data: { screen: 'Match', referenceId: matchId },
       isRead: false,
       sentAt: new Date(),
     }));
-
     await this.notificationModel.insertMany(notifications);
   }
 

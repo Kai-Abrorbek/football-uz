@@ -1,3 +1,4 @@
+// notification-scheduler.service.ts
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
@@ -14,7 +15,7 @@ export class NotificationScheduler {
     private notificationsService: NotificationsService,
   ) {}
 
-  // 경기 시작 30분 전 알림 - 매분 체크
+  // 1. 경기 시작 전 알림 (매분 체크)
   @Cron('* * * * *')
   async checkUpcomingMatches() {
     const now = new Date();
@@ -22,32 +23,29 @@ export class NotificationScheduler {
 
     const upcomingMatches = await this.matchModel.find({
       'status.short': 'NS',
-      date: {
-        $gte: now,
-        $lte: in30Min,
-      },
+      date: { $gte: now, $lte: in30Min },
       notifiedEvents: { $not: { $elemMatch: { $eq: 'matchStart' } } },
     });
 
     for (const match of upcomingMatches) {
       this.logger.log(
-        `Sending match start notification for ${match.homeTeam.name} vs ${match.awayTeam.name}`,
+        `Match starting soon: ${match.homeTeam.name} vs ${match.awayTeam.name}`,
       );
 
       await this.notificationsService.sendMatchStartNotification(
         match._id.toString(),
         match.homeTeam.name!,
         match.awayTeam.name!,
+        match.homeTeam.logo, // ⚽️ 경기 로고로 홈팀 로고 전달
       );
 
-      // 알림 보낸 경기 기록 ← 추가
       await this.matchModel.findByIdAndUpdate(match._id, {
         $addToSet: { notifiedEvents: 'matchStart' },
       });
     }
   }
 
-  // 골 알림 - 1분마다 라이브 경기 체크
+  // 2. 골 알림 (라이브 경기 체크)
   @Cron('*/1 * * * *')
   async checkLiveMatchGoals() {
     const liveMatches = await this.matchModel.find({
@@ -57,23 +55,29 @@ export class NotificationScheduler {
     for (const match of liveMatches) {
       const recentGoals = match.events.filter((event) => {
         if (event.type !== 'Goal') return false;
+
+        // 현재 시간 기준 2분 이내 발생한 골만 필터링 (안전하게 2분)
         const now = new Date();
         const eventTime = event.time.elapsed || 0;
-        const matchStart = match.date;
         const eventDate = new Date(
-          matchStart.getTime() + eventTime * 60 * 1000,
+          match.date.getTime() + eventTime * 60 * 1000,
         );
-        return now.getTime() - eventDate.getTime() < 1 * 60 * 1000;
+        return now.getTime() - eventDate.getTime() < 2 * 60 * 1000;
       });
 
       for (const goal of recentGoals) {
-        const goalKey = `${match._id}_${goal.time.elapsed}_${goal.player?.id}`;
+        const goalKey = `goal_${match._id}_${goal.time.elapsed}_${goal.player?.id}`;
 
-        // 이미 알림 보낸 골이면 스킵
         if (match.notifiedEvents?.includes(goalKey)) continue;
 
+        // ⚽️ 어느 팀이 골을 넣었는지 판단해서 로고 선택
+        const scoringTeamLogo =
+          goal.team?.id === match.homeTeam.id
+            ? match.homeTeam.logo
+            : match.awayTeam.logo;
+
         this.logger.log(
-          `Goal scored: ${goal.player?.name} - ${match.homeTeam.name} vs ${match.awayTeam.name}`,
+          `Goal notification: ${goal.player?.name} (${goal.team?.name})`,
         );
 
         await this.notificationsService.sendGoalNotification(
@@ -83,9 +87,9 @@ export class NotificationScheduler {
           goal.player?.name ?? 'Unknown',
           match.goals?.home ?? 0,
           match.goals?.away ?? 0,
+          scoringTeamLogo || '', // ⚽️ 득점팀 로고 전달
         );
 
-        // 알림 보낸 골 기록
         await this.matchModel.findByIdAndUpdate(match._id, {
           $addToSet: { notifiedEvents: goalKey },
         });
@@ -93,20 +97,20 @@ export class NotificationScheduler {
     }
   }
 
-  // 경기 종료 알림 - 5분마다 체크
+  // 3. 경기 종료 알림
   @Cron('*/1 * * * *')
   async checkFinishedMatches() {
-    const fiveMinAgo = new Date(Date.now() - 2 * 60 * 1000);
+    const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000);
 
     const recentlyFinished = await this.matchModel.find({
       'status.short': 'FT',
-      updatedAt: { $gte: fiveMinAgo },
-      notifiedEvents: { $not: { $elemMatch: { $eq: 'matchEnd' } } }, // 이미 알림 보낸 경기 제외
+      updatedAt: { $gte: twoMinAgo },
+      notifiedEvents: { $not: { $elemMatch: { $eq: 'matchEnd' } } },
     });
 
     for (const match of recentlyFinished) {
       this.logger.log(
-        `Match finished: ${match.homeTeam.name} ${match.goals?.home}-${match.goals?.away} ${match.awayTeam.name}`,
+        `Match finished: ${match.homeTeam.name} vs ${match.awayTeam.name}`,
       );
 
       await this.notificationsService.sendMatchEndNotification(
@@ -117,7 +121,6 @@ export class NotificationScheduler {
         match.goals?.away ?? 0,
       );
 
-      // 종료 알림 보낸 경기 기록
       await this.matchModel.findByIdAndUpdate(match._id, {
         $addToSet: { notifiedEvents: 'matchEnd' },
       });

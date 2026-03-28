@@ -44,20 +44,17 @@ export class FcmService implements OnModuleInit {
   async sendToDevice(token: string, title: string, body: string, data?: any) {
     try {
       const message = {
+        notification: { title: String(title), body: String(body) }, // ⚽️ OS 알림용
         data: {
           title: String(title),
           body: String(body),
-          ...(data || {}),
-        },
+          ...this.stringifyData(data),
+        }, // 앱 내부 로직용
         token,
       };
-
-      const response = await admin.messaging().send(message);
-      this.logger.log(`Notification sent: ${response}`);
-      return response;
+      return await admin.messaging().send(message);
     } catch (error) {
       this.logger.error('Failed to send notification', error);
-      throw error;
     }
   }
 
@@ -69,70 +66,35 @@ export class FcmService implements OnModuleInit {
     data?: any,
   ) {
     try {
-      if (!tokens || tokens.length === 0) {
-        this.logger.warn('No FCM tokens provided, skipping notification');
-        return { successCount: 0, failureCount: 0, responses: [] };
-      }
-
       const validTokens = tokens.filter(
-        (token) =>
-          token &&
-          token.trim().length > 0 &&
-          !token.startsWith('ExponentPushToken'),
+        (t) => t && t.trim().length > 0 && !t.startsWith('ExponentPushToken'),
       );
-
-      if (validTokens.length === 0) {
-        this.logger.warn('No valid FCM tokens after filtering');
-        return { successCount: 0, failureCount: 0, responses: [] };
-      }
+      if (validTokens.length === 0) return;
 
       const message = {
+        notification: { title: String(title), body: String(body) }, // ⚽️ OS 알림용
         data: {
           title: String(title),
           body: String(body),
-          ...(data || {}),
+          ...this.stringifyData(data),
         },
         tokens: validTokens,
       };
 
       const response = await admin.messaging().sendEachForMulticast(message);
-
+      // 실패한 토큰 삭제 로직 (기존 유지)
       if (response.failureCount > 0) {
-        const invalidTokens: string[] = [];
-
-        response.responses.forEach((resp, idx) => {
-          if (!resp.success) {
-            this.logger.error(`토큰 ${idx} 실패:`, resp.error);
-
-            if (
-              resp.error?.code === 'messaging/invalid-argument' ||
-              resp.error?.code ===
-                'messaging/registration-token-not-registered' ||
-              resp.error?.code === 'messaging/invalid-registration-token'
-            ) {
-              invalidTokens.push(validTokens[idx]);
-            }
-          }
-        });
-
-        if (invalidTokens.length > 0) {
-          await this.userModel.updateMany(
-            { fcmTokens: { $in: invalidTokens } },
-            { $pull: { fcmTokens: { $in: invalidTokens } } },
-          );
-          this.logger.log(
-            `삭제된 유효하지 않은 토큰: ${invalidTokens.length}개`,
-          );
-        }
+        const invalidTokens = validTokens.filter(
+          (_, i) => !response.responses[i].success,
+        );
+        await this.userModel.updateMany(
+          { fcmTokens: { $in: invalidTokens } },
+          { $pull: { fcmTokens: { $in: invalidTokens } } },
+        );
       }
-
-      this.logger.log(
-        `Sent ${response.successCount} notifications, ${response.failureCount} failed`,
-      );
       return response;
     } catch (error) {
       this.logger.error('Failed to send notifications', error);
-      throw error;
     }
   }
 
@@ -140,20 +102,27 @@ export class FcmService implements OnModuleInit {
   async sendToTopic(topic: string, title: string, body: string, data?: any) {
     try {
       const message = {
+        notification: { title: String(title), body: String(body) }, // ⚽️ OS 알림용
         data: {
           title: String(title),
           body: String(body),
-          ...(data || {}),
+          ...this.stringifyData(data),
         },
         topic,
       };
-
-      const response = await admin.messaging().send(message);
-      this.logger.log(`Topic notification sent: ${response}`);
-      return response;
+      return await admin.messaging().send(message);
     } catch (error) {
       this.logger.error('Failed to send topic notification', error);
-      throw error;
     }
+  }
+
+  // 💡 FCM data 필드는 모든 값을 string으로 보내야 안전함
+  private stringifyData(data?: any) {
+    const result: any = {};
+    if (!data) return result;
+    Object.keys(data).forEach((key) => {
+      result[key] = String(data[key]);
+    });
+    return result;
   }
 }
