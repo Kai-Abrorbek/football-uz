@@ -257,8 +257,8 @@ export class AdminService {
       title,
       body,
       target,
-      successCount: result.successCount,
-      failureCount: result.failureCount,
+      successCount: result?.successCount,
+      failureCount: result?.failureCount,
     });
 
     return result;
