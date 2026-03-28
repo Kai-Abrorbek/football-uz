@@ -16,6 +16,8 @@ async function bootstrap() {
   // CORS 설정
   app.enableCors({
     origin: [
+      'https://footballuz.online',
+      'https://www.footballuz.online',
       'http://72.62.75.97:3005',
       'http://localhost:3005',
       'http://localhost:3000',
