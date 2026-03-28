@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -11,6 +11,7 @@ import { SendNotificationDto } from './dto/send-notification.dto';
 
 @Injectable()
 export class NotificationsService {
+  private logger = new Logger(NotificationsService.name);
   constructor(
     @InjectModel(Notification.name)
     private notificationModel: Model<NotificationDocument>,
@@ -311,6 +312,12 @@ export class NotificationsService {
   }
 
   async saveFcmToken(userId: string, token: string) {
+    // ⚽️ Expo 토큰은 Firebase에서 못 쓰니까 저장 안 함!
+    if (!token || token.startsWith('ExponentPushToken')) {
+      this.logger.warn(`Invalid token skipped: ${token}`);
+      return { message: '유효하지 않은 토큰입니다' };
+    }
+
     await this.userModel.findByIdAndUpdate(userId, {
       $addToSet: { fcmTokens: token },
     });
