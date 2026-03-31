@@ -318,8 +318,6 @@ export class NotificationsService {
       // 에러를 던지지 않고 그냥 정상 응답을 줘서 프론트 에러를 막음
       return { message: 'Expo token is not supported for FCM' };
     }
-    console.log(userId);
-    console.log(token);
     // ⚽️ 2. 진짜 FCM 토큰일 때만 DB에 저장 (중복 방지 포함)
     await this.userModel.findByIdAndUpdate(userId, {
       $addToSet: { fcmTokens: token },

@@ -184,21 +184,10 @@ export class MatchesService {
   }
 
   async findLive() {
-    const cacheKey = 'matches:live';
-
-    const cached = await this.cacheManager.get(cacheKey);
-    console.log('CACHED => ', cached);
-    if (cached) {
-      this.logger.log(`✅ 캐시 히트: ${cacheKey}`);
-      return cached;
-    }
-
     const matches = await this.matchModel
       .find({ 'status.short': { $in: ['1H', 'HT', '2H', 'ET', 'BT', 'P'] } })
       .sort({ date: 1 })
       .exec();
-    console.log('MATCHES => ', matches);
-    await this.cacheManager.set(cacheKey, matches, 60 * 1000);
     return matches;
   }
 
