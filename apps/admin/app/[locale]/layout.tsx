@@ -30,6 +30,7 @@ export async function generateMetadata({
   const currentSEO = seoData[locale] || seoData.en;
 
   return {
+    metadataBase: new URL('https://footballuz.online'),
     title: currentSEO.title,
     description: currentSEO.desc,
     icons: {
@@ -46,10 +47,10 @@ export async function generateMetadata({
       siteName: 'Football Uz',
       images: [
         {
-          url: '/icon2.png',
+          url: '/icon2.png', // 나중에 1200x630 사이즈의 'og-image.png'를 따로 만들어서 교체하는 걸 추천!
           width: 1200,
           height: 630,
-          alt: '사이트 미리보기 이미지',
+          alt: 'Football UZ 미리보기',
         },
       ],
       locale: locale,

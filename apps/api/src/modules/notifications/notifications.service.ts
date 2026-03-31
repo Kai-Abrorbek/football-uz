@@ -107,7 +107,7 @@ export class NotificationsService {
     const users = await this.userModel.find({
       $or: [
         { 'notificationSettings.matchStart': true },
-        // { matchAlerts: { $elemMatch: { matchId, matchStart: true } } },
+        { matchAlerts: { $elemMatch: { matchId, matchStart: true } } },
       ],
     });
 
