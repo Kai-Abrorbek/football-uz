@@ -38,7 +38,7 @@ export async function generateMetadata({
         { url: '/icon2.png', sizes: '16x16' },
         { url: '/icon2.png', sizes: '32x32' },
       ],
-      apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+      apple: [{ url: '/icon2.jpg', sizes: '180x180' }],
     },
     openGraph: {
       title: currentSEO.title,
@@ -47,7 +47,7 @@ export async function generateMetadata({
       siteName: 'Football Uz',
       images: [
         {
-          url: '/icon2.png', // 나중에 1200x630 사이즈의 'og-image.png'를 따로 만들어서 교체하는 걸 추천!
+          url: '/icon2.jpg', // 나중에 1200x630 사이즈의 'og-image.png'를 따로 만들어서 교체하는 걸 추천!
           width: 1200,
           height: 630,
           alt: 'Football UZ 미리보기',
