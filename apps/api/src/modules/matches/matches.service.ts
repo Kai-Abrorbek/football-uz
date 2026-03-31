@@ -8,6 +8,7 @@ import { TeamMatchQueryDto } from './dto/team-match-query.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { MatchVoteDocument, MatchVote } from '../../schemas/match-vote.schema';
+import { channel } from 'diagnostics_channel';
 
 @Injectable()
 export class MatchesService {
@@ -186,6 +187,7 @@ export class MatchesService {
     const cacheKey = 'matches:live';
 
     const cached = await this.cacheManager.get(cacheKey);
+    console.log('CACHED => ', cached);
     if (cached) {
       this.logger.log(`✅ 캐시 히트: ${cacheKey}`);
       return cached;
@@ -195,7 +197,7 @@ export class MatchesService {
       .find({ 'status.short': { $in: ['1H', 'HT', '2H', 'ET', 'BT', 'P'] } })
       .sort({ date: 1 })
       .exec();
-
+    console.log('MATCHES => ', matches);
     await this.cacheManager.set(cacheKey, matches, 60 * 1000);
     return matches;
   }
