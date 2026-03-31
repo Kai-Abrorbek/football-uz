@@ -68,7 +68,12 @@
     "filterLabel": "Filter",
     "statsPowered":  "Powered by NestJS & MongoDB",
     "statsLive":     "Live scores via Socket.io",
-    "statsDeployed": "Deployed on Docker · VPS"
-
+    "statsDeployed": "Deployed on Docker · VPS",
+    "videoTitle": "See Football UZ in action.",
+    "videoSub": "Watch real app flows — from live scores to match predictions.",
+    "videoCard1Title": "Live Match Experience",
+    "videoCard1Desc": "Real-time scores, lineups, and stats updating as the game unfolds.",
+    "videoCard2Title": "Follow Your Team",
+    "videoCard2Desc": "Track players, get push notifications, and never miss a key moment."
   }
 }

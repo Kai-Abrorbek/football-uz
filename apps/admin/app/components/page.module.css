@@ -358,21 +358,13 @@
   border-radius: 15px;
   overflow: hidden;
   aspect-ratio: 9/16;
-  max-height: 465px;
-  max-width: 225px;
-  width: 190px;
+  width: 251px;
+  min-height: 551px;  
   display: flex;
   flex-direction: column;
   box-shadow: 0 8px 32px rgba(0,0,0,0.22);
 }
 
-/* .phoneNotchBar {
-  height: 6px;
-  background: #111;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-} */
 
 .phoneNotchBar::after {
   content: '';
@@ -557,9 +549,9 @@
 
 .sliderTrack {
   display: flex;
-  gap: 10px;
+  gap: 15px;
   width: max-content;
-  animation: slideLeft 32s linear infinite;
+  animation: slideLeft 200s linear infinite;
   padding: 12px 8px;
 }
 
@@ -570,10 +562,9 @@
 
 /* ── Match card (phone-style) ── */
 .matchCard {
-  width: 225px;
-  min-height: 457px;
+  width: 251px;
+  min-height: 551px;
   border-radius: 24px;
-  padding: 20px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -830,4 +821,518 @@
   .footerInner { gap: 40px; }
   .footerLinks { gap: 28px; }
   .browseGrid { grid-template-columns: 1fr 1fr; }
+}
+
+/* 상단 티커 (주식 전광판 효과) */
+.tickerContainer {
+  width: 100%;
+  background: #0a0a0a;
+  color: #fff;
+  padding: 8px 0;
+  overflow: hidden;
+  border-bottom: 1px solid #222;
+  position: relative;
+  z-index: 50;
+}
+
+.tickerTrack {
+  display: flex;
+  white-space: nowrap;
+  animation: tickerScroll 30s linear infinite;
+}
+
+.tickerItem {
+  margin-right: 40px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.tickerLive {
+  color: #ff3b30;
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+@keyframes tickerScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* 유저 리뷰 섹션 */
+.testimonialSection {
+  padding: 80px 20px;
+  background: #f6f2f2;
+  text-align: center;
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  color: #fff;
+  margin-bottom: 40px;
+}
+
+.testimonialGrid {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.reviewCard {
+  background: #111;
+  padding: 24px;
+  border-radius: 16px;
+  max-width: 300px;
+  text-align: left;
+  border: 1px solid #222;
+}
+
+.stars {
+  color: #ffd700;
+  margin-bottom: 12px;
+}
+
+.reviewContent {
+  color: #ddd;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.reviewAuthor strong {
+  color: #fff;
+}
+
+.reviewAuthor span {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+/* ── NEW! 1번 다크 글로우 궤도 디자인 CSS (와 미친 소리 포인트) ── */
+.statsSection {
+  position: relative;
+  min-height: 100vh; /* 스크롤 공간 확보 */
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* 아이콘이 화면 밖으로 나가도 스크롤바 안 생기게 */
+}
+
+.orbitContainer {
+  position: absolute;
+  width: 1px; height: 1px; /* 기준점 */
+  display: flex; justify-content: center; align-items: center;
+  pointer-events: none; /* 아이콘 클릭 방지 (필요시 제거) */
+}
+
+/* 중앙 코어 */
+.orbitCore {
+  position: relative;
+  width: 120px; height: 120px;
+  z-index: 10;
+}
+
+.coreLogo {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #fff;
+  box-shadow: 0 0 20px rgba(255,255,255,0.2);
+}
+
+.coreGlow {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(97, 218, 251, 0.5) 0%, rgba(97, 218, 251, 0) 70%);
+  transform: translate(-50%, -50%);
+  filter: blur(30px);
+  animation: corePulse 5s ease-in-out infinite;
+}
+
+@keyframes corePulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+/* 기술 아이콘 궤도 회전 로직 */
+.orbitIconWrapper {
+  position: absolute;
+  top: 50%; left: 50%;
+  /* 반지름 데이터는 inline style로 처리 */
+  transform-origin: 0 0; /* 중앙을 기준으로 회전 */
+  animation: orbitRotate linear infinite; /* 회전 속도는 inline style */
+}
+
+.orbitIcon {
+  position: absolute;
+  bottom: 100%; /* 부모 원 테두리에 올리기 */
+  left: 50%;
+  transform: translate(-50%, 50%); /* 아이콘 중앙 맞추기 */
+  width: 70px; height: 70px;
+  background: #111;
+  border-radius: 50%;
+  display: flex; justify-content: center; align-items: center;
+  font-size: 2.2rem;
+  border: 1px solid rgba(255,255,255,0.05);
+  animation: orbitIconCounterRotate linear infinite; /* 자식은 반대로 회전해 항상 정면 보기 */
+}
+
+@keyframes orbitRotate {
+  0% { transform: rotate(0deg) translate(-50%, -50%); }
+  100% { transform: rotate(360deg) translate(-50%, -50%); }
+}
+
+@keyframes orbitIconCounterRotate {
+  0% { transform: translate(-50%, 50%) rotate(0deg); }
+  100% { transform: translate(-50%, 50%) rotate(-360deg); }
+}
+
+/* 배경 궤도 라인 */
+.orbitLine {
+  position: absolute;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.orbitLineInner { width: 530px; height: 530px; }
+.orbitLineOuter { width: 900px; height: 800px; }
+
+/* 통계 텍스트 오버레이 (고급스러운 다크 & 그라데이션) */
+.statsOverlay {
+  position: relative;
+  z-index: 20;
+  text-align: center;
+  max-width: 800px;
+  padding: 0 20px;
+}
+
+.statsLabel {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #61dafb;
+  margin-bottom: 32px;
+  font-weight: 600;
+}
+
+.statLine {
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  margin-bottom: 24px;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.statValue {
+  background: linear-gradient(180deg, #fff 30%, #a0a0a0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.statKey {
+  color: inherit;
+}
+
+
+/* 상단 네비게이션 */
+.topNav {
+  position: absolute;
+  top: 40px; /* Ticker 높이만큼 내림 */
+  left: 0;
+  width: 100%;
+  padding: 0 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  pointer-events: none; /* 배경 클릭 방해 안 하게 */
+}
+
+.logoTemp {
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+  pointer-events: auto;
+}
+
+/* 언어 선택기 (Glassmorphism) */
+.langSwitcherContainer {
+  position: relative;
+  pointer-events: auto;
+}
+
+.langBtn {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 8px 16px;
+  border-radius: 20px;
+  color: #333; 
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.langBtn:hover {
+  background: rgba(0, 0, 0, 0.1); 
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.langFlag {
+  width: 50px;
+  height: 30px;
+}
+
+.langLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* 드롭다운 메뉴 */
+.langDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: rgba(15, 15, 15, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  animation: slideDown 0.2s ease;
+}
+
+.langItem {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  padding: 10px 12px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+}
+
+.langItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.langActive {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+.videoSection {
+  padding: 80px 24px;
+  background: #fff;
+  text-align: center;
+}
+
+.videoTitle {
+  font-size: clamp(28px, 4vw, 52px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0 0 16px;
+  color: #111;
+}
+
+.videoSub {
+  font-size: 16px;
+  color: #888;
+  margin: 0 auto 56px;
+  max-width: 480px;
+  line-height: 1.6;
+}
+
+.videoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .videoGrid { grid-template-columns: 1fr; }
+}
+
+.videoCard {
+  background: #f5f5f2;
+  border-radius: 24px;
+  padding: 40px 32px 32px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  transition: transform 0.2s;
+}
+.videoCard:hover { transform: translateY(-4px); }
+
+/* 폰으로 찍은 영상 → 9:16 비율 */
+.videoWrap {
+  width: 260px;
+  height: 561px;
+  aspect-ratio: 9 / 16;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #111;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.22);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.videoEl {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.videoPlaceholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #0d1b2a 0%, #1a1a2e 100%);
+}
+
+.videoPlayIcon {
+  width: 56px;
+  height: 56px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #fff;
+  border: 1.5px solid rgba(255,255,255,0.2);
+}
+
+.videoCardTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+  align-self: flex-start;
+}
+
+.videoCardDesc {
+  font-size: 14px;
+  color: #888;
+  line-height: 1.6;
+  margin: 0;
+  align-self: flex-start;
+}
+
+.testimonialSection {
+  padding: 80px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sectionTitle {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 48px;
+  letter-spacing: -0.02em;
+}
+
+/* 3단 그리드 배치 (높이가 달라도 위로 정렬되게 align-items: start) */
+.testimonialGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+/* 카드 디자인 (사진이랑 똑같이 테두리랑 그림자 줌) */
+.reviewCard {
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease;
+}
+
+.reviewCard:hover {
+  transform: translateY(-2px);
+}
+
+.authorInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.authorText {
+  display: flex;
+  flex-direction: column;
+}
+
+.authorName {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111;
+  margin: 0;
+}
+
+.authorRole {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+}
+
+.reviewContent {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+  margin: 0;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 900px) {
+  .testimonialGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .testimonialGrid {
+    grid-template-columns: 1fr;
+  }
 }

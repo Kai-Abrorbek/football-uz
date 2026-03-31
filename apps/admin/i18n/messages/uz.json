@@ -68,7 +68,13 @@
     "filterLabel": "Filtr",
     "statsPowered":  "NestJS va MongoDB asosida",
     "statsLive":     "Socket.io orqali jonli natijalar",
-    "statsDeployed": "Docker · VPS da joylashtirilgan"
+    "statsDeployed": "Docker · VPS da joylashtirilgan",
+    "videoTitle": "Football UZ ni harakatda ko'ring.",
+    "videoSub": "Jonli natijalardan tortib bashoratgacha — haqiqiy ilova oqimlarini tomosha qiling.",
+    "videoCard1Title": "Jonli o'yin tajribasi",
+    "videoCard1Desc": "O'yin davomida real vaqtda natijalar, tarkib va statistika yangilanib turadi.",
+    "videoCard2Title": "Jamoangizni kuzating",
+    "videoCard2Desc": "O'yinchilarni kuzating, push-bildirishnomalar oling va muhim lahzalarni o'tkazib yubormang."
 
   }
 }

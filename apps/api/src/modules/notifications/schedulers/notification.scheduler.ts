@@ -27,6 +27,7 @@ export class NotificationScheduler {
       notifiedEvents: { $not: { $elemMatch: { $eq: 'matchStart' } } },
     });
 
+    console.log(upcomingMatches);
     for (const match of upcomingMatches) {
       this.logger.log(
         `Match starting soon: ${match.homeTeam.name} vs ${match.awayTeam.name}`,

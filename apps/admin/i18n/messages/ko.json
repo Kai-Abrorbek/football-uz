@@ -68,7 +68,12 @@
     "filterLabel": "필터",
     "statsPowered":  "NestJS & MongoDB 기반",
     "statsLive":     "Socket.io 실시간 스코어",
-    "statsDeployed": "Docker · VPS 배포"
-
+    "statsDeployed": "Docker · VPS 배포",
+    "videoTitle": "Football UZ를 직접 확인해보세요.",
+    "videoSub": "실시간 스코어부터 경기 예측까지 — 실제 앱 흐름을 영상으로 확인하세요.",
+    "videoCard1Title": "라이브 경기 경험",
+    "videoCard1Desc": "경기가 진행되는 동안 실시간으로 스코어, 라인업, 통계가 업데이트됩니다.",
+    "videoCard2Title": "내 팀 팔로우",
+    "videoCard2Desc": "선수를 추적하고, 푸시 알림을 받고, 중요한 순간을 절대 놓치지 마세요."
   }
 }

@@ -129,6 +129,9 @@ export class NotificationsService {
     const tokens = validUsers.flatMap((u) => u!.fcmTokens);
     const titleText = `${homeTeam} vs ${awayTeam}`;
     const bodyText = '경기가 곧 시작됩니다!';
+    console.log(users);
+    console.log(validUsers);
+    console.log(tokens);
 
     await this.fcmService.sendToMultipleDevices(tokens, titleText, bodyText, {
       type: 'matchStart',
