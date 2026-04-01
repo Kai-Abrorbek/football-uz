@@ -1,0 +1,93 @@
+/* 🛠 football-uz 전용 간지 코드 버튼 CSS */
+
+.btnCode {
+  position: fixed;
+  bottom: 30px;  /* 화면 아래에서 30px 띄움 */
+  right: 30px;   /* 화면 오른쪽에서 30px 띄움 */
+  z-index: 9999; /* 다른 화면 요소들보다 무조건 맨 위에 오게 설정 */
+  /* 버튼 형태 및 크기 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  background-color: #1a1a1d; /* 매트한 블랙 매터리얼 */
+  color: #fff;
+  border: 1px solid #00f2fe; /* 네온 시안 테두리 */
+  border-radius: 6px; /* 살짝 각진 모던한 디자인 */
+  cursor: pointer;
+  
+  /* 폰트 및 애니메이션 설정 */
+  font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 0.1rem;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden; /* 내부 광원 마스킹 */
+  
+  /* ⚡️ 네온 시안 외부 발광 효과 */
+  box-shadow: 
+    0 0 5px rgba(0, 242, 254, 0.6),
+    0 0 15px rgba(0, 242, 254, 0.3);
+}
+
+/* ── 🔮 중앙 기호 그라데이션 (시안 -> 퍼플) ── */
+.symbol {
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(135deg, #00e5ff 0%, #e040fb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 2px rgba(224, 64, 251, 0.5));
+}
+
+/* ── 🚀 퍼플 코어 광원 (이미지 6번 느낌) ── */
+.coreGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(circle, rgba(224, 64, 251, 0.7) 0%, rgba(224, 64, 251, 0) 70%);
+  opacity: 0;
+  border-radius: 50%;
+  filter: blur(8px);
+  transition: opacity 0.3s, transform 0.4s;
+  z-index: 1;
+}
+
+/* ── ⚡️ 상단 반사광 (유리 질감) ── */
+.reflection {
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+  border-radius: 3px;
+  filter: blur(1px);
+  z-index: 3;
+}
+
+/* ── 🖱 Hover 액션 (퍼플 광원 확장) ── */
+.btnCode:hover {
+  transform: translateY(-1px);
+  border-color: #e040fb; /* 테두리도 퍼플로 전환 */
+  box-shadow: 
+    0 0 10px rgba(224, 64, 251, 0.7),
+    0 0 25px rgba(224, 64, 251, 0.4);
+}
+
+.btnCode:hover .coreGlow {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.1); /* 퍼플 광원이 꽉 참 */
+}
+
+/* ── 🖱 Active/Click 액션 (네온 프레스) ── */
+.btnCode:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 
+    0 0 5px rgba(0, 242, 254, 0.5),
+    0 0 10px rgba(0, 242, 254, 0.3);
+}

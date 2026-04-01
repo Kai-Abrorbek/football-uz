@@ -5,6 +5,9 @@ import Image from 'next/image'; // 아키텍처 SVG 이미지를 위해 필요
 import styles from '../../components/DevModePage.module.css';
 import HealthCheck from './components/HealthCheck';
 import QuickLinks from './components/QuickLinks';
+import LighthouseScore from './components/LighthouseScore';
+import TerminalLog from './components/TerminalLog';
+import GitHubSection from './components/GitHubSection';
 
 // ── 데이터 및 타입 정의 (기존 코드 유지) ──────────────────────────────────
 
@@ -19,7 +22,7 @@ interface StackItem {
 
 const STACK_ITEMS: StackItem[] = [
   {
-    icon: 'N',
+    icon: '/icons/NestJS.svg',
     iconBg: '#fce7ec',
     iconColor: '#e0234e',
     name: 'NestJS',
@@ -27,7 +30,7 @@ const STACK_ITEMS: StackItem[] = [
     version: 'v10 · TypeScript',
   },
   {
-    icon: 'N',
+    icon: '/icons/nextjs.svg',
     iconBg: '#f0f0f0',
     iconColor: '#222',
     name: 'Next.js',
@@ -35,7 +38,7 @@ const STACK_ITEMS: StackItem[] = [
     version: 'v15.3.1 · App Router',
   },
   {
-    icon: 'RN',
+    icon: '/icons/expo.svg',
     iconBg: '#e8f4ff',
     iconColor: '#2196f3',
     name: 'React Native (Expo)',
@@ -43,7 +46,7 @@ const STACK_ITEMS: StackItem[] = [
     version: 'SDK 52 · EAS Build',
   },
   {
-    icon: 'M',
+    icon: '/icons/mongodb.svg',
     iconBg: '#e8f5e9',
     iconColor: '#2e7d32',
     name: 'MongoDB',
@@ -51,7 +54,7 @@ const STACK_ITEMS: StackItem[] = [
     version: 'v7 · self-hosted',
   },
   {
-    icon: 'R',
+    icon: '/icons/redis-logo.svg',
     iconBg: '#ffebee',
     iconColor: '#c62828',
     name: 'Redis',
@@ -59,7 +62,7 @@ const STACK_ITEMS: StackItem[] = [
     version: 'v7 · cache-manager',
   },
   {
-    icon: 'S',
+    icon: '/icons/socketio.png',
     iconBg: '#ede7f6',
     iconColor: '#4527a0',
     name: 'Socket.io',
@@ -67,7 +70,7 @@ const STACK_ITEMS: StackItem[] = [
     version: 'v4 · NestJS gateway',
   },
   {
-    icon: 'F',
+    icon: '/icons/firebase-1-logo.svg',
     iconBg: '#fff8e1',
     iconColor: '#f57f17',
     name: 'Firebase FCM',
@@ -75,7 +78,7 @@ const STACK_ITEMS: StackItem[] = [
     version: 'firebase-admin v12',
   },
   {
-    icon: 'i',
+    icon: '/icons/inext_logo.webp',
     iconBg: '#e0f2f1',
     iconColor: '#00695c',
     name: 'i18next / next-intl',
@@ -83,7 +86,7 @@ const STACK_ITEMS: StackItem[] = [
     version: 'next-intl v4',
   },
   {
-    icon: 'D',
+    icon: '/icons/docker-icon.svg',
     iconBg: '#e3f2fd',
     iconColor: '#1565c0',
     name: 'Docker Compose',
@@ -282,6 +285,7 @@ export default function DevModePage() {
           {/* ── Overview 섹션 ── */}
           <HealthCheck />
           <QuickLinks />
+          <LighthouseScore />
           <section
             ref={overviewRef}
             className={`${styles.sectionContainer} ${styles.scrollAnchor}`}
@@ -354,13 +358,12 @@ export default function DevModePage() {
             <div className={styles.stackGrid}>
               {STACK_ITEMS.map((item) => (
                 <div key={item.name} className={styles.stackCard}>
-                  <div
+                  <img
                     className={styles.stackIcon}
                     style={{ background: item.iconBg, color: item.iconColor }}
-                  >
-                    {' '}
-                    {item.icon}{' '}
-                  </div>
+                    src={item.icon}
+                    alt=""
+                  />
                   <div>
                     <p className={styles.stackName}>{item.name}</p>
                     <p className={styles.stackRole}>{item.role}</p>
@@ -437,7 +440,8 @@ export default function DevModePage() {
           </section>
 
           {/* ── GitHub 섹션 ── */}
-          <section
+          <GitHubSection />
+          {/* <section
             ref={githubRef}
             className={`${styles.sectionContainer} ${styles.scrollAnchor}`}
           >
@@ -509,7 +513,7 @@ export default function DevModePage() {
                 <span className={styles.commitTime}>5h ago</span>
               </div>
             </div>
-          </section>
+          </section> */}
 
           {/* ── Environment 섹션 ── */}
           <section
@@ -526,6 +530,8 @@ export default function DevModePage() {
               ))}
             </div>
           </section>
+
+          <TerminalLog />
         </div>
       </div>
     </div>

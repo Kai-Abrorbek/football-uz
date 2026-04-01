@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import styles from '../components/page.module.css';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
+import { CodeButton } from './dev/components/CodeButton';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -566,6 +567,7 @@ export default function HomePage() {
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroFade, setHeroFade] = useState(true);
   const [browseTab, setBrowseTab] = useState<'matches' | 'teams' | ''>('');
+  const router = useRouter();
 
   // Hero text rotation
   useEffect(() => {
@@ -585,6 +587,7 @@ export default function HomePage() {
     <main className={styles.main}>
       {/* 1. 상단 라이브 스코어 티커 */}
       <LiveTicker />
+      <CodeButton onClick={() => router.push('/dev')} />
       {/* 화면 우측 상단 고정 헤더 영역 */}
       <header className={styles.topNav}>
         <div className={styles.logoTemp}>Football UZ</div>

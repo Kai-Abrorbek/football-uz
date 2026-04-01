@@ -1,0 +1,121 @@
+.wrapper {
+  background-color: #0d0d0d;
+  border: 1px solid var(--color-border, #313133);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 40px;
+  margin-bottom: 50px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.header {
+  background-color: #1a1a1a;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border, #313133);
+  position: relative;
+}
+
+.dots {
+  display: flex;
+  gap: 8px;
+}
+
+.dots span {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.dotRed { background-color: #ff5f56; }
+.dotYellow { background-color: #ffbd2e; }
+.dotGreen { background-color: #27c93f; }
+
+.title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #888;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.body {
+  padding: 20px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 250px;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.line {
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+
+.cmd { color: #fcc2c2; font-weight: bold; }
+.info { color: #61dafb; }
+.success { color: #39d353; font-weight: bold; }
+.detail { color: #aaa; padding-left: 15px; }
+
+.cursorWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: #aaa;
+}
+
+.cursorPath {
+  color: #fcc2c2;
+  font-weight: bold;
+}
+
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 15px;
+  background-color: #fff;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.input { color: #fff; font-weight: bold; }
+.error { color: #ff5f56; }
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.prompt {
+  color: #39d353; /* 프롬프트 초록색으로 변경 */
+  font-weight: bold;
+}
+
+.inputField {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 14px;
+  outline: none;
+  caret-color: #fff; /* 커서 색상 */
+}
+
+.prompt { color: #39d353; font-weight: bold; margin-right: 8px; }
+.inputField { 
+  flex: 1; background: transparent; border: none; color: #fff; 
+  outline: none; font-family: monospace; font-size: 14px; 
+}
+.input { color: #fcc2c2; }
+.error { color: #ff5f56; }

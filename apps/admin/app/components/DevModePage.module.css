@@ -103,7 +103,7 @@
   gap: 15px;
 }
 .stackCard { background-color: var(--color-bg-card); padding: 16px; border-radius: 10px; border: 1px solid var(--color-border); display: flex; align-items: center; gap: 16px; }
-.stackIcon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; }
+.stackIcon { width: 55px; height: 55px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; }
 .stackName { font-size: 17px; /* 폰트 키움 */ font-weight: 600; margin: 0; }
 .stackRole { font-size: 14px; /* 폰트 키움 */ color: var(--color-text-secondary); margin: 3px 0; }
 .stackVer { font-size: 12px; /* 폰트 키움 */ color: #888; margin: 0; }
