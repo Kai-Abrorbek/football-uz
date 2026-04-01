@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import Image from 'next/image'; // 아키텍처 SVG 이미지를 위해 필요
 import styles from '../../components/DevModePage.module.css';
 import HealthCheck from './components/HealthCheck';
+import QuickLinks from './components/QuickLinks';
 
 // ── 데이터 및 타입 정의 (기존 코드 유지) ──────────────────────────────────
 
@@ -280,6 +281,7 @@ export default function DevModePage() {
         <div className={styles.content}>
           {/* ── Overview 섹션 ── */}
           <HealthCheck />
+          <QuickLinks />
           <section
             ref={overviewRef}
             className={`${styles.sectionContainer} ${styles.scrollAnchor}`}

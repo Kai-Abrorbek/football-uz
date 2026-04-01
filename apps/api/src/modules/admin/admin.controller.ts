@@ -14,20 +14,13 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { InjectConnection } from '@nestjs/mongoose';
-import { Connection } from 'mongoose';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, AdminGuard)
 @Controller('admin')
 export class AdminController {
-  constructor(
-    private readonly adminService: AdminService,
-    @InjectConnection() private readonly mongoConnection: Connection,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
+  constructor(private readonly adminService: AdminService) {}
 
   // ─── 대시보드 ───────────────────────────────────────────────
   @Get('dashboard')
@@ -139,30 +132,5 @@ export class AdminController {
   @Get('notifications/history')
   getNotificationHistory(@Query('page') page = 1) {
     return this.adminService.getNotificationHistory(Number(page));
-  }
-
-  @Get('health')
-  async checkHealth() {
-    // 1. MongoDB 상태 체크 (1 === connected)
-    const isDbConnected = this.mongoConnection.readyState === 1;
-
-    // 2. Redis 상태 체크 (ping-pong 테스트)
-    let isRedisConnected = false;
-    try {
-      await this.cacheManager.set('health_ping', 'pong', 5000); // 5초짜리 임시 데이터 쓰기
-      const val = await this.cacheManager.get('health_ping'); // 다시 읽기
-      if (val === 'pong') {
-        isRedisConnected = true;
-      }
-    } catch (error) {
-      isRedisConnected = false;
-    }
-
-    return {
-      status: isDbConnected && isRedisConnected ? 'ok' : 'error',
-      db: isDbConnected ? 'ok' : 'error',
-      redis: isRedisConnected ? 'ok' : 'error',
-      timestamp: new Date().toISOString(),
-    };
   }
 }
