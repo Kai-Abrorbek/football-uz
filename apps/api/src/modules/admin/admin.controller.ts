@@ -8,6 +8,7 @@ import {
   Query,
   Body,
   UseGuards,
+  Inject,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminService } from './admin.service';

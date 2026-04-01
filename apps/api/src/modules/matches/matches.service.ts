@@ -8,7 +8,6 @@ import { TeamMatchQueryDto } from './dto/team-match-query.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { MatchVoteDocument, MatchVote } from '../../schemas/match-vote.schema';
-import { channel } from 'diagnostics_channel';
 
 @Injectable()
 export class MatchesService {

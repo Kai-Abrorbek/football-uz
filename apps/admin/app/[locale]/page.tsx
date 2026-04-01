@@ -21,20 +21,6 @@ interface MatchCard {
   awayLogo: string;
 }
 
-interface AppScreen {
-  imageUrl: string;
-  title: string;
-  sub: string;
-}
-
-interface Testimonial {
-  id: number;
-  name: string;
-  role: string;
-  content: string;
-  rating: number;
-}
-
 // 궤도에 배치할 기술 스택 아이콘 데이터
 interface OrbitIcon {
   id: number;
@@ -604,7 +590,6 @@ export default function HomePage() {
         <div className={styles.logoTemp}>Football UZ</div>
         <LanguageSwitcher />
       </header>
-
       {/* ── HERO ── */}
       <section className={styles.hero}>
         <div className={styles.heroAppIcon}>
@@ -630,7 +615,6 @@ export default function HomePage() {
           <button className={styles.ctaSecondary}>{t('ctaExplore')} →</button>
         </div>
       </section>
-
       <section className={styles.browseSection}>
         <div className={styles.browseContainer}>
           {/* Navbar */}
@@ -760,7 +744,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* ── NEW! FLOATING ORBITING TECH STACK (1번 디자인) ── */}
       <section className={styles.statsSection}>
         <div className={styles.orbitContainer}>
@@ -815,7 +798,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
       {/* ── MATCH CARDS SLIDER (4th screenshot) ── */}
       <section className={styles.sliderSection}>
         <h2 className={styles.sliderTitle}>{t('sliderTitle')}</h2>
@@ -828,7 +810,6 @@ export default function HomePage() {
         </div>
         <MatchSlider />
       </section>
-
       {/* ── VIDEO SHOWCASE ── */}
       <section className={styles.videoSection}>
         <h2 className={styles.videoTitle}>{t('videoTitle')}</h2>
@@ -858,7 +839,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
       {/* 4. 유저 리뷰 (신뢰도 상승) */}
       <section className={styles.testimonialSection}>
         <h2 className={styles.sectionTitle}>What our users are saying.</h2>
@@ -883,7 +863,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
       {/* ── FOOTER ── */}
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
