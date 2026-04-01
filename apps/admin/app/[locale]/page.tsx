@@ -613,11 +613,17 @@ export default function HomePage() {
             className={styles.ctaPrimary}
             href="https://footballuz.online/downloads/football-uz.apk"
           >
-            {t('ctaDownload')}
+            <span className={styles.ctaText}>{t('ctaDownload')}</span>
+            {/* ✨ 빛이 지나가는 애니메이션용 요소 */}
+            <span className={styles.shimmer}></span>
           </a>
-          <button className={styles.ctaSecondary}>{t('ctaExplore')} →</button>
+
+          <button className={styles.ctaSecondary}>
+            {t('ctaExplore')} <span className={styles.arrow}>→</span>
+          </button>
         </div>
       </section>
+
       <section className={styles.browseSection}>
         <div className={styles.browseContainer}>
           {/* Navbar */}

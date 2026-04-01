@@ -1,0 +1,41 @@
+.homeBtn {
+  position: fixed;
+  top: 30px;
+  left: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(25, 25, 28, 0.8);
+  backdrop-filter: blur(8px); /* 뒤에 내용이 살짝 비치는 고급스러운 블러 */
+  border: 1px solid var(--color-border, #313133);
+  border-radius: 8px;
+  color: #aaa;
+  font-family: 'SF Mono', Consolas, monospace;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  z-index: 9999;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.homeBtn:hover {
+  color: #00f2fe; /* 네온 시안으로 변경 */
+  border-color: #00f2fe;
+  background: rgba(0, 242, 254, 0.1);
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
+  transform: translateX(-2px); /* 전체적으로 살짝 왼쪽으로 이동 */
+}
+
+.icon {
+  font-family: sans-serif;
+  transition: transform 0.3s ease;
+}
+
+.homeBtn:hover .icon {
+  transform: translateX(-4px); /* 화살표만 한 번 더 왼쪽으로 쓱! */
+}
+
+.homeBtn:active {
+  transform: scale(0.95);
+}

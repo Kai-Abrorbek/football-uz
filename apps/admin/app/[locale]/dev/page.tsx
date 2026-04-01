@@ -8,6 +8,7 @@ import QuickLinks from './components/QuickLinks';
 import LighthouseScore from './components/LighthouseScore';
 import TerminalLog from './components/TerminalLog';
 import GitHubSection from './components/GitHubSection';
+import HomeButton from './components/HomeButton';
 
 // ── 데이터 및 타입 정의 (기존 코드 유지) ──────────────────────────────────
 
@@ -251,6 +252,7 @@ export default function DevModePage() {
 
   return (
     <div className={styles.container}>
+      <HomeButton />
       {/* ── 상단 고정 헤더 & 탭바 ── */}
       <div className={styles.stickyHeaderNav}>
         <div className={styles.header}>
