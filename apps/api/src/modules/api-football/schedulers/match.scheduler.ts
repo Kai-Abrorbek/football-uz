@@ -13,7 +13,6 @@ import { DetailsScheduler } from './details.scheduler';
 @Injectable()
 export class MatchScheduler {
   private readonly logger = new Logger(MatchScheduler.name);
-  private previousLiveIds: Set<number> = new Set();
   private statsLastSyncMap = new Map<number, Date>();
 
   constructor(
@@ -34,15 +33,6 @@ export class MatchScheduler {
     } else {
       this.logger.log(`Initial sync skipped - ${count} matches already exist`);
     }
-
-    const liveMatches = await this.matchModel
-      .find({
-        'status.short': { $in: ['1H', 'HT', '2H', 'ET', 'BT', 'P'] },
-      })
-      .exec();
-
-    this.previousLiveIds = new Set(liveMatches.map((m) => m.apiFootballId));
-    this.logger.log(`Initialized ${this.previousLiveIds.size} live matches`);
   }
 
   async initialSync() {
@@ -101,43 +91,49 @@ export class MatchScheduler {
       this.logger.error('Failed to sync recent fixtures', error.message);
     }
   }
-  @Cron('*/30 * * * * *')
+
+  @Cron('*/20 * * * * *')
   async syncLiveScores() {
     try {
       const now = new Date();
       const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
 
-      // 현재 라이브 상태이거나 최근 2시간 내 시작한 경기 체크
-      const liveCount = await this.matchModel.countDocuments({
-        $or: [
-          { 'status.short': { $in: ['1H', 'HT', '2H', 'ET', 'BT', 'P'] } },
-          {
-            'status.short': 'NS',
-            date: { $gte: twoHoursAgo, $lte: now },
-          },
-        ],
+      // DB에서 현재 라이브 경기 조회 (메모리 대신)
+      const dbLiveMatches = await this.matchModel
+        .find({ 'status.short': { $in: ['1H', 'HT', '2H', 'ET', 'BT', 'P'] } })
+        .select('apiFootballId')
+        .lean();
+
+      const dbLiveIds = new Set(dbLiveMatches.map((m) => m.apiFootballId));
+
+      // NS 경기 중 곧 시작할 것들
+      const nsCount = await this.matchModel.countDocuments({
+        'status.short': 'NS',
+        date: { $gte: twoHoursAgo, $lte: now },
       });
 
-      if (liveCount === 0) {
+      if (dbLiveIds.size === 0 && nsCount === 0) {
         this.logger.log(
           'No live or recently started matches - skipping API call',
         );
         return;
       }
 
-      this.logger.log(`${liveCount} potential live matches found - syncing...`);
+      this.logger.log(
+        `${dbLiveIds.size} live matches in DB, ${nsCount} NS matches - syncing...`,
+      );
 
       const data = await this.apiFootballService.getFixtureLive();
-      const liveFixtures = data.response;
-      const currentLiveIds = new Set(
-        (liveFixtures ?? [])
-          .filter((live) => FEATURED_LEAGUES.includes(live.league.id))
-          .map((live) => live.fixture.id) as number[],
+      const liveFixtures = data.response ?? [];
+
+      const apiLiveIds = new Set(
+        liveFixtures
+          .filter((f) => FEATURED_LEAGUES.includes(f.league.id))
+          .map((f) => f.fixture.id as number),
       );
 
-      const justFinished = [...this.previousLiveIds].filter(
-        (id) => !currentLiveIds.has(id),
-      );
+      // DB엔 라이브인데 API엔 없는 것 = 방금 종료
+      const justFinished = [...dbLiveIds].filter((id) => !apiLiveIds.has(id));
 
       for (const id of justFinished) {
         await this.syncMatch(id);
@@ -146,10 +142,9 @@ export class MatchScheduler {
 
       if (justFinished.length > 0) {
         await this.cacheManager.del('matches:live');
-        this.logger.log(`🗑️ 종료된 경기 캐시 삭제`);
+        this.logger.log(`🗑️ 종료된 경기 ${justFinished.length}개 캐시 삭제`);
       }
 
-      this.previousLiveIds = currentLiveIds;
       if (liveFixtures.length === 0) {
         this.logger.log('No live matches from API');
         await this.cacheManager.del('matches:live');
