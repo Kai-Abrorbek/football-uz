@@ -141,7 +141,7 @@ export class AdminController {
     return this.adminService.getNotificationHistory(Number(page));
   }
 
-  @Get()
+  @Get('health')
   async checkHealth() {
     // 1. MongoDB 상태 체크 (1 === connected)
     const isDbConnected = this.mongoConnection.readyState === 1;
