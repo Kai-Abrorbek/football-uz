@@ -16,7 +16,7 @@ export default function HealthCheck() {
         const apiUrl =
           process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
-        const res = await fetch(`${apiUrl}/admin/health`, {
+        const res = await fetch(`${apiUrl}/health`, {
           cache: 'no-store',
         });
 
