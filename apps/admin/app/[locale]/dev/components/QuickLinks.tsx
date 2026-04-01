@@ -12,19 +12,19 @@ interface LinkItem {
 const LINKS: LinkItem[] = [
   {
     name: 'GitHub Repo',
-    url: 'https://github.com/kai/football-uz', // 네 실제 깃허브 주소로 변경
+    url: 'https://github.com/Kai-Abrorbek/football-uz', // 네 실제 깃허브 주소로 변경
     icon: '🐙',
     desc: 'Source code & commits',
   },
   {
     name: 'Swagger API',
-    url: 'https://api.footballuz.online/docs', // 실제 Swagger 주소로 변경
+    url: 'https://footballuz.online/admin/swagger', // 실제 Swagger 주소로 변경
     icon: '📘',
     desc: 'REST API documentation',
   },
   {
     name: 'Admin Panel',
-    url: 'https://admin.footballuz.online', // 관리자 페이지 주소
+    url: 'https://footballuz.online/admin', // 관리자 페이지 주소
     icon: '⚙️',
     desc: 'CMS & Moderation',
   },
