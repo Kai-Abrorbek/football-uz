@@ -1,0 +1,101 @@
+.wrapper {
+  background-color: var(--color-bg-card, #252527);
+  border: 1px solid var(--color-border, #313133);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #aaa);
+  letter-spacing: 0.05em;
+}
+
+.statusBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dotChecking {
+  background-color: #f59e0b;
+  animation: pulse 1s infinite alternate;
+}
+
+.dotOnline {
+  background-color: #39d353;
+  box-shadow: 0 0 8px rgba(57, 211, 83, 0.6);
+}
+
+.grid {
+  display: flex;
+  gap: 15px;
+}
+
+.card {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.name {
+  font-size: 14px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.ping {
+  font-family: monospace;
+  font-size: 14px;
+  color: #39d353;
+}
+
+.pingLoading {
+  color: #888;
+  animation: blink 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.dotError {
+  background-color: #f43f5e;
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.6);
+}
+
+.pingError {
+  color: #f43f5e;
+  font-weight: bold;
+}
