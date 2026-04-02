@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef } from 'react';
-import Image from 'next/image'; // 아키텍처 SVG 이미지를 위해 필요
 import styles from '../../components/DevModePage.module.css';
 import HealthCheck from './components/HealthCheck';
 import QuickLinks from './components/QuickLinks';
@@ -9,6 +8,7 @@ import LighthouseScore from './components/LighthouseScore';
 import TerminalLog from './components/TerminalLog';
 import GitHubSection from './components/GitHubSection';
 import HomeButton from './components/HomeButton';
+import SystemArchitecture from './components/SystemArchitecture';
 
 // ── 데이터 및 타입 정의 (기존 코드 유지) ──────────────────────────────────
 
@@ -199,44 +199,20 @@ const ENV_VARS = [
   { key: 'VPS', value: 'Hostinger KVM2 · Docker Compose' },
 ];
 
-// GitHub contribution 잔디밭 지도 데이터 하드코딩
-function ContribGrid() {
-  const seed = [
-    0, 0, 0, 1, 0, 2, 1, 0, 3, 2, 1, 0, 0, 1, 2, 3, 4, 3, 2, 1, 0, 0, 1, 0, 2,
-    3, 2, 1, 0, 0, 1, 2, 3, 2, 1, 0, 1, 2, 3, 4, 3, 2, 1, 0, 1, 2, 1, 0, 0, 1,
-    2,
-  ];
-  const cells = [];
-  for (let w = 0; w < 52; w++) {
-    for (let d = 0; d < 7; d++) {
-      const v = seed[(w * 7 + d) % seed.length];
-      const rand = (w * 13 + d * 7) % 4;
-      cells.push(Math.min(4, v + (rand === 0 ? 1 : 0)));
-    }
-  }
-  return (
-    <div className={styles.contribGrid}>
-      {cells.map((level, i) => (
-        <div key={i} className={`${styles.cday} ${styles[`c${level}`]}`} />
-      ))}
-    </div>
-  );
-}
-
 // ── Main Component ──────────────────────────────────────────────────────────────────
 
 export default function DevModePage() {
-  // 각 섹션의 위치를 기억할 Ref들
-  const overviewRef = useRef<HTMLElement>(null);
-  const techStackRef = useRef<HTMLElement>(null);
-  const archRef = useRef<HTMLElement>(null);
-  const apiRef = useRef<HTMLElement>(null);
-  const schedulersRef = useRef<HTMLElement>(null);
-  const githubRef = useRef<HTMLElement>(null);
-  const environmentRef = useRef<HTMLElement>(null);
+  const overviewRef = useRef<HTMLDivElement>(null);
+  const techStackRef = useRef<HTMLDivElement>(null);
+  const archRef = useRef<HTMLDivElement>(null);
+  const apiRef = useRef<HTMLDivElement>(null);
+  const schedulersRef = useRef<HTMLDivElement>(null);
+  const githubRef = useRef<HTMLDivElement>(null);
+  const environmentRef = useRef<HTMLDivElement>(null);
+  const bashRef = useRef<HTMLDivElement>(null);
 
   // 탭 클릭 시 해당 섹션으로 부드럽게 스크롤
-  const scrollToSection = (ref: React.RefObject<HTMLElement | null>) => {
+  const scrollToSection = (ref: React.RefObject<HTMLDivElement | null>) => {
     ref.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -248,6 +224,7 @@ export default function DevModePage() {
     { label: 'Schedulers', ref: schedulersRef },
     { label: 'GitHub', ref: githubRef },
     { label: 'Environment', ref: environmentRef },
+    { label: 'Bash', ref: bashRef },
   ];
 
   return (
@@ -377,25 +354,7 @@ export default function DevModePage() {
           </section>
 
           {/* ── Architecture 섹션 (SVG 이미지로 변경) ── */}
-          <section
-            ref={archRef}
-            className={`${styles.sectionContainer} ${styles.scrollAnchor}`}
-          >
-            <p className={styles.secLabel}>Architecture</p>
-            <div className={styles.archWrap}>
-              <div className={styles.archImageContainer}>
-                {/* public 폴더의 football_uz_architecture_diagram.svg를 불러옴 */}
-                <Image
-                  src="/football_uz_architecture_diagram.svg"
-                  alt="Football UZ Architecture Diagram"
-                  width={1100} // 원본 비율에 맞게 적당히 큼직하게 설정
-                  height={800}
-                  priority
-                  className={styles.archImage}
-                />
-              </div>
-            </div>
-          </section>
+          <SystemArchitecture ref={archRef} />
 
           {/* ── API endpoints 섹션 ── */}
           <section
@@ -442,80 +401,7 @@ export default function DevModePage() {
           </section>
 
           {/* ── GitHub 섹션 ── */}
-          <GitHubSection />
-          {/* <section
-            ref={githubRef}
-            className={`${styles.sectionContainer} ${styles.scrollAnchor}`}
-          >
-            <p className={styles.secLabel}>GitHub</p>
-            <div className={styles.metricsRow}>
-              {[
-                {
-                  label: 'Repository',
-                  value: 'football-uz',
-                  sub: 'github.com/kai',
-                },
-                { label: 'Total commits', value: '847', sub: 'since Jan 2024' },
-                { label: 'Open PRs', value: '2', sub: 'in review' },
-                {
-                  label: 'Branches',
-                  value: '4',
-                  sub: 'main · dev · feat · fix',
-                },
-              ].map((m) => (
-                <div key={m.label} className={styles.metricCard}>
-                  <p className={styles.metricLabel}>{m.label}</p>
-                  <p
-                    className={styles.metricValue}
-                    style={{
-                      fontSize: m.label === 'Repository' ? '20px' : undefined,
-                    }}
-                  >
-                    {m.value}
-                  </p>
-                  <p className={styles.metricSub}>{m.sub}</p>
-                </div>
-              ))}
-            </div>
-            <p className={styles.secLabel}>LANGUAGE BREAKDOWN</p>
-            <div className={styles.langBar}>
-              {[
-                { label: 'TypeScript', pct: 62, color: '#3178c6' },
-                { label: 'JavaScript', pct: 24, color: '#f7df1e' },
-                { label: 'HTML/CSS', pct: 9, color: '#e34c26' },
-                { label: 'Other', pct: 5, color: '#cbcbcb' },
-              ].map((l) => (
-                <div
-                  key={l.label}
-                  className={styles.langSeg}
-                  style={{ width: `${l.pct}%`, background: l.color }}
-                />
-              ))}
-            </div>
-            <p className={styles.secLabel} style={{ margin: '20px 0 10px 0' }}>
-              CONTRIBUTION ACTIVITY
-            </p>
-            <ContribGrid />
-            <p className={styles.secLabel} style={{ marginTop: '20px' }}>
-              RECENT COMMITS
-            </p>
-            <div className={styles.commitList}>
-              <div className={styles.commitRow}>
-                <span className={styles.commitHash}>a3f2c1d</span>
-                <span className={styles.commitMsg}>
-                  fix: syncLiveScores DB 기반으로 전환
-                </span>
-                <span className={styles.commitTime}>2h ago</span>
-              </div>
-              <div className={styles.commitRow}>
-                <span className={styles.commitHash}>b7e91a2</span>
-                <span className={styles.commitMsg}>
-                  feat: Next.js 15 다운그레이드 + ESLint 무시
-                </span>
-                <span className={styles.commitTime}>5h ago</span>
-              </div>
-            </div>
-          </section> */}
+          <GitHubSection ref={githubRef} />
 
           {/* ── Environment 섹션 ── */}
           <section
@@ -533,7 +419,7 @@ export default function DevModePage() {
             </div>
           </section>
 
-          <TerminalLog />
+          <TerminalLog ref={bashRef} />
         </div>
       </div>
     </div>

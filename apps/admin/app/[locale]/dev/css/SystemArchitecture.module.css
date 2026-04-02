@@ -1,0 +1,279 @@
+/* 컨테이너 내부에만 적용되도록 변수 설정 */
+.container {
+  --bg: #0a0e1a;
+  --bg2: #0f1525;
+  --bg3: #141929;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #e8eaf2;
+  --muted: #6b7194;
+  --accent: #4f8ef7;
+  --accent2: #7c6af7;
+  --green: #3ecf8e;
+  --amber: #f59e0b;
+  --red: #ef4444;
+
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  padding: 40px 24px 60px;
+}
+
+/* ── Header ── */
+.pageHeader {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.pageHeader h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.pageHeader h2 {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.pageHeader p {
+  font-size: 13px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+.liveDot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-right: 6px;
+  animation: blink 2s ease-in-out infinite;
+  vertical-align: middle;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── Main layout ── */
+.diagram {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+/* ── Layer wrapper ── */
+.layer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.layerLabel {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  align-self: flex-start;
+  padding-left: 4px;
+}
+.nodesRow {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+/* ── Node card ── */
+.node {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+  position: relative;
+  transition: border-color 0.2s, transform 0.2s;
+  cursor: default;
+}
+.node:hover {
+  border-color: rgba(255,255,255,0.25);
+  transform: translateY(-2px);
+}
+.nodeIcon {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.nodeName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  white-space: nowrap;
+}
+.nodeSub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  white-space: nowrap;
+}
+.nodeBadge {
+  position: absolute;
+  top: -7px; right: -7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 20px;
+  letter-spacing: 0.06em;
+}
+.badgeLive { background: rgba(62,207,142,0.15); color: var(--green); border: 1px solid rgba(62,207,142,0.3); }
+.badgeExt  { background: rgba(79,142,247,0.12); color: var(--accent); border: 1px solid rgba(79,142,247,0.25); }
+.badgeCache{ background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+
+/* ── Wide node (Nginx) ── */
+.nodeWide {
+  flex-direction: row;
+  min-width: 400px;
+  gap: 14px;
+  padding: 14px 24px;
+  justify-content: flex-start;
+}
+.nodeWide .nodeText { display: flex; flex-direction: column; gap: 2px; }
+.nodeWide .nodeName { text-align: left; }
+.nodeWide .nodeSub  { text-align: left; }
+
+/* ── VPS container ── */
+.vpsBox {
+  border: 1px solid rgba(79,142,247,0.2);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  background: rgba(79,142,247,0.03);
+  position: relative;
+}
+.vpsLabel {
+  position: absolute;
+  top: -11px; left: 20px;
+  background: var(--bg);
+  padding: 0 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.vpsInner {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ── External services box ── */
+.extBox {
+  border: 1px solid rgba(124,106,247,0.2);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  background: rgba(124,106,247,0.03);
+  position: relative;
+}
+.extLabel {
+  position: absolute;
+  top: -11px; left: 20px;
+  background: var(--bg);
+  padding: 0 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent2);
+}
+
+/* ── Connector arrows ── */
+.connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0;
+  gap: 0;
+  position: relative;
+  z-index: 1;
+}
+.connectorLine {
+  width: 1px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+  flex: 1;
+  min-height: 24px;
+}
+.connectorLabel {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg3);
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+.arrowDown {
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid rgba(255,255,255,0.15);
+  margin-top: 1px;
+}
+
+/* ── Data flow legend ── */
+.legend {
+  max-width: 1000px;
+  margin: 40px auto 0;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.legendItem {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+}
+.legendLine {
+  width: 28px; height: 1px;
+  background: rgba(255,255,255,0.2);
+}
+.legendLine.dashed { background: none; border-top: 1px dashed rgba(255,255,255,0.2); }
+.legendLine.colored { background: var(--accent); }
+
+/* ── Footer note ── */
+.footerNote {
+  max-width: 1000px;
+  margin: 16px auto 0;
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+}

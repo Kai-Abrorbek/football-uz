@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { GitHubCalendar } from 'react-github-calendar';
+import { forwardRef, useEffect, useState } from 'react';
 import styles from '../../../components/DevModePage.module.css';
 
 const OWNER = 'Kai-Abrorbek';
 const REPO = 'football-uz';
 
-export default function GitHubSection() {
+const GitHubSection = forwardRef<HTMLDivElement, {}>((props, ref) => {
   const [repoInfo, setRepoInfo] = useState<any>(null);
   const [commits, setCommits] = useState<any[]>([]);
   const [langs, setLangs] = useState<
@@ -90,7 +89,7 @@ export default function GitHubSection() {
   if (!repoInfo) return <p style={{ color: '#888' }}>Loading GitHub Data...</p>;
 
   return (
-    <>
+    <section ref={ref}>
       {/* ── 상단 4개 카드 ── */}
       <div className={styles.metricsRow}>
         {[
@@ -234,6 +233,9 @@ export default function GitHubSection() {
           );
         })}
       </div>
-    </>
+    </section>
   );
-}
+});
+
+GitHubSection.displayName = 'GitHubSection';
+export default GitHubSection;

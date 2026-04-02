@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, forwardRef } from 'react';
 import styles from '../css/TerminalLog.module.css';
 
 const BOOT_LOGS = [
@@ -26,8 +26,7 @@ const BOOT_LOGS = [
     type: 'success',
   },
 ];
-
-export default function TerminalLog() {
+const TerminalLog = forwardRef<HTMLDivElement, {}>((props, ref) => {
   const [logs, setLogs] = useState<any[]>([]);
   const [isBooting, setIsBooting] = useState(true);
   const [input, setInput] = useState('');
@@ -113,7 +112,7 @@ export default function TerminalLog() {
 
   return (
     <div className={styles.wrapper} ref={terminalRef}>
-      <div className={styles.header}>
+      <div className={styles.header} ref={ref}>
         <div className={styles.dots}>
           <span className={styles.dotRed} />
           <span className={styles.dotYellow} />
@@ -147,4 +146,7 @@ export default function TerminalLog() {
       </div>
     </div>
   );
-}
+});
+
+TerminalLog.displayName = 'TerminalLog';
+export default TerminalLog;
