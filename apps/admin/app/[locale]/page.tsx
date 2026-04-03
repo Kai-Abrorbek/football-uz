@@ -613,8 +613,12 @@ export default function HomePage() {
             className={styles.ctaPrimary}
             href="https://footballuz.online/downloads/football-uz.apk"
           >
+            <img
+              src="/icons/android-original.svg"
+              alt=""
+              style={{ width: 40, height: 40 }}
+            />
             <span className={styles.ctaText}>{t('ctaDownload')}</span>
-            {/* ✨ 빛이 지나가는 애니메이션용 요소 */}
             <span className={styles.shimmer}></span>
           </a>
 

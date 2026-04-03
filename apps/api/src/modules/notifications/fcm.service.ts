@@ -27,14 +27,16 @@ export class FcmService implements OnModuleInit {
     }
 
     try {
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId,
-          clientEmail,
-          privateKey,
-        }),
-      });
-      this.logger.log('Firebase Admin initialized');
+      if (!admin.apps.length) {
+        admin.initializeApp({
+          credential: admin.credential.cert({
+            projectId,
+            clientEmail,
+            privateKey,
+          }),
+        });
+        this.logger.log('Firebase Admin initialized');
+      }
     } catch (error) {
       this.logger.error('Failed to initialize Firebase', error);
     }
