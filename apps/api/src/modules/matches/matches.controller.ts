@@ -32,6 +32,7 @@ export class MatchesController {
   @Get()
   @ApiOperation({ summary: '경기 목록 조회 (필터링)' })
   async findAll(@Query() query: MatchQueryDto) {
+    console.log(query);
     return this.matchesService.findAll(query);
   }
 

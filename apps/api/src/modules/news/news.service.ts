@@ -127,7 +127,7 @@ export class NewsService {
       }
 
       this.logger.log(`일반 뉴스 ${articles.length}개 저장 완료`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('일반 뉴스 가져오기 실패:', error.message);
     }
   }
@@ -164,7 +164,7 @@ export class NewsService {
       }
 
       this.logger.log(`${league.name} 뉴스 ${articles.length}개 저장 완료`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`리그 ${leagueId} 뉴스 가져오기 실패:`, error.message);
     }
   }

@@ -23,6 +23,7 @@ export const FEATURED_LEAGUES = [
   802, // Uzbekistan Cup => O
   48, // 리그컵
   10,
+  45,
 ];
 
 export const FEATURED_LEAGUES_Object = [

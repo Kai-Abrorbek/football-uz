@@ -87,7 +87,7 @@ export class MatchScheduler {
       }
 
       this.logger.log('Recent fixtures sync completed');
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Failed to sync recent fixtures', error.message);
     }
   }
