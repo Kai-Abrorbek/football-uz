@@ -63,7 +63,7 @@ export class FcmService implements OnModuleInit {
           notification: {
             sound: 'default',
             channelId: 'default', // 프론트에서 만든 채널ID와 일치해야 함
-            clickAction: 'TOP_LEVEL_NAVIGATOR',
+            clickAction: 'android.intent.action.MAIN',
           },
         },
         // ⚽️ 4. iOS 전용 설정 (혹시 모르니)
@@ -118,7 +118,7 @@ export class FcmService implements OnModuleInit {
           notification: {
             sound: 'default',
             channelId: 'default', // 프론트 채널ID와 맞춰야 함
-            clickAction: 'TOP_LEVEL_NAVIGATOR',
+            clickAction: 'android.intent.action.MAIN',
           },
         },
         // 🍏 iOS: 백그라운드 데이터 수신 허용
@@ -178,7 +178,7 @@ export class FcmService implements OnModuleInit {
           notification: {
             sound: 'default',
             channelId: 'default', // 프론트에서 만든 채널ID와 일치해야 함
-            clickAction: 'TOP_LEVEL_NAVIGATOR',
+            clickAction: 'android.intent.action.MAIN',
           },
         },
         // ⚽️ 4. iOS 전용 설정 (혹시 모르니)
