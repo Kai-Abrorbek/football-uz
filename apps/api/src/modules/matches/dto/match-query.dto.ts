@@ -79,13 +79,13 @@ export class LeagueMatchQueryDto {
   @IsNotEmpty()
   @Type(() => Number)
   @IsNumber()
-  leagueId: number;
+  leagueId?: number;
 
   @ApiProperty({ required: false })
   @IsNotEmpty()
   @Type(() => Number)
   @IsNumber()
-  season: number;
+  season?: number;
 
   @ApiProperty({ required: false })
   @IsOptional()

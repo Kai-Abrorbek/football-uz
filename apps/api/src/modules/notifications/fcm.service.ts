@@ -52,7 +52,10 @@ export class FcmService implements OnModuleInit {
           body: String(body),
         },
         // ⚽️ 2. 앱 내부 로직용 데이터
-        data: this.stringifyData(data),
+        data: {
+          ...this.stringifyData(data),
+          isServerNotification: 'true',
+        },
 
         // ⚽️ 3. 안드로이드 전용 설정 (중요!)
         android: {
@@ -60,6 +63,7 @@ export class FcmService implements OnModuleInit {
           notification: {
             sound: 'default',
             channelId: 'default', // 프론트에서 만든 채널ID와 일치해야 함
+            clickAction: 'TOP_LEVEL_NAVIGATOR',
           },
         },
         // ⚽️ 4. iOS 전용 설정 (혹시 모르니)
@@ -88,7 +92,7 @@ export class FcmService implements OnModuleInit {
     title: string,
     body: string,
     data?: any,
-  ) {
+  ): Promise<admin.messaging.BatchResponse | void> {
     try {
       const validTokens = tokens.filter(
         (t) => t && t.trim().length > 0 && !t.startsWith('ExponentPushToken'),
@@ -106,6 +110,7 @@ export class FcmService implements OnModuleInit {
           title: String(title),
           body: String(body),
           ...this.stringifyData(data),
+          isServerNotification: 'true',
         },
         // 🚀 안드로이드: 앱이 꺼져있을 때(Killed state) 즉시 깨우기 위한 설정
         android: {
@@ -113,7 +118,7 @@ export class FcmService implements OnModuleInit {
           notification: {
             sound: 'default',
             channelId: 'default', // 프론트 채널ID와 맞춰야 함
-            clickAction: 'FLUTTER_NOTIFICATION_CLICK', // 혹은 RN 기본 설정
+            clickAction: 'TOP_LEVEL_NAVIGATOR',
           },
         },
         // 🍏 iOS: 백그라운드 데이터 수신 허용
@@ -162,7 +167,10 @@ export class FcmService implements OnModuleInit {
           body: String(body),
         },
         // ⚽️ 2. 앱 내부 로직용 데이터
-        data: this.stringifyData(data),
+        data: {
+          ...this.stringifyData(data),
+          isServerNotification: 'true',
+        },
 
         // ⚽️ 3. 안드로이드 전용 설정 (중요!)
         android: {
@@ -170,6 +178,7 @@ export class FcmService implements OnModuleInit {
           notification: {
             sound: 'default',
             channelId: 'default', // 프론트에서 만든 채널ID와 일치해야 함
+            clickAction: 'TOP_LEVEL_NAVIGATOR',
           },
         },
         // ⚽️ 4. iOS 전용 설정 (혹시 모르니)

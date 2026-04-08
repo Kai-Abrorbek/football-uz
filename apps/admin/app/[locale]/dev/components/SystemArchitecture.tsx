@@ -65,7 +65,7 @@ const SystemArchitecture = forwardRef<HTMLDivElement, {}>((props, ref) => {
                 </svg>
               </div>
               <span className={styles.nodeName}>Next.js Web</span>
-              <span className={styles.nodeSub}>:3000 · public</span>
+              <span className={styles.nodeSub}>:**00 · public</span>
             </div>
 
             {/* Next.js Admin */}
@@ -84,7 +84,7 @@ const SystemArchitecture = forwardRef<HTMLDivElement, {}>((props, ref) => {
                 </svg>
               </div>
               <span className={styles.nodeName}>Next.js Admin</span>
-              <span className={styles.nodeSub}>:3005 · internal</span>
+              <span className={styles.nodeSub}>:**05 · internal</span>
             </div>
           </div>
         </div>
@@ -155,7 +155,7 @@ const SystemArchitecture = forwardRef<HTMLDivElement, {}>((props, ref) => {
             style={{ minHeight: '16px' }}
           ></div>
           <div className={styles.connectorLabel}>
-            HTTP :4000 · internal network
+            HTTP :**00 · internal network
           </div>
           <div
             className={styles.connectorLine}
@@ -205,7 +205,7 @@ const SystemArchitecture = forwardRef<HTMLDivElement, {}>((props, ref) => {
                   </svg>
                 </div>
                 <span className={styles.nodeName}>NestJS API</span>
-                <span className={styles.nodeSub}>port 4000</span>
+                <span className={styles.nodeSub}>port **00</span>
                 <span className={styles.nodeSub}>Scheduler · Auth</span>
                 <span className={styles.nodeSub}>Socket.io · FCM</span>
               </div>
@@ -256,7 +256,7 @@ const SystemArchitecture = forwardRef<HTMLDivElement, {}>((props, ref) => {
                   </svg>
                 </div>
                 <span className={styles.nodeName}>Redis</span>
-                <span className={styles.nodeSub}>port 6379</span>
+                <span className={styles.nodeSub}>port **79</span>
                 <span className={styles.nodeSub}>Cache · Chat · Dedup</span>
               </div>
 
@@ -302,7 +302,7 @@ const SystemArchitecture = forwardRef<HTMLDivElement, {}>((props, ref) => {
                   </svg>
                 </div>
                 <span className={styles.nodeName}>Admin Panel</span>
-                <span className={styles.nodeSub}>Next.js :3005</span>
+                <span className={styles.nodeSub}>Next.js :**05</span>
                 <span className={styles.nodeSub}>Dashboard</span>
               </div>
             </div>

@@ -305,20 +305,20 @@ export default function DevModePage() {
               &nbsp;&nbsp;├─{' '}
               <span className={styles.monoHighlight}>apps/api</span>
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{' '}
-              <span className={styles.monoMuted}>NestJS · port 4000</span>
+              <span className={styles.monoMuted}>NestJS · port **00</span>
               <br />
               &nbsp;&nbsp;├─{' '}
               <span className={styles.monoHighlight}>apps/web</span>
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{' '}
               <span className={styles.monoMuted}>
-                Next.js homepage · port 3000
+                Next.js homepage · port **00
               </span>
               <br />
               &nbsp;&nbsp;├─{' '}
               <span className={styles.monoHighlight}>apps/admin</span>
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{' '}
               <span className={styles.monoMuted}>
-                Next.js admin · port 3005
+                Next.js admin · port **05
               </span>
               <br />
               &nbsp;&nbsp;└─{' '}
