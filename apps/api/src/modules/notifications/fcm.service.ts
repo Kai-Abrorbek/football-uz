@@ -46,22 +46,18 @@ export class FcmService implements OnModuleInit {
   async sendToDevice(token: string, title: string, body: string, data?: any) {
     try {
       const message: admin.messaging.Message = {
-        // ❌ notification 블록 제거
         data: {
-          title: String(title), // ← data로 이동
-          body: String(body), // ← data로 이동
+          title: String(title),
+          body: String(body),
           ...this.stringifyData(data),
           isServerNotification: 'true',
         },
         android: {
-          priority: 'high',
-          // ❌ notification 블록 제거
+          priority: 'high', // 이것만 남김
         },
         apns: {
           payload: {
-            aps: {
-              contentAvailable: true,
-            },
+            aps: { contentAvailable: true, sound: 'default' },
           },
         },
         token,
@@ -81,7 +77,7 @@ export class FcmService implements OnModuleInit {
     title: string,
     body: string,
     data?: any,
-  ): Promise<admin.messaging.BatchResponse | void> {
+  ) {
     try {
       const validTokens = tokens.filter(
         (t) => t && t.trim().length > 0 && !t.startsWith('ExponentPushToken'),
@@ -90,7 +86,6 @@ export class FcmService implements OnModuleInit {
 
       const message: admin.messaging.MulticastMessage = {
         tokens: validTokens,
-        // ❌ notification 블록 제거
         data: {
           title: String(title),
           body: String(body),
@@ -98,14 +93,11 @@ export class FcmService implements OnModuleInit {
           isServerNotification: 'true',
         },
         android: {
-          priority: 'high',
-          // ❌ notification 블록 제거
+          priority: 'high', // 이것만 남김
         },
         apns: {
           payload: {
-            aps: {
-              contentAvailable: true,
-            },
+            aps: { contentAvailable: true, sound: 'default' },
           },
         },
       };
@@ -132,11 +124,10 @@ export class FcmService implements OnModuleInit {
     }
   }
 
-  // 🚨 3. 토픽 전송 (notification 삭제)
+  // 3. 토픽 전송
   async sendToTopic(topic: string, title: string, body: string, data?: any) {
     try {
       const message: admin.messaging.Message = {
-        // ❌ notification 블록 제거
         data: {
           title: String(title),
           body: String(body),
@@ -144,14 +135,11 @@ export class FcmService implements OnModuleInit {
           isServerNotification: 'true',
         },
         android: {
-          priority: 'high',
-          // ❌ notification 블록 제거
+          priority: 'high', // 이것만 남김
         },
         apns: {
           payload: {
-            aps: {
-              contentAvailable: true,
-            },
+            aps: { contentAvailable: true, sound: 'default' },
           },
         },
         topic,
@@ -162,7 +150,6 @@ export class FcmService implements OnModuleInit {
     }
   }
 
-  // 💡 FCM data 필드는 모든 값을 string으로 보내야 안전함
   private stringifyData(data?: any) {
     const result: any = {};
     if (!data) return result;

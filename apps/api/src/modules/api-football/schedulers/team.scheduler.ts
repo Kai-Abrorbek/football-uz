@@ -7,7 +7,7 @@ import { Team, TeamDocument } from '../../../schemas/team.schema';
 import {
   FEATURED_LEAGUES_Object,
   SEASON,
-} from 'apps/api/src/constants/leagues.constant';
+} from '../../../constants/leagues.constant';
 
 @Injectable()
 export class TeamScheduler {

@@ -22,6 +22,7 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {},
-    "types": ["node", "express"] 
+    "types": ["node", "express"] ,
+    "strictPropertyInitialization": false
   }
 }

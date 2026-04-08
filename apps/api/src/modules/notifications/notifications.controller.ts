@@ -15,6 +15,7 @@ import { NotificationsService } from './notifications.service';
 import { SendNotificationDto } from './dto/send-notification.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FcmService } from './fcm.service';
+import { title } from 'process';
 
 @ApiTags('Notifications')
 @Controller('notifications')
@@ -106,7 +107,7 @@ export class NotificationsController {
       body: string;
       data?: any;
     },
-  ) {
+  ): Promise<any> {
     return await this.fcmService.sendToMultipleDevices(
       requestBody.tokens,
       requestBody.title,

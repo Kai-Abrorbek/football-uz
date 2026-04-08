@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { NotificationSettings } from 'apps/api/src/schemas';
+import { NotificationSettings } from '../../../schemas';
 
 export class AuthResponseDto {
   @ApiProperty()

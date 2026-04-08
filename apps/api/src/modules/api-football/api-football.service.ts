@@ -44,7 +44,7 @@ export class ApiFootballService {
       );
 
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`API Request Failed: ${endpoint}`, error.message);
 
       await this.logSync(

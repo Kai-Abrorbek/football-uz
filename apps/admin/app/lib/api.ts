@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  baseURL: 'https://api.footballuz.online/api/v1',
+  baseURL: 'http://localhost:4000/api/v1',
+  // baseURL: 'https://api.footballuz.online/api/v1',
   withCredentials: true,
 });
 

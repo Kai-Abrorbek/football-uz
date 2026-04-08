@@ -4,13 +4,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ApiFootballService } from '../api-football.service';
 import { Standing, StandingDocument } from '../../../schemas/standing.schema';
-import {
-  FEATURED_LEAGUES,
-  SEASON,
-} from 'apps/api/src/constants/leagues.constant';
+import { FEATURED_LEAGUES, SEASON } from '../../../constants/leagues.constant';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import { Match, MatchDocument } from 'apps/api/src/schemas';
+import { Match, MatchDocument } from '../../../schemas';
 
 @Injectable()
 export class StandingScheduler {

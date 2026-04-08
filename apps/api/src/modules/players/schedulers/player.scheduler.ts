@@ -5,11 +5,8 @@ import { Model } from 'mongoose';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
-import { Player, Team } from 'apps/api/src/schemas';
-import {
-  FEATURED_LEAGUES,
-  SEASON,
-} from 'apps/api/src/constants/leagues.constant';
+import { Player, Team } from '../../../schemas';
+import { FEATURED_LEAGUES, SEASON } from '../../../constants/leagues.constant';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from '@nestjs/cache-manager';
 
@@ -75,7 +72,7 @@ export class PlayerStatsScheduler {
       }
 
       this.logger.log(`리그 ${leagueId} 득점왕 동기화 완료`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`리그 ${leagueId} 득점왕 동기화 실패:`, error.message);
     }
   }
@@ -110,7 +107,7 @@ export class PlayerStatsScheduler {
       }
 
       this.logger.log(`리그 ${leagueId} 어시스트왕 동기화 완료`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
         `리그 ${leagueId} 어시스트왕 동기화 실패:`,
         error.message,

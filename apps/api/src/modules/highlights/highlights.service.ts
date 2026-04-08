@@ -84,8 +84,8 @@ export class HighlightsService {
       });
 
       return highlight;
-    } catch (e) {
-      console.error('YouTube API error:', e.message);
+    } catch (error: any) {
+      console.error('YouTube API error:', error.message);
       return null;
     }
   }

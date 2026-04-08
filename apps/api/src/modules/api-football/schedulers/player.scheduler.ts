@@ -8,10 +8,7 @@ import {
   LeagueRecord,
   LeagueRecordDocument,
 } from '../../../schemas/league-record.schema';
-import {
-  FEATURED_LEAGUES,
-  SEASON,
-} from 'apps/api/src/constants/leagues.constant';
+import { FEATURED_LEAGUES, SEASON } from '../../../constants/leagues.constant';
 
 @Injectable()
 export class PlayerScheduler {

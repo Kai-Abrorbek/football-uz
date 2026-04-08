@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import { ApiFootballService } from '../api-football.service';
 import { Match, MatchDocument } from '../../../schemas/match.schema';
 import { FixtureabsenceService } from '../../fixtureabsence/fixtureabsence.service';
-import { Player, PlayerDocument } from 'apps/api/src/schemas';
+import { Player, PlayerDocument } from '../../../schemas';
 
 @Injectable()
 export class DetailsScheduler {
