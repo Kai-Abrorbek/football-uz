@@ -15,12 +15,6 @@ export class StandingsController {
     return this.standingsService.findAll(season ? +season : SEASON);
   }
 
-  // @Get('league/:leagueId')
-  // @ApiOperation({ summary: '리그 현재 시즌 순위표 조회' })
-  // async findCurrentByLeague(@Param('leagueId') leagueId: number) {
-  //   return this.standingsService.findCurrentByLeague(+leagueId);
-  // }
-
   @Get('league/:leagueId/season/:season')
   @ApiOperation({ summary: '리그별 시즌 순위표 조회' })
   async findByLeague(

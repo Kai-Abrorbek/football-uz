@@ -15,7 +15,7 @@ import { redisStore } from 'cache-manager-redis-yet';
             host: configService.get<string>('REDIS_HOST', 'localhost'),
             port: configService.get<number>('REDIS_PORT', 6379),
           },
-          ttl: 60 * 60 * 1000, // 1시간 (밀리초)
+          ttl: 60 * 60, // 1시간
         }),
       }),
       inject: [ConfigService],

@@ -39,15 +39,6 @@ export class MatchesService {
       filter.date = { $gte: today };
     }
 
-    // if (query.startUTC && query.endUTC) {
-    //   filter.date = {
-    //     $gte: new Date(query.startUTC),
-    //     $lte: new Date(query.endUTC),
-    //   };
-    // } else {
-    //   filter.date = { $gte: today };
-    // }
-
     if (query.leagueId) {
       filter['league.id'] = query.leagueId;
     }
@@ -83,7 +74,7 @@ export class MatchesService {
         .find(filter)
         .sort({ date: 1 })
         .exec();
-      await this.cacheManager.set(cacheKey, matches, 60 * 60 * 1000);
+      await this.cacheManager.set(cacheKey, matches, 60 * 60);
       return matches;
     }
 
@@ -101,55 +92,60 @@ export class MatchesService {
   }
 
   async getLeagueMatches(query: LeagueMatchQueryDto) {
-    const matches = await this.matchModel.find({
-      'league.id': query.leagueId,
-      'league.season': query.season,
-    });
+    // round=0 아니면 DB 조회 없이 바로 캐시 확인 가능
+    let currentRound: number;
 
-    const playedMatches = matches.filter(
-      (m) => m.status?.short === 'FT' || m.status?.short === '2H',
-    );
-
-    const roundNumbers = playedMatches
-      .map((m) => {
-        const s = m.round ?? '';
-        const match = s.match(/(\d+)\s*$/);
-        return match ? Number(match[1]) : NaN;
-      })
-      .filter(Number.isFinite);
-
-    let currentRound = roundNumbers.length ? Math.max(...roundNumbers) : 1;
-
-    // round=0이면 현재 라운드 자동 계산, 아니면 그대로 사용
     if (query.round !== 0) {
+      // round 명시된 경우 → 바로 캐시 확인
       currentRound = query.round!;
+
+      const cacheKey = `league:${query.leagueId}:season:${query.season}:round:${currentRound}:dir:${query.direction ?? 'init'}`;
+      const cached = await this.cacheManager.get(cacheKey);
+      if (cached) return cached;
+    } else {
+      // round=0 (자동계산) → DB 조회 필요
+      const matches = await this.matchModel.find({
+        'league.id': query.leagueId,
+        'league.season': query.season,
+      });
+
+      const playedMatches = matches.filter(
+        (m) => m.status?.short === 'FT' || m.status?.short === '2H',
+      );
+
+      const roundNumbers = playedMatches
+        .map((m) => {
+          const s = m.round ?? '';
+          const match = s.match(/(\d+)\s*$/);
+          return match ? Number(match[1]) : NaN;
+        })
+        .filter(Number.isFinite);
+
+      currentRound = roundNumbers.length ? Math.max(...roundNumbers) : 1;
+
+      // 자동계산 후 캐시 확인
+      const cacheKey = `league:${query.leagueId}:season:${query.season}:round:${currentRound}:dir:${query.direction ?? 'init'}`;
+      const cached = await this.cacheManager.get(cacheKey);
+      if (cached) return cached;
     }
 
+    //  필터 구성
     const filter: any = {};
     if (query.leagueId) filter['league.id'] = query.leagueId;
     if (query.season) filter['league.season'] = query.season;
 
+    // direction별 rounds 계산
     let rounds: number[];
 
-    // ✅ direction으로 범위 분리
     if (query.direction === 'prev') {
-      // 이전 라운드들: currentRound-3 ~ currentRound
-      rounds = [
-        // currentRound - 3,
-        // currentRound - 2,
-        currentRound - 1,
-        currentRound,
-      ].filter((r) => r > 0 && Number.isFinite(r));
+      rounds = [currentRound - 1, currentRound].filter(
+        (r) => r > 0 && Number.isFinite(r),
+      );
     } else if (query.direction === 'next') {
-      // 다음 라운드들: currentRound ~ currentRound+3
-      rounds = [
-        currentRound,
-        currentRound + 1,
-        // currentRound + 2,
-        // currentRound + 3,
-      ].filter((r) => r > 0 && Number.isFinite(r));
+      rounds = [currentRound, currentRound + 1].filter(
+        (r) => r > 0 && Number.isFinite(r),
+      );
     } else {
-      // 초기(direction 없음): 현재 기준 앞뒤로
       rounds = [
         currentRound - 2,
         currentRound - 1,
@@ -169,11 +165,16 @@ export class MatchesService {
 
     filter['round'] = { $in: roundStrings };
 
+    //  DB 조회
     const result = await this.matchModel
       .find(filter)
-      .sort({ date: 1 }) // ✅ 오름차순으로 통일
+      .sort({ date: 1 })
       .lean()
       .exec();
+
+    //  캐시 저장 (direction 포함된 키, 24시간)
+    const cacheKey = `league:${query.leagueId}:season:${query.season}:round:${currentRound}:dir:${query.direction ?? 'init'}`;
+    await this.cacheManager.set(cacheKey, result, 60 * 60 * 24);
 
     return {
       currentRound,

@@ -68,9 +68,10 @@ export class MatchScheduler {
 
   // 최근 경기 업데이트 - 6시간마다
   // @Cron('0 */6 * * *')
-  async syncRecentFixtures() {
+  async syncRecentFixtures(day: number, label: string) {
     this.logger.log('Syncing recent fixtures...');
-    const dates = this.getLast7Days();
+    const dates = this.getLast7Days(day, label);
+    console.log(dates);
     try {
       for (const date of dates) {
         const data = await this.apiFootballService.getFixturesByDate(date);
@@ -352,11 +353,13 @@ export class MatchScheduler {
     }
   }
 
-  private getLast7Days(): string[] {
+  private getLast7Days(day: number, label: string): string[] {
     const dates: string[] = [];
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < day; i++) {
       const date = new Date();
-      date.setDate(date.getDate() - i);
+      label === '+'
+        ? date.setDate(date.getDate() + i)
+        : date.setDate(date.getDate() - i);
       dates.push(date.toISOString().split('T')[0]);
     }
     return dates;

@@ -89,7 +89,7 @@ export class PlayersService {
 
     const result = { player, recentMatches };
 
-    await this.cacheManager.set(cacheKey, result, 60 * 60 * 1000); // 1시간
+    await this.cacheManager.set(cacheKey, result, 60 * 60); // 1시간
 
     return result;
   }

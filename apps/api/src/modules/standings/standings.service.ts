@@ -35,15 +35,11 @@ export class StandingsService {
     }
 
     // 3. 캐시 저장 (24시간)
-    await this.cacheManager.set(cacheKey, standing, 60 * 60 * 24 * 1000);
+    await this.cacheManager.set(cacheKey, standing, 60 * 60);
     this.logger.log(`💾 캐시 저장: ${cacheKey}`);
 
     return standing;
   }
-
-  // async findCurrentByLeague(leagueId: number) {
-  //   return this.findByLeague(leagueId, season);
-  // }
 
   async findAll(season: number = SEASON) {
     const cacheKey = `standings:all:${season}`;
@@ -58,7 +54,7 @@ export class StandingsService {
       .find({ 'league.season': season })
       .exec();
 
-    await this.cacheManager.set(cacheKey, standings, 60 * 60 * 24 * 1000);
+    await this.cacheManager.set(cacheKey, standings, 60 * 60);
 
     return standings;
   }

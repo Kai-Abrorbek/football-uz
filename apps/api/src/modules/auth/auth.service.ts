@@ -328,7 +328,7 @@ export class AuthService {
     await this.cacheManager.set(
       `telegram:login:${loginToken}`,
       JSON.stringify(telegramUser),
-      300000, // ms 단위
+      50000, // ms 단위
     );
   }
 
