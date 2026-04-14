@@ -33,7 +33,7 @@ export class ApiFootballController {
     return { message: '라이브 스코어 동기화 완료' };
   }
 
-  @Post('recent')
+  @Post('recent/:day/:label')
   @ApiOperation({ summary: '최근 경기 업데이트 수동 동기화' })
   async recentMatches(
     @Param('day') day: number,
