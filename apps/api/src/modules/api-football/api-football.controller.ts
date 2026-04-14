@@ -37,7 +37,7 @@ export class ApiFootballController {
   @ApiOperation({ summary: '최근 경기 업데이트 수동 동기화' })
   async recentMatches(
     @Param('day') day: number,
-    @Param('label') label: string,
+    @Param('label') label: number,
   ) {
     await this.matchScheduler.syncRecentFixtures(day, label);
     return { message: '최근 경기 업데이트 수동 동기화 완' };
