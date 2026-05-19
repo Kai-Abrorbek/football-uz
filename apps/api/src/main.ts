@@ -13,7 +13,6 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix(process.env.API_PREFIX || 'api/v1');
 
-  // CORS 설정
   app.enableCors({
     origin: [
       'https://footballuz.online',
@@ -22,6 +21,8 @@ async function bootstrap() {
       'http://localhost:3005',
       'http://localhost:3000',
       'http://localhost:8081',
+      'https://football-uz-app.vercel.app',
+      'https://football-uz-chbvie142-kai-abrorbeks-projects.vercel.app',
     ],
     credentials: true,
   });
