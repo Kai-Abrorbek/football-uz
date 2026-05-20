@@ -627,7 +627,21 @@ export default function HomePage() {
           </button>
         </div>
       </section>
-
+      {/* ── APP PREVIEW SECTION ── */}
+      <section className={styles.appPreviewSection}>
+        <p className={styles.appPreviewLabel}>📱 Try it in your browser</p>
+        <div className={styles.phoneWrapper}>
+          <div className={styles.phoneMockup}>
+            <div className={styles.phoneSpeaker} />
+            <iframe
+              src="https://football-uz-app.vercel.app"
+              className={styles.phoneIframe}
+              allow="accelerometer; camera; gyroscope"
+            />
+            <div className={styles.phoneHomeBar} />
+          </div>
+        </div>
+      </section>
       <section className={styles.browseSection}>
         <div className={styles.browseContainer}>
           {/* Navbar */}
