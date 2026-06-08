@@ -28,7 +28,7 @@ export class PlayerStatsScheduler {
       this.configService.get<string>('API_FOOTBALL_BASE_URL') || '';
   }
 
-  @Cron('0 4 * * *')
+  // @Cron('0 4 * * *')
   async syncTopPlayers() {
     this.logger.log('득점왕/어시스트왕 동기화 시작');
     const season = SEASON;

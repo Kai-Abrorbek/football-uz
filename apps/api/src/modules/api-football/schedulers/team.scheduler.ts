@@ -20,7 +20,7 @@ export class TeamScheduler {
   ) {}
 
   // 팀 정보 - 4시간마다
-  @Cron('0 */4 * * *')
+  // @Cron('0 */4 * * *')
   async syncTeams() {
     this.logger.log('Syncing teams...');
     const season = SEASON;

@@ -93,7 +93,7 @@ export class MatchScheduler {
     }
   }
 
-  @Cron('*/20 * * * * *')
+  // @Cron('*/20 * * * * *')
   async syncLiveScores() {
     try {
       const now = new Date();

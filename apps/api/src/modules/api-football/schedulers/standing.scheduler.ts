@@ -21,7 +21,7 @@ export class StandingScheduler {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  @Cron('0 */3 * * *')
+  // @Cron('0 */3 * * *')
   async syncStandings() {
     this.logger.log('Syncing standings...');
     const season = SEASON;
@@ -88,7 +88,7 @@ export class StandingScheduler {
   }
 
   // 1분마다 체크 - 경기 종료 후 5분 된 경기 있으면 해당 리그 순위표 업데이트
-  @Cron('*/1 * * * *')
+  // @Cron('*/1 * * * *')
   async syncStandingsAfterMatch() {
     try {
       const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);

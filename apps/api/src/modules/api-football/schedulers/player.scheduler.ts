@@ -22,7 +22,7 @@ export class PlayerScheduler {
     private leagueRecordModel: Model<LeagueRecordDocument>,
   ) {}
 
-  @Cron('0 */12 * * *')
+  // @Cron('0 */12 * * *')
   async syncTopScorers() {
     this.logger.log('Syncing top scorers...');
     const season = SEASON;
